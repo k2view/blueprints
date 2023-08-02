@@ -4,7 +4,7 @@
 
 # Kubernetes Cluster Name
 global:
-  clusterName: "eu-central-1-aws-dfaas-eks"
+  clusterName: ""
 
 # Chart: charts/gcp-monitoring-collectors
 # Manifest specific values: 02-opreator.yaml
@@ -15,11 +15,13 @@ operator:
 
   should_create_namespace: true
 
+  metricsWriterSecretFile: "additionals/metricsWriter.json"
+
 # GCP params
-projectId: "k2view-dfaas"
+projectId: ""
 
 # Physical Location of where GCP metrics will be stored
-location: "europe-west3"
+location: ""
 
 
 kube_state_metrics: # Flip switch for installing Kube-State-Metrics

@@ -16,7 +16,7 @@ variable "domain" {
 variable "karpenter_cloudformation_path" {
   type = string
   default = "./cloudformations/karpenter.yaml"
-  description = "local Path to Karpenter Cloudformation stack - cloudformation from : https://karpenter.sh/docs/getting-started/getting-started-with-karpenter/"
+  description = "local Path to Karpenter Cloudformation stack - Ref : https://karpenter.sh/docs/getting-started/getting-started-with-karpenter/"
 }
 
 variable "karpenter_version" {

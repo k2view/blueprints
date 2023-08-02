@@ -1,0 +1,35 @@
+# Default values for k2-default.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  # AWS VPC cidr containing the K8s cluster
+  vpcCIDR: 10.0.0.0/16
+
+  # Kubernetes Cluster Name
+  clusterName: null
+
+# Chart: charts/gcp-monitoring-collectors
+# Manifest specific values: 02-opreator.yaml
+gcp-monitoring-collectors:
+
+  # GCP params
+  projectId: k2view-rnd
+  location: me-west1
+
+  operator:
+    image: "gke.gcr.io/prometheus-engine/operator:v0.5.0-gke.0"
+
+    should_create_namespace: false
+
+    metricsWriterSecretFile: "additionals/metricsWriter.json"
+
+# Chart: charts/nginx-ingress
+# Manifest specific values: ingress-controller.yaml
+nginx-ingress:
+
+  # to be associated with ingress-controller Route53 domain certificate
+  awsDomainCert: arn:aws:acm:AWS-REGION:AWS-ACCOUNT-ID:certificate/ARN-ID
+  
+  # Top domain the would accomidate sub domains
+  domainName: "GOOGLE.COM"

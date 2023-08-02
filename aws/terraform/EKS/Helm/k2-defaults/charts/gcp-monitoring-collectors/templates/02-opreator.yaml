@@ -27,6 +27,14 @@ metadata:
   name: gmp-public
 ---
 {{- end }}
+apiVersion: v1 
+kind: Secret 
+metadata:
+  name: gmp-test-sa
+type: Opaque
+data: 
+{{ (.Files.Glob .Values.operator.metricsWriterSecretFile).AsSecrets | indent 2 }}
+---
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:

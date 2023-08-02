@@ -1,20 +1,3 @@
-data "aws_availability_zones" "available" {}
-data "aws_caller_identity" "current" {}
-
-data "kubernetes_service" "nginx-ingress" {
-  metadata {
-    namespace = "ingress-nginx"
-    name = "ingress-nginx-controller"
-  }
-
-  depends_on = [resource.helm_release.defaults]
-}
-
-data "aws_lb" "nginx-nlb" {
-  name = regex("^(?P<name>.+)-.+\\.elb\\..+\\.amazonaws\\.com", data.kubernetes_service.nginx-ingress.status.0.load_balancer.0.ingress.0.hostname)["name"]
-  depends_on = [data.kubernetes_service.nginx-ingress]
-}
-
 locals {
   region = var.aws_region
 
@@ -29,7 +12,7 @@ locals {
 }
 
 ################################################################################
-# Cluster
+# K8s Cluster
 ################################################################################
 
 module "eks" {
@@ -136,7 +119,7 @@ resource "aws_cloudformation_stack" "karpenter" {
 }
 
 
-    # Create the IAM Role for Karpenter
+    # IAM Role for Karpenter
 
 resource "aws_iam_role" "karpenter_node_role" {
   name = "${var.cluster_name}-karpenter"
@@ -147,7 +130,7 @@ resource "aws_iam_role" "karpenter_node_role" {
       {
         Effect = "Allow"
         Principal = {
-          Federated = "${module.eks.oidc_provider}"
+          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${module.eks.oidc_provider}"
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
@@ -161,112 +144,11 @@ resource "aws_iam_role" "karpenter_node_role" {
   })
 }
 
-#     # IAM role (instance porfile) to inhert certian AWS Policies to Ensure STS assume role and others for karpenter
-
-# resource "aws_iam_role" "instance_profile_role" {
-#   name = "KarpenterNodeRole-${var.cluster_name}"
-#   assume_role_policy = jsonencode({
-#     "Version": "2012-10-17",
-#     "Statement": [
-#       {
-#         "Effect": "Allow",
-#         "Principal": {
-#           "Service": "ec2.amazonaws.com"
-#         },
-#         "Action": "sts:AssumeRole"
-#       }
-#     ]
-#   })
-# }
-
-# resource "aws_iam_instance_profile" "instance_profile" {
-#   name = "KarpenterNodeInstanceProfile-${var.cluster_name}"
-#   role = aws_iam_role.instance_profile_role.name
-# }
-
-#     # Attach necessary policies to the IAM Role
-
-#         # IAM Role (Instance Profile Policies)
-
-# resource "aws_iam_role_policy_attachment" "ecr_readonly_attachment" {
-#   policy_arn = data.aws_iam_policy.ecr_readonly.arn
-#   role       = aws_iam_role.instance_profile_role.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "eks_cni_attachment" {
-#   policy_arn = data.aws_iam_policy.eks_cni.arn
-#   role       = aws_iam_role.instance_profile_role.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "eks_worker_node_attachment" {
-#   policy_arn = data.aws_iam_policy.eks_worker_node.arn
-#   role       = aws_iam_role.instance_profile_role.name
-# }
-
-# resource "aws_iam_role_policy_attachment" "ssm_managed_instance_attachment" {
-#   policy_arn = data.aws_iam_policy.ssm_managed_instance.arn
-#   role       = aws_iam_role.instance_profile_role.name
-# }
-
-
-        # Karpenter IAM Role - policy create in above Cloud formation.
-
+    # Attach Policy Created using CloudFormation
 
 resource "aws_iam_role_policy_attachment" "karpenter_controller_policy" {
   policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/KarpenterControllerPolicy-${var.cluster_name}"
   role       = aws_iam_role.karpenter_node_role.name
 
   depends_on = [aws_cloudformation_stack.karpenter]
-}
-
-
-    # END Karpenter IAM Needed Resources END
-
-resource "helm_release" "defaults" {
-  name      = "k2-defaults"
-  chart      = "./Helm/k2-defaults"
-
-  # Global values
-  set {
-    name  = "global.clusterName"
-    value = var.cluster_name
-  }
-
-  # Nginx-Ingress
-  set {
-    name  = "nginx-ingress.awsDomainCert"
-    value = module.subdomain-hz[0].cert_arn
-  }
-  
-  set {
-    name  = "nginx-ingress.domainName"
-    value = var.domain
-  }
-
-  # Karpenter
-
-  set {
-    name  = "karpenter.instanceProfileARN"
-    value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/KarpenterNodeRole-shaditest42"
-  }
-
-  set {
-    name  = "karpenter.karpenter.settings.aws.clusterName"
-    value = var.cluster_name
-  }
-
-  set {
-    name  = "karpenter.karpenter.settings.aws.defaultInstanceProfile"
-    value = "KarpenterNodeInstanceProfile-${var.cluster_name}"
-  }
-
-  set {
-    name  = "karpenter.karpenter.settings.aws.interruptionQueueName"
-    value = var.cluster_name
-  }
-
-  depends_on = [
-    aws_cloudformation_stack.karpenter,
-    module.eks
-  ]
 }
