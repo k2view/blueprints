@@ -1,0 +1,64 @@
+{{- if .Values.yace.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: yace
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yace-config-config-map
+  namespace: yace
+data:
+  config.yml: |
+    {{- .Files.Get .Values.yace.path_to_config | trim | nindent 4 }}
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: yace-aws-creds
+  namespace: yace
+data:
+  AWS_ACCESS_KEY_ID: {{ .Values.yace.secrets.AWS_ACCESS_KEY_ID | b64enc | default "''" }}
+  AWS_SECRET_ACCESS_KEY: {{ .Values.yace.secrets.AWS_SECRET_ACCESS_KEY | b64enc | default "''" }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yace-deployment
+  namespace: yace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yace
+  template:
+    metadata:
+      labels:
+        app: yace
+    spec:
+      containers:
+      - name: yace
+        image: ghcr.io/nerdswords/yet-another-cloudwatch-exporter:v0.51.0
+        ports:
+        - containerPort: 5000
+        env:
+        -   name: AWS_ACCESS_KEY_ID
+            valueFrom:
+                secretKeyRef:
+                    name: yace-aws-creds
+                    key: AWS_ACCESS_KEY_ID
+        -   name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+                secretKeyRef:
+                    name: yace-aws-creds
+                    key: AWS_SECRET_ACCESS_KEY
+        volumeMounts:
+        - name: config-volume
+          mountPath: /tmp
+      volumes:
+      - name: config-volume
+        configMap:
+          name: yace-config-config-map
+{{- end }}

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: {{ .Values.KarpenterNamespace }}
+data:
+  mapRoles: |
+    - rolearn: {{ .Values.instanceProfileARN }}
+      username: system:node:{{ "{{EC2PrivateDNSName}}" }}
+      groups:
+        - system:bootstrappers
+        - system:nodes

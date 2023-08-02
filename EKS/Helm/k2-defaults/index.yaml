@@ -1,0 +1,31 @@
+apiVersion: v1
+entries:
+  k2-default:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-04-04T14:50:29.950461059+03:00"
+    dependencies:
+    - name: permission-access
+      repository: file://./charts/permission-access
+      version: ~0.1.0-0
+    - name: storage-classes
+      repository: file://./charts/storage-classes
+      version: ~0.1.0-0
+    - name: autoscaling
+      repository: file://./charts/autoscaling
+      version: ~0.1.0-0
+    - name: nginx-ingress
+      repository: file://./charts/nginx-ingress
+      version: ~0.1.0-0
+    - name: gcp-monitoring-k8s-resource-extension
+      repository: file://./charts/gcp-monitoring-k8s-resource-extension
+      version: ~0.1.0-0
+    description: Helm charts the installs default needed featuers as per K2View's
+      specificaitions to be shipped with its K8 Cluster
+    digest: a4828eef56a08bc0a096d9c16e123f1114cf070ba486b45ec7998b4e61ab168a
+    name: k2-default
+    type: application
+    urls:
+    - k2-default-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-04-04T14:50:29.948207865+03:00"

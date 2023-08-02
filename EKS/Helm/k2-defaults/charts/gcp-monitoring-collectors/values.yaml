@@ -1,0 +1,48 @@
+# Default values for gcp-monitoring-collectors.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Kubernetes Cluster Name
+global:
+  clusterName: "eu-central-1-aws-dfaas-eks"
+
+# Chart: charts/gcp-monitoring-collectors
+# Manifest specific values: 02-opreator.yaml
+operator:
+  enabled: true
+
+  image: "gke.gcr.io/prometheus-engine/operator:v0.5.0-gke.0"
+
+  should_create_namespace: true
+
+# GCP params
+projectId: "k2view-dfaas"
+
+# Physical Location of where GCP metrics will be stored
+location: "europe-west3"
+
+
+kube_state_metrics: # Flip switch for installing Kube-State-Metrics
+  enabled: true
+
+yace:
+  enabled: false # Flip switch for installing yet-another-cloudwatch-export
+
+  # path to Metrics File
+  path_to_config: "additionals/config.yml"
+
+  secrets:
+
+    # AWS IAM User with access to CloudWatch metrics
+    # Both values should be specified base64 encoded !!.
+    AWS_ACCESS_KEY_ID: 'awd'
+    AWS_SECRET_ACCESS_KEY: 'awds'
+
+promtail:
+  enabled: false
+
+  instanceId: ""
+
+  APIKEY: ""
+
+  INSTANCEURL: ""

@@ -1,0 +1,13 @@
+apiVersion: v1alpha1
+customNamespace:
+  - name: AWS/NetworkELB
+    namespace: AWS/NetworkELB
+    regions:
+      - eu-central-1
+    metrics:
+      - name: ActiveFlowCount
+        statistics:
+          - Average
+        period: 300
+        length: 300
+        nilToZero: true
