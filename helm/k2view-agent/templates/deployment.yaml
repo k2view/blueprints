@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: k2view-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k2view-agent
+  template:
+    metadata:
+      labels:
+        app: k2view-agent
+    spec:
+      {{- if .Values.image.addDockerRegistry }}
+      imagePullSecrets:
+        -name: {{ .Values.image.dockerRegistrySecret }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: {{ .Values.image.url }}
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: K2_MAILBOX_ID
+            valueFrom:
+              secretKeyRef:
+                name: agent-config-secret
+                key: K2_MAILBOX_ID
+          - name: K2_MANAGER_URL
+            valueFrom:
+              secretKeyRef:
+                name: agent-config-secret
+                key: K2_MANAGER_URL
+          - name: kubeInterface
+            valueFrom:
+              secretKeyRef:
+                name: agent-config-secret
+                key: kubeInterface
+          {{- if .Values.serviceAccount.create }}
+          - name: kubeToken
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.serviceAccount.name }}
+                key: token
+          {{- else }}
+          - name: kubeToken
+            valueFrom:
+              secretKeyRef:
+                name: agent-config-secret
+                key: kubeToken
+          {{- end }}
+          livenessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - ps aux | grep K2v-Agent | grep -v grep
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+            limits:
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}
+            requests:
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
