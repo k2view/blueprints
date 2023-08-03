@@ -1,0 +1,70 @@
+# Default values for K2view agent.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace:
+  create: true
+  name: "k2view-agent"
+
+image:
+  url: "docker.share.cloud.k2view.com/k2view/k2v-agent:latest"
+
+  repoSecret:
+    name: "registry-secret"
+    enabled: false
+    dockerRegistry:
+      auths:
+        "docker.share.cloud.k2view.com":
+          username: ""
+          password: ""
+
+# Secrets used to config the agent
+secrets:
+  K2_MAILBOX_ID: ""
+  K2_MANAGER_URL: "https://cloud-dev.k2view.com/api/mailbox"
+  kubeInterface: "https://kubernetes.default.svc"
+  # If serviceAccount.create is true this env will be ignored
+  kubeToken: ""
+
+serviceAccount:
+  # will create service account with cluster role and secret with tocken of this SA
+  create: true
+  # The name of the service account to use.
+  name: "k2view-agent"
+
+resources:
+  requests:
+    memory: 128Mi
+    cpu: '0.1'
+  limits:
+    memory: 256Mi
+    cpu: '0.4'
+
+# Role for SA
+role:
+  name: k2view-agent
+  rules:
+    - apiGroups: [""]
+      resources: ["namespaces"]
+      verbs: ["create", "delete", "get"]
+    - apiGroups: ["apps"]
+      resources: ["deployments"]
+      verbs: ["create", "delete", "list", "get", "patch"]
+    - apiGroups: ["batch"]
+      resources: ["jobs", "jobs/status"]
+      verbs: ["create", "delete", "get", "list"]
+    - apiGroups: ["networking.k8s.io"]
+      resources: ["ingresses", "networkpolicies"]
+      verbs: ["create", "delete"]
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["delete", "list"]
+    - apiGroups: [""]
+      resources: ["configmaps", "secrets"]
+      verbs: ["create", "delete", "list", "patch"]
+    - apiGroups: [""]
+      resources: ["services", "persistentvolumeclaims", "networkpolicies"]
+      verbs: ["create", "delete"]
+    - apiGroups: ["monitoring.googleapis.com"]
+      resources: ["podmonitorings"]
+      verbs: ["create", "delete"]
