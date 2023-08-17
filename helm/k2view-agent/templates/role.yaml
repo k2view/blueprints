@@ -2,10 +2,10 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.role.name }}
+  name: {{ .Values.serviceAccount.role.name }}
   namespace: {{ .Values.namespace.name }}
 rules:
-  {{- range $rule := .Values.role.rules }}
+  {{- range $rule := .Values.serviceAccount.role.rules }}
   - apiGroups: [{{ range $i, $apiGroup := $rule.apiGroups }}"{{ $apiGroup }}"{{ if ne (len $rule.apiGroups) (add $i 1) }},{{ end }}{{ end }}]
     resources: [{{ range $i, $resource := $rule.resources }}"{{ $resource }}"{{ if ne (len $rule.resources) (add $i 1) }},{{ end }}{{ end }}]
     verbs: [{{ range $i, $verb := $rule.verbs }}"{{ $verb }}"{{ if ne (len $rule.verbs) (add $i 1) }},{{ end }}{{ end }}]
