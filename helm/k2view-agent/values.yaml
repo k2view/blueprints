@@ -21,7 +21,7 @@ image:
 # Secrets used to config the agent
 secrets:
   K2_MAILBOX_ID: ""
-  K2_MANAGER_URL: "https://cloud-dev.k2view.com/api/mailbox"
+  K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
   # If serviceAccount.create is true this env will be ignored
   kubeToken: ""
