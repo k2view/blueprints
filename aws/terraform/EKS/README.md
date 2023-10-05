@@ -46,8 +46,8 @@ To use this Terraform project, you will need the following prerequisites:
 1. Clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/k2view-academy/Blueprints.git
-cd aws/terraform/eks
+git clone https://github.com/k2view/blueprints.git
+cd aws/terraform/EKS
 ```
 
 1. Set up your IAM User credentials. You can do this by setting the following environment variables.

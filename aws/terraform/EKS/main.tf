@@ -20,7 +20,7 @@ module "eks" {
   # version = "~> 19.13"
 
   cluster_name                   = var.cluster_name
-  cluster_version                = "1.27"
+  cluster_version                = var.cluster_version
   cluster_endpoint_public_access = true
 
   vpc_id     = module.vpc.vpc_id
@@ -105,7 +105,7 @@ module "create-a-record" {
 # K8s Defaultly needed applications per K2view's Specification
 #---------------------------------------------------------------
 
-    # Karpenter IAM Needed Resources
+  # Karpenter IAM Needed Resources
 
 resource "aws_cloudformation_stack" "karpenter" {
   name = "Karpenter-${var.cluster_name}" 
@@ -119,7 +119,7 @@ resource "aws_cloudformation_stack" "karpenter" {
 }
 
 
-    # IAM Role for Karpenter
+  # IAM Role for Karpenter
 
 resource "aws_iam_role" "karpenter_node_role" {
   name = "${var.cluster_name}-karpenter"
@@ -144,7 +144,7 @@ resource "aws_iam_role" "karpenter_node_role" {
   })
 }
 
-    # Attach Policy Created using CloudFormation
+  # Attach Policy Created using CloudFormation
 
 resource "aws_iam_role_policy_attachment" "karpenter_controller_policy" {
   policy_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/KarpenterControllerPolicy-${var.cluster_name}"

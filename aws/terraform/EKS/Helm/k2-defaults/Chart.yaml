@@ -25,11 +25,6 @@ appVersion: "1.16.0"
 
 
 dependencies:
-  - name: tigera-operator
-    repository: https://projectcalico.docs.tigera.io/charts
-    version: 3.25.1
-    alias: calico
-
   - name: permission-access
     version: "~0.1.0-0"
     repository: "file://./charts/permission-access"
@@ -41,3 +36,8 @@ dependencies:
   - name: gcp-monitoring-collectors
     version: 0.2.8
     repository: "file://./charts/gcp-monitoring-collectors"
+  
+  - name: tigera-operator
+    repository: https://projectcalico.docs.tigera.io/charts
+    version: 3.25.1
+    alias: calico
