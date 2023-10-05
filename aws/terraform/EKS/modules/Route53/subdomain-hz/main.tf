@@ -3,10 +3,6 @@ locals {
   parent_domain = replace(var.domain, "${local.subdomain}.", "")
 }
 
-data "aws_route53_zone" "parent_hosted_zone" {
-  name = local.parent_domain
-}
-
 ### Create domain record ##
 resource "aws_route53_zone" "cluster_domain" {
   name = "${var.domain}"
@@ -57,10 +53,14 @@ resource "aws_route53_record" "cret_record" {
 }
 
 ## adding NS records of just created Hosted Zone to parent Domain Hosted Zone
+/*data "aws_route53_zone" "parent_hosted_zone" {
+  name = local.parent_domain
+}
+
 resource "aws_route53_record" "parent_hz_ns_record" {
   zone_id = "${data.aws_route53_zone.parent_hosted_zone.zone_id}"
   name = "${var.domain}"
   type = "NS"
   ttl = "300"
   records = aws_route53_zone.cluster_domain.name_servers
-}
+}*/
