@@ -1,0 +1,10 @@
+
+#The id of EFS (fs-{ID})
+fileSystemId: 
+  required: true
+
+#defaults for fabric cs
+sc_name: efs-sc
+uid: "1000"
+gidRangeStart: "998"
+gidRangeEnd: "2000"

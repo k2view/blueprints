@@ -1,0 +1,18 @@
+# Default values for nginx-ingress.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# AWS VPC cidr containing the K8s cluster
+vpcCIDR:
+  required: true
+
+# Chart: charts/nginx-ingress
+# Manifest specific values: ingress-controller.yaml
+
+# to be associated with ingress-controller Route53 domain certificate
+awsDomainCert:
+  required: true
+
+# Top domain the would accomidate sub domains
+domainName:
+  required: true
