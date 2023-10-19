@@ -23,13 +23,3 @@ gcp-monitoring-collectors:
     should_create_namespace: false
 
     metricsWriterSecretFile: "additionals/metricsWriter.json"
-
-# Chart: charts/nginx-ingress
-# Manifest specific values: ingress-controller.yaml
-nginx-ingress:
-
-  # to be associated with ingress-controller Route53 domain certificate
-  awsDomainCert: arn:aws:acm:AWS-REGION:AWS-ACCOUNT-ID:certificate/ARN-ID
-  
-  # Top domain the would accomidate sub domains
-  domainName: "GOOGLE.COM"

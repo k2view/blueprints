@@ -1,0 +1,13 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.sc_name }}
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: {{ .Values.fileSystemId | quote }}
+  directoryPerms: "775"
+  basePath: "/dynamic_provisioning"
+  uid: {{ .Values.uid | quote }}
+  gidRangeStart: {{ .Values.gidRangeStart | quote }}
+  gidRangeEnd: {{ .Values.gidRangeEnd | quote }}

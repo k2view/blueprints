@@ -15,23 +15,16 @@ variable "cluster_version" {
   description = "EKS cluster version"
 }
 
+variable "instance_type" {
+  type        = string
+  default     = "m5.2xlarge"
+  description = "EKS cluster instance type"
+}
+
 variable "domain" {
   type        = string
   description = "Subdomain for rout53 (Example SUBDOMAIN.DOMAIN.COM)"
 }
-
-variable "karpenter_cloudformation_path" {
-  type        = string
-  default     = "./cloudformations/karpenter.yaml"
-  description = "local Path to Karpenter Cloudformation stack - Ref : https://karpenter.sh/docs/getting-started/getting-started-with-karpenter/"
-}
-
-variable "karpenter_version" {
-  type        = string
-  default     = "v0.29.2"
-  description = "The version of Karpenter to be installed"
-}
-
 
 ### Default tags ###
 
