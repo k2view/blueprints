@@ -30,11 +30,11 @@ A Helm chart for k2view cloud manager site agent
 * Get K2_MAILBOX_ID and K2_MANAGER_URL from your k2view contact.
 * The kubeInterface should be accessible 
 
-### pull agent image
-#### cloud container registry
+### Pull agent image
+#### Cloud container registry
 If you pull image from you cloud container registry (GCR/ECR/ACR) that you cluster have access to make sure to specify image url and the value of addDockerRegistry is false.
 
-#### external container registry (nexus)
+#### External container registry (nexus)
 If you pull image from k2view nexus or you private nexus specify this parameters 
 
 ```yaml
@@ -46,3 +46,6 @@ dockerRegistry:
 ```
 
 * make sure the value of image.repoSecret.enabled is true
+
+#### Additional secrets
+Each secret (key:"value") will be added to agent-config-secrets secret and to agent container as a environment variable
