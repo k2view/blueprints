@@ -48,7 +48,7 @@ serviceAccount:
         resources: ["namespaces"]
         verbs: ["create", "delete", "get"]
       - apiGroups: ["apps"]
-        resources: ["deployments"]
+        resources: ["deployments", "statefulsets"]
         verbs: ["create", "delete", "list", "get", "patch"]
       - apiGroups: ["batch"]
         resources: ["jobs", "jobs/status"]
