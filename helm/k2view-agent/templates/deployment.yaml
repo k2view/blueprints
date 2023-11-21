@@ -33,6 +33,13 @@ spec:
                   key: {{ $key }}
             {{- end }}
             {{- end }}
+            {{- if .Values.serviceAccount.create }}
+            - name: kubeToken
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.serviceAccount.name }}
+                  key: token
+            {{- end }}
           livenessProbe:
             exec:
               command:

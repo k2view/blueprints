@@ -24,7 +24,7 @@ secrets:
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
   # If serviceAccount.create is true this env will be ignored
-  kubeToken: ""
+  #kubeToken: ""
 
 resources:
   requests:
@@ -42,7 +42,7 @@ serviceAccount:
 
   # Role for SA
   role:
-    name: k2view-agent
+    name: "k2view-agent"
     rules:
       - apiGroups: [""]
         resources: ["namespaces"]
