@@ -31,7 +31,7 @@ A Helm chart for k2view cloud manager site agent
 * The kubeInterface should be accessible 
 
 ### Pull agent image
-#### Vloud container registry
+#### Cloud container registry
 If you pull image from you cloud container registry (GCR/ECR/ACR) that you cluster have access to make sure to specify image url and the value of addDockerRegistry is false.
 
 #### External container registry (nexus)
