@@ -9,6 +9,12 @@ variable "domain" {
     description = "Subdomain for rout53."
 }
 
+variable "update_parent_hosted_zone" {
+    type        = bool
+    description = "Create A recort in parent hosted zone that point to new hosted zone"
+    default     = false
+}
+
 ### Default tags ###
 variable "owner" {
     type        = string

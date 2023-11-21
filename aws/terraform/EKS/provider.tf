@@ -1,5 +1,20 @@
-provider "aws" {
-  region = local.region
+terraform {
+  required_providers {
+    aws={
+      source = "Hashicorp/aws"
+      version = ">=5.0.0"
+    }
+    helm={
+      source = "Hashicorp/helm"
+      version = "2.11.0"
+    }
+    kubernetes={
+      source = "Hashicorp/kubernetes"
+      version = "2.23.0"
+    }
+    null = {
+    }
+  }
 }
 
 provider "kubernetes" {
