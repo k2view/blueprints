@@ -24,34 +24,15 @@ spec:
           image: {{ .Values.image.url }}
           imagePullPolicy: IfNotPresent
           env:
-          - name: K2_MAILBOX_ID
-            valueFrom:
-              secretKeyRef:
-                name: agent-config-secrets
-                key: K2_MAILBOX_ID
-          - name: K2_MANAGER_URL
-            valueFrom:
-              secretKeyRef:
-                name: agent-config-secrets
-                key: K2_MANAGER_URL
-          - name: kubeInterface
-            valueFrom:
-              secretKeyRef:
-                name: agent-config-secrets
-                key: kubeInterface
-          {{- if .Values.serviceAccount.create }}
-          - name: kubeToken
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.serviceAccount.name }}
-                key: token
-          {{- else }}
-          - name: kubeToken
-            valueFrom:
-              secretKeyRef:
-                name: agent-config-secrets
-                key: kubeToken
-          {{- end }}
+            {{- range $key, $value :=  .Values.secrets }}
+            {{- if not (empty $value) }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: agent-config-secrets
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
           livenessProbe:
             exec:
               command:
