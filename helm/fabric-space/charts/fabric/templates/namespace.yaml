@@ -1,0 +1,11 @@
+{{- if .Values.namespace.create }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace.name }}
+  labels:
+    app: fabric
+    {{- range $label := .Values.labelsList }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+{{- end }}

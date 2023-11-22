@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cassandra-deployment
+  labels: &id001
+    app: cassandra
+    {{- range $label := .Values.labelsList }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  namespace: {{ .Values.namespace.name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: cassandra
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      {{- if .Values.container.image.repoSecret.enabled }}
+      imagePullSecrets:
+        -name: {{ .Values.container.image.repoSecret.name }}
+      {{- end }}
+      containers:
+      - name: cassandra
+        image: {{ .Values.container.image.url }}
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: {{ .Values.listening_port }}
+        resources:
+          limits:
+            memory: {{ .Values.container.resource_allocation.limits.memory }}
+            cpu: {{ .Values.container.resource_allocation.limits.cpu }}
+          requests:
+            memory: {{ .Values.container.resource_allocation.requests.memory }}
+            cpu: {{ .Values.container.resource_allocation.requests.cpu }}
+        env:
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: cassandra-secret
+              key: username
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cassandra-secret
+              key: password
+        {{- range $env := .Values.container.envList }}
+        - name: {{ $env.key }}
+          value: {{ $env.value }}
+        {{- end }}
+      volumes:
+      - name: cassandra-storage
+        persistentVolumeClaim:
+          claimName: cassandra-claim
