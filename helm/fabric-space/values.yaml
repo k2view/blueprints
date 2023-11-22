@@ -83,7 +83,7 @@ fabric:
     
     # Fabric Image to be populated into Deployment
     image:
-      url: "329508970117.dkr.ecr.eu-central-1.amazonaws.com/rnd-dev:fabric_7.2.0_235" 
+      url: "" 
       repoSecret:
         enabled: false
 
