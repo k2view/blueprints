@@ -1,0 +1,34 @@
+{{ if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fabric-ingress
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: fabric
+    {{- range $label := .Values.labelsList }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  annotations:
+    {{- range $label := .Values.ingress.annotations }}
+    {{ $label.key }}: {{ $label.value | quote }}
+    {{- end }}
+spec:
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    {{- if .Values.ingress.tlsSecret.enabled }}
+    secretName: fabric-private-ingress-ssl
+    {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: fabric-service
+              port:
+                number: {{ .Values.ingress.port }}
+{{ end }}

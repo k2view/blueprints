@@ -1,0 +1,141 @@
+{{ if eq .Values.deploy.type "StatefulSet" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: fabric-stateful-sets
+  namespace: {{ .Values.namespace.name }}
+  labels: &id001
+    app: fabric
+    {{- range $label := .Values.labelsList }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+spec:
+    replicas: {{ .Values.container.replicas }}
+    serviceName: fabric-stateful-sets
+    selector:
+      matchLabels:
+        app: fabric
+    volumeClaimTemplates:
+    - metadata:
+        name: fabric-storage-private
+      spec:
+        storageClassName: {{ .Values.storage.class }}
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.storage.alocated_amount }}
+    template:
+        metadata:
+          labels: *id001
+        spec:
+          {{- if .Values.container.image.repoSecret.enabled }}
+          imagePullSecrets:
+            - name: {{ .Values.container.image.repoSecret.name }}
+          {{- end }}
+          initContainers:
+          - command:
+            - /bin/bash
+            args:
+            - -l
+            - -c
+            - ./docker-entrypoint.sh
+            imagePullPolicy: IfNotPresent
+            image: {{ .Values.container.image.url }}
+            name: init-fabric
+            resources:
+              limits:
+                memory: {{ .Values.container.resource_allocation.limits.memory | default "4Gi" }}
+                cpu: {{ .Values.container.resource_allocation.limits.cpu | default "1" }}
+              requests:
+                memory: {{ .Values.container.resource_allocation.requests.memory | default "1Gi" }}
+                cpu: {{ .Values.container.resource_allocation.requests.cpu | default "0.4" }}
+            env:
+            # common secrets
+            {{- range $secret := .Values.secretsList }}
+            {{- range $key, $value := $secret.data }}
+            {{- if not (empty $value) }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            # init secrets
+            {{- range $secret := .Values.initSecretsList }}
+            {{- range $key, $value := $secret.data }}
+            {{- if not (empty $value) }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            volumeMounts:
+            - name: fabric-storage-private
+              mountPath: /opt/apps/fabric/workspace
+            - name: {{ .Values.mountSecret.name }}
+              mountPath: {{ .Values.mountSecret.mountPath }}
+          
+          containers:
+          - command:
+            - /bin/bash
+            args:
+            - -l
+            - -c
+            - ./docker-entrypoint.sh && tail -F workspace/logs/k2fabric.log
+            imagePullPolicy: IfNotPresent
+            image: {{ .Values.container.image.url }}
+            name: fabric
+            ports:
+            - containerPort: 3213
+            - containerPort: 7170
+            - containerPort: 7070
+            - containerPort: 9100
+            securityContext:
+              allowPrivilegeEscalation: false
+            resources:
+              limits:
+                memory: {{ .Values.container.resource_allocation.limits.memory | default "4Gi" }}
+                cpu: {{ .Values.container.resource_allocation.limits.cpu | default "1" }}
+              requests:
+                memory: {{ .Values.container.resource_allocation.requests.memory | default "2Gi" }}
+                cpu: {{ .Values.container.resource_allocation.requests.cpu | default "0.4" }}
+            env:
+            {{- range $secret := .Values.secretsList }}
+            {{- range $key, $value := $secret.data }}
+            {{- if not (empty $value) }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secret.name }}
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            livenessProbe:
+              initialDelaySeconds: {{ .Values.container.livenessProbe.initialDelaySeconds | default 120 }}
+              periodSeconds: {{ .Values.container.livenessProbe.periodSeconds | default 60 }}
+              exec:
+                command:
+                - /bin/bash
+                - /opt/apps/fabric/isAlive.sh
+            volumeMounts:
+            - name: fabric-storage-private
+              mountPath: /opt/apps/fabric/workspace
+            {{- if .Values.mountSecret.enabled }}
+            - name: {{ .Values.mountSecret.name }}
+              mountPath: {{ .Values.mountSecret.mountPath }}
+            {{- end }}
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          volumes:
+          - name: {{ .Values.mountSecret.name }}
+            secret:
+              secretName: {{ .Values.mountSecret.name }}
+{{ end }}
