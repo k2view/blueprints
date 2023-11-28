@@ -130,10 +130,12 @@ spec:
             - name: {{ .Values.mountSecret.name }}
               mountPath: {{ .Values.mountSecret.mountPath }}
             {{- end }}
+          {{ if .Values.storage.securityContext }}
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
             fsGroup: 1000
+          {{ end }}
           volumes:
           - name: {{ .Values.mountSecret.name }}
             secret:

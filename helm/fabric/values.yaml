@@ -48,6 +48,7 @@ listening_port: 3213
 storage:
   pvc:
     enabled: true
+  securityContext: true
   class: gp2
   alocated_amount: 10Gi
 
@@ -60,7 +61,7 @@ scaling:
 
 # Deploy network policy that allow to fabric egress only to cassandra pod
 networkPolicy:
-  enabled: true
+  enabled: false
 
 ingress:
   enabled: true
