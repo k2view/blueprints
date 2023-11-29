@@ -16,7 +16,6 @@ function rotating_prompt() {
 }
 
 function init() {
-    # echo '''
     echo "Installing dependencies ..."
     DISTRIBUTION="Unknown"
 
@@ -34,9 +33,7 @@ function init() {
     esac
   
     echo "Initializing Completed! "
-  #  ''' > /tmp/init.sh
-    # chmod +x /tmp/init.sh 
-    # $GUM spin --show-output --spinner meter --title "Initialzing Installer  ..." -- bash -c "bash /tmp/init.sh"
+
     if [[ -x $GUM ]] 
     then
 	   $GUM style --foreground "#00ff00" '√ Initialzing Completed Successfully ...' 
@@ -128,37 +125,23 @@ case "$OS" in
       fi
       ;;
   MacOS)
-    echo '''
-      #!/bin/bash -x
-      exec &>/tmp/install_microk8s_mac.log 
-      
-      if ! brew list microk8s &> /dev/null
+      if brew list minikube &> /dev/null
       then
+        minikube start 
+      else
+        brew install hyperkit
+        brew install minikube
         brew install kubectl
         brew install helm
-        brew install ubuntu/microk8s/microk8s     
-        multipass set local.driver=qemu
-        microk8s install -y
-        microk8s status --wait-ready
-        if [ -r ~/.kube/config ]
-        then       
-          cp -p ~/.kube/config ~/.kube/config.backup.$$
-          microk8s config >> ~/.kube/config
-        else
-          mkdir -p ~/.kube || true
-          microk8s config >> ~/.kube/config
-        fi
+        minikube start 
       fi
 
-    ''' > /tmp/install_microk8s_mac.sh
-    chmod +x /tmp/install_microk8s_mac.sh
-    $GUM spin --show-output --spinner meter --title "Installing Kubernetes ..." -- bash -c "/tmp/install_microk8s_mac.sh"
-    if microk8s status  | grep -q "microk8s is running" 
-    then
-      $GUM style --foreground "#00ff00" '√ Kubernetes installed successfully ...' 
-    else
-      $GUM style --foreground "#ff0000" 'x Kubernetes installation failed ...' 
-    fi
+      if minikube status  &> /dev/null
+      then
+        $GUM style --foreground "#00ff00" '√ Kubernetes installed successfully ...' 
+      else
+        $GUM style --foreground "#ff0000" 'x Kubernetes installation failed ...' 
+      fi
     ;;
   esac
 }
@@ -180,31 +163,44 @@ echo "## The following tools will be installed:
 
 echo ""
 echo ""
-echo '''
-#!/bin/bash -x
-exec &>/tmp/configure_microk8s.log
-microk8s kubectl cluster-info
-code=0
-for addon in dns ingress cert-manager storage registry metrics-server
-do
-  microk8s enable $addon
-  echo  "\t\t Installing ${addon} ..."
-  ((code+=$?))
-done
-microk8s kubectl get all --all-namespaces
-microk8s kubectl get nodes
-echo $code > /tmp/configure_microk8s.code
-''' > /tmp/configure_microk8s.sh
-chmod +x /tmp/configure_microk8s.sh
-$GUM spin --show-output --spinner meter --title "Configuring Kubernetes ..." -- bash -c "/tmp/configure_microk8s.sh"
-code=`cat /tmp/configure_microk8s.code`
+case "$OS" in 
+  linux) 
 
-if [[ $code -eq 0 ]]
-then
-  $GUM style --foreground "#00ff00" '√ Kubernetes Configured successfully ...'
-else
-  $GUM style --foreground "#ff0000" 'x Kubernetes Configuration failed ...'
-fi
+      echo '''
+      #!/bin/bash -x
+      exec &>/tmp/configure_microk8s.log
+      microk8s kubectl cluster-info
+      code=0
+      for addon in dns ingress cert-manager storage registry metrics-server
+      do
+        microk8s enable $addon
+        echo  "\t\t Installing ${addon} ..."
+        ((code+=$?))
+      done
+      microk8s kubectl get all --all-namespaces
+      microk8s kubectl get nodes
+      echo $code > /tmp/configure_microk8s.code
+      ''' > /tmp/configure_microk8s.sh
+      chmod +x /tmp/configure_microk8s.sh
+      $GUM spin --show-output --spinner meter --title "Configuring Kubernetes ..." -- bash -c "/tmp/configure_microk8s.sh"
+      code=`cat /tmp/configure_microk8s.code`
+
+      if [[ $code -eq 0 ]]
+      then
+        $GUM style --foreground "#00ff00" '√ Kubernetes Configured successfully ...'
+      else
+        $GUM style --foreground "#ff0000" 'x Kubernetes Configuration failed ...'
+      fi
+      ;;
+  MacOS)
+    for addon in ingress metrics-server registry volumesnapshots csi-hostpath-driver
+    do
+      echo $addon
+      minikube addons enable $addon
+    done
+    ;;
+  esac
+
 }
 
 
@@ -215,27 +211,44 @@ function install_k2agent() {
 
   MAILBOX_ID=`$GUM input --prompt "Enter Mailbox ID: " --prompt.foreground=212 --placeholder "12345678-0123-0123-0123-123456789012"`
 
- echo """
-  #!/bin/bash -x
-  exec &>/tmp/k2_agent_install.log
-  rm -rf blueprints || true
-  git clone https://github.com/k2view/blueprints.git
-  cd blueprints/helm/k2view-agent
-  # microk8s kubectl create namespace k2view-agent
-  helm install k2-agent . --set secrets.K2_MAILBOX_ID=\"$MAILBOX_ID\" --set secrets.K2_MANAGER_URL=\"$MANAGER_URL\"
-  """ > /tmp/k2agent_install.sh
+case "$OS" in 
+ linux)
+    echo """
+      #!/bin/bash -x
+      exec &>/tmp/k2_agent_install.log
+      rm -rf blueprints || true
+      git clone https://github.com/k2view/blueprints.git
+      cd blueprints/helm/k2view-agent
+      # microk8s kubectl create namespace k2view-agent
+      helm install k2-agent . --set secrets.K2_MAILBOX_ID=\"$MAILBOX_ID\" --set secrets.K2_MANAGER_URL=\"$MANAGER_URL\"
+      """ > /tmp/k2agent_install.sh
+      chmod +x /tmp/k2agent_install.sh
+      $GUM spin --show-output --spinner meter --title "Installing K2View Agent ..." -- bash -c "/tmp/k2agent_install.sh"
+      sleep 5
+      if microk8s kubectl get deploy k2view-agent | grep -q "k2view-agent   1/1"
+      then
+        $GUM style --foreground "#00ff00" '√ K2-Agent Deployed successfully ...'
+      else
+        $GUM style --foreground "#ff0000" 'x K2-Agent Deployment failed ...'
+      fi
 
-  chmod +x /tmp/k2agent_install.sh
+      ;;
+  MacOS)
+      rm -rf blueprints || true
+      git clone https://github.com/k2view/blueprints.git
+      cd blueprints/helm/k2view-agent
+      
+      helm install k2-agent . --set secrets.K2_MAILBOX_ID=\"$MAILBOX_ID\" --set secrets.K2_MANAGER_URL=\"$MANAGER_URL\" || true
+      if kubectl -n k2view-agent  get deploy k2view-agent | grep -q "k2view-agent   1/1"
+      then
+        $GUM style --foreground "#00ff00" '√ K2-Agent Is Running ...'
+      else
+        $GUM style --foreground "#ff0000" 'x K2-Agent Deployment failed ...'
+      fi
 
-  $GUM spin --show-output --spinner meter --title "Installing K2View Agent ..." -- bash -c "/tmp/k2agent_install.sh"
+      ;;
+  esac      
 
-  sleep 5
-  if microk8s kubectl get deploy k2view-agent | grep -q "k2view-agent   1/1"
-  then
-    $GUM style --foreground "#00ff00" '√ K2-Agent Deployed successfully ...'
-  else
-    $GUM style --foreground "#ff0000" 'x K2-Agent Deployment failed ...'
-  fi
 
 }
 
@@ -262,6 +275,7 @@ then
     echo "Exiting ..."
     exit 1
 else
+    sudo date
     if ! git version >/dev/null 
     then
       install_git
