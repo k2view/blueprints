@@ -1,0 +1,19 @@
+{{ if .Values.storage.pvc.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: fabric-claim
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: fabric
+    {{- range $label := .Values.labelsList }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.storage.class }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.alocated_amount }}
+{{ end }}
