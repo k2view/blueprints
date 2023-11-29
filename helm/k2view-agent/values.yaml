@@ -65,7 +65,7 @@ serviceAccount:
         verbs: ["create", "delete", "list", "patch","get"]
       - apiGroups: [""]
         resources: ["services", "persistentvolumeclaims"]
-        verbs: ["create", "delete"]
+        verbs: ["create", "delete", "get"]
       - apiGroups: ["monitoring.googleapis.com"]
         resources: ["podmonitorings"]
         verbs: ["create", "delete"]
