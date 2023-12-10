@@ -325,7 +325,6 @@ case "$OS" in
       else
         print_colored_bold "red" 'x K2-Agent Deployment failed ...'
       fi
-
       ;;
   MacOS)
       rm -rf blueprints || true
@@ -335,14 +334,15 @@ case "$OS" in
       while kubectl get ns k2view-agent &>/dev/null
       do
         print_colored_bold "cyan" "Updating K 2View Agent"
-      helm install k2-agent . --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" || true
-      sleep 10
-      if kubectl --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
-      then
-        print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
-      else
-        print_colored_bold "red" 'x K2-Agent Deployment failed ...'
-      fi
+        helm install k2-agent . --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" || true
+        sleep 10
+        if kubectl --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
+        then
+          print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
+        else
+          print_colored_bold "red" 'x K2-Agent Deployment failed ...'
+        fi
+      done
       ;;
   esac 
 
