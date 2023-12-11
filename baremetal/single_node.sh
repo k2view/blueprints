@@ -109,7 +109,6 @@ case "$OS" in
           done
           (( i )) && printf '\n'
         fi
-        # open /Applications/Docker.app
         brew install minikube
         brew install kubectl
         brew install helm
@@ -180,56 +179,22 @@ function install_k2agent() {
   print_in_box "cyan" "Installing K2View Agent"
   echo
 
-  print_colored_bold "cyan" "Enter Mailbox URL: "
-  read MANAGER_URL 
-  print_colored_bold "cyan"  "Enter Mailbox ID: "
-  read MAILBOX_ID
-
-  # MANAGER_URL=`$GUM input --prompt "Enter Mailbox URL: " --prompt.foreground=212 --placeholder "https://cloud-dev.k2view.com/api/mailbox"`
-
-  # MAILBOX_ID=`$GUM input --prompt "Enter Mailbox ID: " --prompt.foreground=212 --placeholder "12345678-0123-0123-0123-123456789012"`
-
-case "$OS" in 
- linux)
-    echo """
-      #!/bin/bash -x
-      exec &>/tmp/k2_agent_install.log
-      rm -rf blueprints || true
-      git clone https://github.com/k2view/blueprints.git
-      cd blueprints/helm/k2view-agent
-      # microk8s kubectl create namespace k2view-agent
-      helm install k2-agent . --set secrets.K2_MAILBOX_ID=\"$MAILBOX_ID\" --set secrets.K2_MANAGER_URL=\"$MANAGER_URL\"
-      """ > /tmp/k2agent_install.sh
-      chmod +x /tmp/k2agent_install.sh
-      BUBBLES_FG_COLOR="green" spinner "Installing K2View Agent ..." -- bash -c "/tmp/k2agent_install.sh"
-      sleep 5
-      if microk8s kubectl get deploy k2view-agent | grep -q "k2view-agent   1/1"
-      then
-        print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
-      else
-        print_colored_bold "red" 'x K2-Agent Deployment failed ...'
-      fi
-      ;;
-  MacOS)
-      rm -rf blueprints || true
-      git clone https://github.com/k2view/blueprints.git
-      cd blueprints/helm/k2view-agent
-      helm uninstall k2-agent &>/dev/null || true
-      while kubectl get ns k2view-agent &>/dev/null
-      do
-        print_colored_bold "cyan" "Updating K 2View Agent"
-        helm install k2-agent . --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" || true
-        sleep 10
-        if kubectl --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
-        then
-          print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
-        else
-          print_colored_bold "red" 'x K2-Agent Deployment failed ...'
-        fi
-      done
-      ;;
-  esac 
-
+  get_input_with_default "Enter Mailbox URL" "https://cloud.k2view.com/api/mailbox"
+  MANAGER_URL="${INPUT_WITH_DEFAULT}"
+  get_input_with_default "Enter Mailbox ID" "no default"
+  MAILBOX_ID="${INPUT_WITH_DEFAULT}"
+  rm -rf blueprints || true
+  git clone https://github.com/k2view/blueprints.git
+  cd blueprints/helm/k2view-agent
+  microk8s helm uninstall k2-agent &>/dev/null || true
+  print_colored_bold "cyan" "Updating K 2View Agent"
+  microk8s helm install k2-agent . --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" 
+  if microk8s kubectl --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
+  then
+    print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
+  else
+    print_colored_bold "red" 'x K2-Agent Deployment failed ...'
+  fi
 }
 
 clear
@@ -263,5 +228,5 @@ else
   fi
   install_k8s
   configure_k8s
-#  install_k2agent
+  install_k2agent
 fi

@@ -32,6 +32,22 @@ split_parameters() {
     after_dashes="${params_after[*]}"
 }
 
+
+# Function to get current cursor position
+get_cursor_position() {
+    # Save cursor position
+    echo -en "\033[6n" 
+
+    # Read the response from the terminal
+    IFS=';' read -r -d R -a pos
+
+    # Extract rows and columns
+    row=$(echo "${pos[0]}" | tr -cd '0-9')
+    col=$(echo "${pos[1]}" | tr -cd '0-9')
+}
+
+
+
 ################################################################
 ###
 ################################################################
@@ -49,7 +65,7 @@ confirm() {
         # Set focus color
         if [ "$focus" -eq 1 ]; then
             tput setaf 14 # Set foreground color to violet
-	        tput setab 255 # Set background color to white
+                tput setab 255 # Set background color to white
             tput rev      # Reverse video mode for standout effect
         fi
 
@@ -70,7 +86,9 @@ confirm() {
     # tput sgr0     # Reset text attributes
 
     # Calculate positions for buttons
-    local lines_above=$(( $(tput lines) - 0 ))
+    get_cursor_position
+
+    local lines_above=$(( row + 2 ))
     local confirm_button_y=$((lines_above + 1))
     local cancel_button_y=$((lines_above + 1))
 
@@ -117,6 +135,28 @@ confirm() {
     done
     # Cleanup
     tput cnorm  # Show cursor
+}
+
+# Function definition
+# get_input_with_default takes two arguments:
+# 1. prompt - The message to show to the user
+# 2. default - The default value if the user enters nothing
+get_input_with_default() {
+    local prompt=$1  # Assign first argument to 'prompt'
+    local default=$2 # Assign second argument to 'default'
+    local input      # Declare 'input' to store user input
+
+    # Display the prompt to the user, showing the default value
+    echo -n "$prompt [$default]: "
+    read input  # Read user input into the variable 'input'
+
+    # Check if the input is empty (i.e., user pressed Enter directly)
+    if [ -z "$input" ]; then
+        input=$default  # If input is empty, use the default value
+    fi
+
+    # Output the final input value (user input or default)
+    INPUT_WITH_DEFAULT=$input
 }
 
 
