@@ -89,10 +89,9 @@ case "$OS" in
         fi
         ;;
   MacOS)
-      if brew list minikube &> /dev/null
+      if [[ `minikube status | grep -c Running` -eq 3 ]] &> /dev/null
       then
-        [[ `minikube status | grep -c Running` -ne 3 ]] && \\
-             minikube start --memory=${memory_limit} --cpus=${cpu_limit}
+        minikube status
       else
         get_input_with_default "Enter Cluster CPU Limits:" "2"
         local cpu_limit="${INPUT_WITH_DEFAULT}"
@@ -176,23 +175,37 @@ case "$OS" in
   esac
 }
 
-
 function install_k2agent() {
+  case "$OS" in 
+   linux) local HELM="microk8s helm"
+          local KUBECTL="microk8s kubectl"
+          ;;
+   MacOS)  local HELM="helm"
+           local KUBECTL="minikube kubectl -- "
+         ;;
+  esac
+  
+  if $HELM ls | grep k2-agent
+  then
+    print_colored_bold "cyan" "\n\n√ K2-Agent is already installed ... skipping ... \n\n\n"
+    return 0 
+  fi
 
   get_input_with_default "K2View Helm Repository URL:" "https://github.com/k2view/blueprints.git"
   local k2_agent_helm_repo="${INPUT_WITH_DEFAULT}"
-  print_in_box "cyan" "\n\nInstalling K2View Agent\n"
+  print_in_box "cyan" "Installing K2View Agent"
   get_input_with_default "Enter Mailbox URL" "https://cloud.k2view.com/api/mailbox"
   local MANAGER_URL="${INPUT_WITH_DEFAULT}"
   get_input_with_default "Enter Mailbox ID" "no default"
   local MAILBOX_ID="${INPUT_WITH_DEFAULT}"
   rm -rf blueprints || true
   git clone ${k2_agent_helm_repo}
+
   cd blueprints/helm/k2view-agent
-  microk8s helm uninstall k2-agent &>/dev/null || true
-  print_colored_bold "cyan" "Updating K 2View Agent"
-  microk8s helm install k2-agent . --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" 
-  if microk8s kubectl --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
+  $HELM uninstall k2-agent &>/dev/null || true
+  print_colored_bold "cyan" "\n\nInstalling K 2View Agent\n"
+  $HELM install k2-agent . --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" 
+  if $KUBECTL --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
   then
     print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
   else
@@ -233,5 +246,5 @@ else
   fi
   install_k8s
   configure_k8s
-  install_k2agent
+  install_k2agent && print_in_box "cyan" "Installation Completed - Continue in CloudManager"
 fi
