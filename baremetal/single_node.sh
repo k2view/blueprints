@@ -184,7 +184,7 @@ function install_k2agent() {
            local KUBECTL="minikube kubectl -- "
          ;;
   esac
-  
+  echo "\n"
   if $HELM ls | grep k2-agent
   then
     print_colored_bold "cyan" "\n\n√ K2-Agent is already installed ... skipping ... \n\n\n"
@@ -198,13 +198,15 @@ function install_k2agent() {
   local MANAGER_URL="${INPUT_WITH_DEFAULT}"
   get_input_with_default "Enter Mailbox ID" "no default"
   local MAILBOX_ID="${INPUT_WITH_DEFAULT}"
+  set -x -e
   rm -rf blueprints || true
   git clone ${k2_agent_helm_repo}
 
   cd blueprints/helm/k2view-agent
   $HELM uninstall k2-agent &>/dev/null || true
-  print_colored_bold "cyan" "\n\nInstalling K 2View Agent\n"
-  $HELM install k2-agent . --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" 
+  print_colored_bold "cyan" "\n\nDeploying K 2View Agent\n"
+  $HELM install k2-agent . --debug --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" 
+  set +x
   if $KUBECTL --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
   then
     print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
