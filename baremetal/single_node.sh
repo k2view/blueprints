@@ -92,7 +92,7 @@ case "$OS" in
       if brew list minikube &> /dev/null
       then
         [[ `minikube status | grep -c Running` -ne 3 ]] && \\
-             minikube start --memory=${memory_limit} --cpu=${cpu_limit}
+             minikube start --memory=${memory_limit} --cpus=${cpu_limit}
       else
         get_input_with_default "Enter Cluster CPU Limits:" "2"
         local cpu_limit="${INPUT_WITH_DEFAULT}"
@@ -116,7 +116,7 @@ case "$OS" in
         brew install minikube
         brew install kubectl
         brew install helm
-        minikube start --memory=${memory_limit} --cpu=${cpu_limit}
+        minikube start --memory=${memory_limit} --cpus=${cpu_limit}
       fi
 
       if minikube status  &> /dev/null
