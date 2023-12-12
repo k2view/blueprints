@@ -3,7 +3,6 @@
 source ./bubbles.sh
 
 function init() {
-    DISTRIBUTION="Unknown"
     case "$(uname -s)" in
         Linux*)     OS=linux
                     print_colored_bold "green" "Installing $OS dependencies completed ..."
@@ -92,15 +91,20 @@ case "$OS" in
   MacOS)
       if brew list minikube &> /dev/null
       then
-        [[ `minikube status | grep -c Running` -ne 3 ]] && minikube start
+        [[ `minikube status | grep -c Running` -ne 3 ]] && \\
+             minikube start --memory=${memory_limit} --cpu=${cpu_limit}
       else
+        get_input_with_default "Enter Cluster CPU Limits:" "2"
+        local cpu_limit="${INPUT_WITH_DEFAULT}"
+        get_input_with_default "Enter Cluster Memory (MB):" "4096"
+        local memory_limit="${INPUT_WITH_DEFAULT}"
         if [[ `uname -m` == "x86_64" ]]
         then 
           hyperkit -v &> /dev/null &&  spinner "cyan" -- brew install -q hyperkit
         else
           brew install -q --cask docker
           echo "-- Starting Docker.app, if necessary..."
-          open -g -a Docker.app || exit
+          open -g -a Docker.app
           # Wait for the server to start up, if applicable.
           i=0
           while ! docker system info &>/dev/null; do
@@ -112,12 +116,12 @@ case "$OS" in
         brew install minikube
         brew install kubectl
         brew install helm
-        minikube start
+        minikube start --memory=${memory_limit} --cpu=${cpu_limit}
       fi
 
       if minikube status  &> /dev/null
       then
-       print_colored_bold "green" '√ Kubernetes installed successfully ...' 
+        print_colored_bold "green" '√ Kubernetes installed successfully ...' 
       else
         print_colored_bold "red" 'x Kubernetes installation failed ...' 
       fi
@@ -138,13 +142,12 @@ echo -e "\n
 |hostpath-storage|Yes      |                                            |
 |docker registry |Yes      |'https://microk8s.io/docs/registry-built-in'|                           |
 |metrics-server  |Yes      |                                            |
-"
-echo ""
-echo ""
+\n\n"
+
 case "$OS" in 
   linux) 
       microk8s kubectl cluster-info
-      code=0
+      local code=0
       for addon in dns ingress cert-manager storage registry metrics-server
       do
         if ! microk8s kubectl get pods --all-namespaces 2>/dev/null | grep -q ${addon}
@@ -175,16 +178,16 @@ case "$OS" in
 
 
 function install_k2agent() {
-  echo; echo
-  print_in_box "cyan" "Installing K2View Agent"
-  echo
 
+  get_input_with_default "K2View Helm Repository URL:" "https://github.com/k2view/blueprints.git"
+  local k2_agent_helm_repo="${INPUT_WITH_DEFAULT}"
+  print_in_box "cyan" "\n\nInstalling K2View Agent\n"
   get_input_with_default "Enter Mailbox URL" "https://cloud.k2view.com/api/mailbox"
-  MANAGER_URL="${INPUT_WITH_DEFAULT}"
+  local MANAGER_URL="${INPUT_WITH_DEFAULT}"
   get_input_with_default "Enter Mailbox ID" "no default"
-  MAILBOX_ID="${INPUT_WITH_DEFAULT}"
+  local MAILBOX_ID="${INPUT_WITH_DEFAULT}"
   rm -rf blueprints || true
-  git clone https://github.com/k2view/blueprints.git
+  git clone ${k2_agent_helm_repo}
   cd blueprints/helm/k2view-agent
   microk8s helm uninstall k2-agent &>/dev/null || true
   print_colored_bold "cyan" "Updating K 2View Agent"
@@ -196,6 +199,8 @@ function install_k2agent() {
     print_colored_bold "red" 'x K2-Agent Deployment failed ...'
   fi
 }
+
+# ==== Script Starts Here =====
 
 clear
 cat ./static/logo.ans
