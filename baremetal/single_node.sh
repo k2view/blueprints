@@ -209,9 +209,9 @@ function install_k2agent() {
   set +x
   if $KUBECTL --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
   then
-    print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
+    print_colored_bold "green" '\n\n√ K2-Agent Deployed successfully ...\n'
   else
-    print_colored_bold "red" 'x K2-Agent Deployment failed ...'
+    print_colored_bold "red" 'x \n\nK2-Agent Deployment failed ...\n'
   fi
 }
 
