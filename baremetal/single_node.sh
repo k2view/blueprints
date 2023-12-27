@@ -3,15 +3,11 @@
 source ./bubbles.sh
 
 function init() {
-    DISTRIBUTION="Unknown"
-
     case "$(uname -s)" in
         Linux*)     OS=linux
-    		            print_colored_bold "green" "Installing $OS dependencies completed ..."
-		                ;;
-	
+                    print_colored_bold "green" "Installing $OS dependencies completed ..."
+                    ;;
         Darwin*)    OS=MacOS ;;
-
         *)      OS="Unknown" ;;
     esac  
     print_colored_bold "green" "Initializing Completed! "
@@ -56,61 +52,75 @@ function install_docker() {
     BUBBLES_FG_COLOR="green" spinner "Installing Docker ..." -- bash -c "/tmp/install_docker.sh"
     if docker ps &> /dev/null
     then
-	   print_colored_bold "green" '√ Docker installed successfully ...' 
+           print_colored_bold "green" '√ Docker installed successfully ...' 
     else
-	   print_colored_bold "red" 'x Docker installation failed ...' 
+           print_colored_bold "red" 'x Docker installation failed ...' 
     fi
-
 }
 
-function install_microk8s() {
-
+function install_k8s() {
 case "$OS" in 
   linux) 
-	    echo '''
-        #!/bin/bash -x
-        exec &>/tmp/install_microk8s.log 
+        if snap list microk8s &>/dev/null
+        then
+          print_colored_bold "cyan" '\n√ Kubernetes Already installed ... Skipping ... \n' 
+          return 
+        fi
+        print_colored_bold "cyan" '\n√ Installing Kubernetes ... \n' 
         sudo apt update
         echo "vm.nr_hugepages=1024" | sudo tee -a /etc/sysctl.d/20-microk8s-hugepages.conf
-        sysctl -w vm.nr_hugepages=1024
-        sysctl -p
+        sudo sysctl -w vm.nr_hugepages=1024
+        sudo sysctl -p
         sudo apt-get install -y  linux-modules-extra-$(uname -r)
         sudo modprobe nvme-tcp
         echo 'nvme-tcp' | sudo tee -a /etc/modules-load.d/microk8s-mayastor.conf
         sudo apt install snapd -y
         snap version
         sudo snap install microk8s --classic --channel=1.27
-        sudo usermod -a -G microk8s ubuntu
-        sudo chown -f -R ubuntu ~/.kube
-        su - ubuntu
-        microk8s status --wait-ready
-      ''' > /tmp/install_microk8s_linux.sh
-      chmod +x /tmp/install_microk8s_linux.sh
-      
-      BUBBLES_FG_COLOR="green" spinner  "Installing Kubernetes ..." -- bash -c "/tmp/install_microk8s_linux.sh"
-      if microk8s status  | grep -q "microk8s is running" 
-      then
-        print_colored_bold "green" '√ Kubernetes installed successfully ...' 
-      else
-        print_colored_bold "red" 'x Kubernetes installation failed ...' 
-      fi
-      ;;
+        sudo usermod -a -G microk8s $USER
+        sudo chown -f -R $USER ~/.kube
+        sudo microk8s status --wait-ready > /dev/null
+
+        if microk8s status | grep -q "microk8s is running" 
+        then
+          print_colored_bold "green" '\n√ Kubernetes installed successfully ...\n' 
+        else
+          print_colored_bold "red" '\x Kubernetes installation failed ...\n' 
+        fi
+        ;;
   MacOS)
-      if brew list minikube &> /dev/null
+      if [[ `minikube status | grep -c Running` -eq 3 ]] &> /dev/null
       then
-        minikube start 
+        minikube status
       else
-        brew install --cask docker
-        open /Applications/Docker.app
+        get_input_with_default "Enter Cluster CPU Limits:" "2"
+        local cpu_limit="${INPUT_WITH_DEFAULT}"
+        get_input_with_default "Enter Cluster Memory (MB):" "4096"
+        local memory_limit="${INPUT_WITH_DEFAULT}"
+        if [[ `uname -m` == "x86_64" ]]
+        then 
+          hyperkit -v &> /dev/null &&  spinner "cyan" -- brew install -q hyperkit
+        else
+          brew install -q --cask docker
+          echo "-- Starting Docker.app, if necessary..."
+          open -g -a Docker.app
+          # Wait for the server to start up, if applicable.
+          i=0
+          while ! docker system info &>/dev/null; do
+            (( i++ == 0 )) && printf %s '-- Waiting for Docker to finish starting up...' || printf '.'
+            sleep 1
+          done
+          (( i )) && printf '\n'
+        fi
         brew install minikube
         brew install kubectl
         brew install helm
-        minikube start --kubernetes-version=v1.26.3 
+        minikube start --memory=${memory_limit} --cpus=${cpu_limit}
       fi
 
       if minikube status  &> /dev/null
       then
-       print_colored_bold "green" '√ Kubernetes installed successfully ...' 
+        print_colored_bold "green" '√ Kubernetes installed successfully ...' 
       else
         print_colored_bold "red" 'x Kubernetes installation failed ...' 
       fi
@@ -119,11 +129,11 @@ case "$OS" in
 }
 
 
-function configure_microk8s() {
+function configure_k8s() {
 
 echo ""
 print_colored_bold "magenta" "The following tools will be installed:"
-echo "\n
+echo -e "\n
 |Name            |Required |More info                                   |
 |----------------|---------|--------------------------------------------|
 |cert-manager    |Yes      |'https://cert-manager.io/'                  |
@@ -131,36 +141,28 @@ echo "\n
 |hostpath-storage|Yes      |                                            |
 |docker registry |Yes      |'https://microk8s.io/docs/registry-built-in'|                           |
 |metrics-server  |Yes      |                                            |
-"
-echo ""
-echo ""
+\n\n"
+
 case "$OS" in 
   linux) 
-
-      echo '''
-      #!/bin/bash -x
-      exec &>/tmp/configure_microk8s.log
       microk8s kubectl cluster-info
-      code=0
+      local code=0
       for addon in dns ingress cert-manager storage registry metrics-server
       do
-        microk8s enable $addon
-        echo  "\t\t Installing ${addon} ..."
-        ((code+=$?))
+        if ! microk8s kubectl get pods --all-namespaces 2>/dev/null | grep -q ${addon}
+        then
+           print_colored_bold "magenta"  "\nInstalling ${addon} ..."
+           microk8s enable $addon
+           ((code+=$?))
+        else
+           print_colored_bold "magenta"  "\nAddon ${addon} is already installed ... skipping ..."
+        fi
       done
-      microk8s kubectl get all --all-namespaces
-      microk8s kubectl get nodes
-      echo $code > /tmp/configure_microk8s.code
-      ''' > /tmp/configure_microk8s.sh
-      chmod +x /tmp/configure_microk8s.sh
-      BUBBLES_FG_COLOR="green" spinner "Configuring Kubernetes ..." -- bash -c "/tmp/configure_microk8s.sh"
-      code=`cat /tmp/configure_microk8s.code`
-
       if [[ $code -eq 0 ]]
       then
-        print_colored_bold "green" '√ Kubernetes Configured successfully ...'
+        print_colored_bold "green" '\n√ Kubernetes Configured successfully ....\n'
       else
-        print_colored_bold "red" 'x Kubernetes Configuration failed ...'
+        print_colored_bold "red" '\nx Kubernetes Configuration failed ...\n'
       fi
       ;;
   MacOS)
@@ -171,64 +173,49 @@ case "$OS" in
     done
     ;;
   esac
-
 }
-
 
 function install_k2agent() {
-  echo; echo
+  case "$OS" in 
+   linux) local HELM="microk8s helm"
+          local KUBECTL="microk8s kubectl"
+          ;;
+   MacOS)  local HELM="helm"
+           local KUBECTL="minikube kubectl -- "
+         ;;
+  esac
+  echo "\n"
+  if $HELM ls | grep k2-agent
+  then
+    print_colored_bold "cyan" "\n\n√ K2-Agent is already installed ... skipping ... \n\n\n"
+    return 0 
+  fi
+
+  get_input_with_default "K2View Helm Repository URL:" "https://github.com/k2view/blueprints.git"
+  local k2_agent_helm_repo="${INPUT_WITH_DEFAULT}"
   print_in_box "cyan" "Installing K2View Agent"
-  echo
+  get_input_with_default "Enter Mailbox URL" "https://cloud.k2view.com/api/mailbox"
+  local MANAGER_URL="${INPUT_WITH_DEFAULT}"
+  get_input_with_default "Enter Mailbox ID" "no default"
+  local MAILBOX_ID="${INPUT_WITH_DEFAULT}"
+  set -x -e
+  rm -rf blueprints || true
+  git clone ${k2_agent_helm_repo}
 
-  print_colored_bold "cyan" "Enter Mailbox URL: "
-  read MANAGER_URL 
-  print_colored_bold "cyan"  "Enter Mailbox ID: "
-  read MAILBOX_ID
-
-  # MANAGER_URL=`$GUM input --prompt "Enter Mailbox URL: " --prompt.foreground=212 --placeholder "https://cloud-dev.k2view.com/api/mailbox"`
-
-  # MAILBOX_ID=`$GUM input --prompt "Enter Mailbox ID: " --prompt.foreground=212 --placeholder "12345678-0123-0123-0123-123456789012"`
-
-case "$OS" in 
- linux)
-    echo """
-      #!/bin/bash -x
-      exec &>/tmp/k2_agent_install.log
-      rm -rf blueprints || true
-      git clone https://github.com/k2view/blueprints.git
-      cd blueprints/helm/k2view-agent
-      # microk8s kubectl create namespace k2view-agent
-      helm install k2-agent . --set secrets.K2_MAILBOX_ID=\"$MAILBOX_ID\" --set secrets.K2_MANAGER_URL=\"$MANAGER_URL\"
-      """ > /tmp/k2agent_install.sh
-      chmod +x /tmp/k2agent_install.sh
-      BUBBLES_FG_COLOR="green" spinner "Installing K2View Agent ..." -- bash -c "/tmp/k2agent_install.sh"
-      sleep 5
-      if microk8s kubectl get deploy k2view-agent | grep -q "k2view-agent   1/1"
-      then
-        print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
-      else
-        print_colored_bold "red" 'x K2-Agent Deployment failed ...'
-      fi
-
-      ;;
-  MacOS)
-      rm -rf blueprints || true
-      git clone https://github.com/k2view/blueprints.git
-      cd blueprints/helm/k2view-agent
-      helm uninstall k2-agent &>/dev/null || true
-      sleep 10
-      helm install k2-agent . --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" || true
-      sleep 10
-      if kubectl --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
-      then
-        print_colored_bold "green" '√ K2-Agent Deployed successfully ...'
-      else
-        print_colored_bold "red" 'x K2-Agent Deployment failed ...'
-      fi
-      ;;
-  esac 
-
+  cd blueprints/helm/k2view-agent
+  $HELM uninstall k2-agent &>/dev/null || true
+  print_colored_bold "cyan" "\n\nDeploying K 2View Agent\n"
+  $HELM install k2-agent . --debug --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL" 
+  set +x
+  if $KUBECTL --namespace k2view-agent get deploy k2view-agent | grep -q "k2view-agent   1/1"
+  then
+    print_colored_bold "green" '\n\n√ K2-Agent Deployed successfully ...\n'
+  else
+    print_colored_bold "red" 'x \n\nK2-Agent Deployment failed ...\n'
+  fi
 }
+
+# ==== Script Starts Here =====
 
 clear
 cat ./static/logo.ans
@@ -259,7 +246,7 @@ else
   then
     install_git
   fi
-  install_microk8s
-  configure_microk8s
-  install_k2agent
+  install_k8s
+  configure_k8s
+  install_k2agent && print_in_box "cyan" "Installation Completed - Continue in CloudManager"
 fi
