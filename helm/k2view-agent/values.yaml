@@ -24,8 +24,14 @@ secrets:
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
   #kubeToken: ""
-  #CLOUD: ""
-  #REGION: ""
+  #CLOUD: "AWS"
+  #REGION: "eu-central-1"
+
+externalSecrets:
+  #- secretName: "keyspace_secret"
+  #  key: "AWS_KEYSPACE_USER"
+  #  varName: "AWS_KEYSPACE_USER"
+  
 
 resources:
   requests:
@@ -38,6 +44,8 @@ resources:
 serviceAccount:
   # will create service account with cluster role and secret with tocken of this SA
   create: true
+  # Attach SA to agent pod
+  attach: false
   # The name of the service account to use.
   name: "k2view-agent"
 
