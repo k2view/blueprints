@@ -66,6 +66,6 @@ serviceAccount:
       - apiGroups: [""]
         resources: ["services", "persistentvolumeclaims"]
         verbs: ["create", "delete", "get", "list"]
-      - apiGroups: ["podmonitors.monitoring.coreos.com"]
+      - apiGroups: ["monitoring.coreos.com"]
         resources: ["podmonitors"]
         verbs: ["create", "delete"]
