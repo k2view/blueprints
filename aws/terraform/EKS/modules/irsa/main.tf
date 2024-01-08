@@ -13,7 +13,7 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 		{
 			"Effect": "Allow",
 			"Action": "s3:DeleteBucket",
-			"Resource": "arn:aws:s3:::*k2view*"
+			"Resource": "arn:aws:s3:::*${var.tenant}*"
 		},
 		{
 			"Effect": "Allow",
@@ -24,8 +24,8 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 				"s3:ListBucket"
 			],
 			"Resource": [
-				"arn:aws:s3:::*k2view*/*",
-				"arn:aws:s3:::*k2view*"
+				"arn:aws:s3:::*${var.tenant}*/*",
+				"arn:aws:s3:::*${var.tenant}*"
 			]
 		},
 		{
