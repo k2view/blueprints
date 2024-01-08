@@ -26,6 +26,7 @@ secrets:
   #kubeToken: ""
   #CLOUD: ""
   #REGION: ""
+  SPACE_SA_ARN: ""
 
 resources:
   requests:
@@ -39,7 +40,11 @@ serviceAccount:
   # will create service account with cluster role and secret with tocken of this SA
   create: true
   # The name of the service account to use.
-  name: "k2view-agent"
+  name: "agent-sa"
+  provider: "" #aws/gcp
+  arn: ""
+  #service_account: ""
+  project_id: ""
 
   # Role for SA
   role:

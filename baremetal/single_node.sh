@@ -164,6 +164,7 @@ case "$OS" in
       else
         print_colored_bold "red" '\nx Kubernetes Configuration failed ...\n'
       fi
+      microk8s kubectl patch daemonset nginx-ingress-microk8s-controller --namespace ingress --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/args/4", "value": "--ingress-class=nginx"}]'
       ;;
   MacOS)
     for addon in ingress metrics-server registry volumesnapshots csi-hostpath-driver
