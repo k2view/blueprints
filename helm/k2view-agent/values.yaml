@@ -26,6 +26,7 @@ secrets:
   #kubeToken: ""
   #CLOUD: ""
   #REGION: ""
+  SPACE_SA_ARN: ""
 
 resources:
   requests:
