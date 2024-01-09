@@ -26,6 +26,8 @@ secrets:
   #kubeToken: ""
   #CLOUD: ""
   #REGION: ""
+  #AWS_KEYSPACE_USER: ""
+  #AWS_KEYSPACE_PASSWORD: ""
   SPACE_SA_ARN: ""
 
 resources:
