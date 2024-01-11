@@ -45,7 +45,6 @@ serviceAccount:
   name: "agent-sa"
   provider: "" #aws/gcp
   arn: ""
-  #service_account: ""
   project_id: ""
 
   # Role for SA
