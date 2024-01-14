@@ -37,7 +37,7 @@ spec:
             - name: kubeToken
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.serviceAccount.name }}
+                  name: {{ .Values.serviceAccount.service_account_secret }}
                   key: token
             {{- end }}
           livenessProbe:

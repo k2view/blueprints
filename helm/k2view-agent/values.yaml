@@ -24,10 +24,8 @@ secrets:
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
   #kubeToken: ""
-  #CLOUD: ""
+  #CLOUD: "" # GCP|AWS
   #REGION: ""
-  #AWS_KEYSPACE_USER: ""
-  #AWS_KEYSPACE_PASSWORD: ""
   SPACE_SA_ARN: ""
 
 resources:
@@ -43,9 +41,10 @@ serviceAccount:
   create: true
   # The name of the service account to use.
   name: "agent-sa"
-  provider: "" #aws/gcp
-  arn: ""
-  project_id: ""
+  service_account_secret: "k2view-agent" # Should be the same name like the NS name
+  provider: ""   #aws|gcp
+  arn: ""        # For AWS role
+  project_id: "" # For GCP SA
 
   # Role for SA
   role:
