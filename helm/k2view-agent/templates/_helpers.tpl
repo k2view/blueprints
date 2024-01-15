@@ -55,8 +55,8 @@ Create the name of the service account to use
 */}}
 {{- define "K2ViewAgent.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "K2ViewAgent.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "K2ViewAgent.fullname" .) .Values.namespace.name }}
 {{- else }}
-{{- default "default" .Values.serviceAccount.name }}
+{{- default "default" .Values.namespace.name }}
 {{- end }}
 {{- end }}
