@@ -26,9 +26,10 @@ A Helm chart for K2view cloud manager site agent
 | secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | K8s API interface, need to be accessble from the agent. |
 | secrets.kubeToken | string | `""` | Token to access k8s API, If serviceAccount.create is true this env will be ignored and will use the tocken of creates SA. |
 | serviceAccount.create | bool | `true` | Create service account for agent. |
-| serviceAccount.name | string | `"k2view-agent"` | Service account name for agent. |
-| serviceAccount.role.name | string | `"k2view-agent"` | Cluster role that will be atached to agent service account. |
-| serviceAccount.role.rules | list |  | List of rules for Cluster role. |
+| serviceAccount.provider | string | `""` | aws or gcp. |
+| serviceAccount.arn | string | `""` | For aws only, iam role arn. |
+| serviceAccount.gcp_service_account_name | string |`""`| For gcp only, service account name. |
+| serviceAccount.project_id | string |`""`| For gcp only, project id. |
 
 * Get K2_MAILBOX_ID and K2_MANAGER_URL from your K2view contact.
 * The kubeInterface should be accessible 
