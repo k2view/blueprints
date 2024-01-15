@@ -39,16 +39,13 @@ resources:
 serviceAccount:
   # will create service account with cluster role and secret with tocken of this SA
   create: true
-  # The name of the service account to use.
-  name: "agent-sa"
-  service_account_secret: "k2view-agent" # Should be the same name like the NS name
   provider: ""   #aws|gcp
   arn: ""        # For AWS role
+  gcp_service_account_name: "" # For GCP sa
   project_id: "" # For GCP SA
 
   # Role for SA
   role:
-    name: "k2view-agent"
     rules:
       - apiGroups: [""]
         resources: ["namespaces"]
