@@ -22,12 +22,13 @@ A Helm chart for K2view cloud manager site agent
 | role.name | string | `"k2view-agent"` | Agent role name. |
 | secrets | list |  | List of secrets for K2view agent, list of name and value. |
 | secrets.K2_MAILBOX_ID | string | `""` | ID for K2view cloud manager, need to be provoided by K2view cloud manager owner, used to assosiate site with agent. |
+| secrets.SPACE_SA_ARN | string | `""` | For aws only, iam role arn attached to the k8s fabric namespace service account |
 | secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com/api/mailbox"` | K2view cloud manager url. |
 | secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | K8s API interface, need to be accessble from the agent. |
 | secrets.kubeToken | string | `""` | Token to access k8s API, If serviceAccount.create is true this env will be ignored and will use the tocken of creates SA. |
 | serviceAccount.create | bool | `true` | Create service account for agent. |
 | serviceAccount.provider | string | `""` | aws or gcp. |
-| serviceAccount.arn | string | `""` | For aws only, iam role arn. |
+| serviceAccount.arn | string | `""` | For aws only, deployer iam role arn, attached to k8s agent namespace service account. |
 | serviceAccount.gcp_service_account_name | string |`""`| For gcp only, service account name. |
 | serviceAccount.project_id | string |`""`| For gcp only, project id. |
 
