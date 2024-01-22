@@ -1,0 +1,6 @@
+project_id = ""
+cluster_name = ""
+machine_type = ""
+domain = ""
+deploy_grafana_agent = false
+k2view_agent_namespace = "k2view-agent"
