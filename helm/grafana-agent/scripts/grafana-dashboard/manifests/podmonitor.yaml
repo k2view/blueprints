@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  namespace: {namespace}
+  name: podmonitoringfabric
+  labels:
+    k8s-app: PodMonitoringFabric
+spec:
+  selector:
+    matchLabels:
+      app: {PodToMonitor}
+  podMetricsEndpoints:
+  - targetPort: 7170
+    interval: 60s
+    metricRelabelings:
+    - action: keep
+      sourceLabels: [__name__]
+      regex: '^(com_k2view_fabric_stats_total|com_k2view_fabric_stats_count|jvm_memory_bytes_used)$'

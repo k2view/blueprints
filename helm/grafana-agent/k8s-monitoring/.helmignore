@@ -1,0 +1,6 @@
+.git
+.gitignore
+.idea
+ci
+Makefile
+values.schema.modifications.json
