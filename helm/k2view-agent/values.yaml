@@ -28,6 +28,11 @@ secrets:
   #REGION: ""
   SPACE_SA_ARN: "" # AWS SA only 
 
+tls_certificate:
+  create: false
+  TLS_KEY_PATH: "secrets/key.pem"
+  TLS_CERT_PATH: "secrets/cert.pem"
+
 resources:
   requests:
     memory: 128Mi

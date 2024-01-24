@@ -63,3 +63,15 @@ AWS_KEYSPACE_PASSWORD - AWS Keyspace password.
 AWS_ACCESS_KEY_ID     - AWS IAM user key id (in case used user access mode).
 AWS_SECRET_ACCESS_KEY - AWS IAM user key secret (in case used user access mode).
 GCP_CONF_FILE         - GCP service account json (in case used service acount access mode).
+
+#### TLS Certifiacte
+If you want to deploy your own TLS certificate, execute the following:
+1. Create your TLS certificate files - private key and certificate.
+2. Copy your certificate files to "secrets" directory
+3. Install the chart with "tls_certificate.create = true"
+4. Change "tls_certificate.TLS_KEY_PATH" and "tls_certificate.TLS_CERT_PATH" if needed
+
+Example:
+```bash
+helm install k2agent --set tls_certificate.create=true,tls_certificate.TLS_KEY_PATH='secrets/key.pem',tls_certificate.TLS_CERT_PATH='secrets/cert.pem' .
+```
