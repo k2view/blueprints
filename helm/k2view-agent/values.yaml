@@ -31,7 +31,6 @@ externalSecrets:
   #- secretName: "keyspace_secret"
   #  key: "AWS_KEYSPACE_USER"
   #  varName: "AWS_KEYSPACE_USER"
-  
 
 resources:
   requests:
@@ -48,10 +47,13 @@ serviceAccount:
   attach: false
   # The name of the service account to use.
   name: "k2view-agent"
+  provider: ""   #aws|gcp
+  arn: ""        # For AWS role
+  gcp_service_account_name: "" # For GCP sa
+  project_id: "" # For GCP SA
 
   # Role for SA
   role:
-    name: "k2view-agent"
     rules:
       - apiGroups: [""]
         resources: ["namespaces"]
@@ -73,7 +75,11 @@ serviceAccount:
         verbs: ["create", "delete", "list", "patch","get"]
       - apiGroups: [""]
         resources: ["services", "persistentvolumeclaims"]
-        verbs: ["create", "delete", "get"]
-      - apiGroups: ["monitoring.googleapis.com"]
-        resources: ["podmonitorings"]
+        verbs: ["create", "delete", "get", "list"]
+      - apiGroups: ["monitoring.coreos.com"]
+        resources: ["podmonitors"]
         verbs: ["create", "delete"]
+      - apiGroups: [""]
+        resources: ["serviceaccounts"]
+        verbs: ["create", "delete", "get", "list", "patch"]
+
