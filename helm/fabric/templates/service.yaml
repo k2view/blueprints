@@ -4,7 +4,7 @@ metadata:
   name: fabric-service
   labels:
     app: fabric
-    {{- range $label := .Values.labelsList }}
+    {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
   namespace: {{ .Values.namespace.name }}
