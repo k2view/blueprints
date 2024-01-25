@@ -1,6 +1,18 @@
 apiVersion: v2
-name: fabric
-description: A Fabric Helm chart for Kubernetes
+name: fabric-space
+description: The following Helm Chart Deploys Fabric and Cassandra
+
 type: application
 version: 0.1.0
-appVersion: "1.2.0"
+appVersion: "1.2.5"
+
+dependencies:
+  - name: cassandra
+    version: "~0.1.0-0"
+    repository: "file://./charts/cassandra"
+    condition: cassandra.enabled
+  
+  - name: fabric
+    version: "~0.1.0-0"
+    repository: "file://./charts/fabric"
+    condition: fabric.enabled
