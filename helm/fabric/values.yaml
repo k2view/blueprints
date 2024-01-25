@@ -86,7 +86,7 @@ fabric:
     
     # Fabric Image to be populated into Deployment
     image:
-      url: "gcr.io/k2view-rnd/fabric/fabric-studio:7.2.2_21_studio8"
+      url: ""
       repoSecret:
         enabled: false
 
@@ -107,7 +107,7 @@ fabric:
 
   ingress:
     port: 3213
-    host: space-tenant.me-west-1-gcp.cloud-dev.k2view.com
+    host: space-tenant.domain
     tlsSecret:
       enabled: false
     annotations:
