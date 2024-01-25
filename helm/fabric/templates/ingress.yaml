@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace.name }}
   labels:
     app: fabric
-    {{- range $label := .Values.labelsList }}
+    {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
   annotations:

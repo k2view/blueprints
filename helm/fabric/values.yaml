@@ -13,6 +13,15 @@ deploy:
   type: Deployment 
   # type = StatefulSet|Deployment
 
+serviceAccount:
+  create: false   # For new sa, creation of sa only in k8s side
+  #name: ""       # For existing sa, if create is true, name should be an empty string
+  #provider: ""   # aws|gcp
+  #arn: ""        # For AWS role
+  #gcp_service_account_name: "" # For GCP sa
+  #project_id: "" # For GCP SA
+  #cluster_name: ""
+
 container:
   replicas: 1
   annotationsList:
@@ -49,7 +58,7 @@ storage:
   pvc:
     enabled: true
   securityContext: true
-  class: gp2
+  class: regional-pd
   alocated_amount: 10Gi
 
 # Wether if Fabric will scale up or not
@@ -61,7 +70,7 @@ scaling:
 
 # Deploy network policy that allow to fabric egress only to cassandra pod
 networkPolicy:
-  enabled: false
+  enabled: true
 
 ingress:
   enabled: true
@@ -86,38 +95,22 @@ mountSecret:
     enabled: false # true for mount the secret on fabric pod, false for mount only on init container
     mountPath: /opt/apps/fabric/config-secrets
     data:
-      config: 'fabricdb|MDB_DEFAULT_SCHEMA_CACHE_STORAGE_TYPE|NFS\nfabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache\ndefault_pubsub|TYPE|MEMORY\ncommon_area_pubsub|TYPE|MEMORY\nfabric|WEB_SESSION_EXPIRATION_TIME_OUT|540\nfabric|ENABLE_BROADWAY_DEBUG_SERVLET|true\ndefault_session|RECONNECT_MAX_DELAY_MS|1000\nfabric|ENABLE_DB_INTERFACE_PROXY|true\nfabric|WEBSERVER_FILTERS|[{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/studio/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":true}},{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/socket.io/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":false}}];\nfabric|OVERRIDE_API_SCHEMA|HTTPS|ADD\nfabric|OVERRIDE_API_PORT|443|ADD\ndata_discovery|GRAPH_DB_URL|neo4j://dev-neo4j-service:7687\ndata_discovery|GRAPH_DB_USER|neo4j\ndata_discovery|GRAPH_DB_PASSWORD|Q1w2e3r4t5\n'
-      cp_files: ''
-      idp_cert: ''
+      config: 'fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache\ndefault_pubsub|TYPE|MEMORY\ncommon_area_pubsub|TYPE|MEMORY\nfabric|WEB_SESSION_EXPIRATION_TIME_OUT|540\nfabric|ENABLE_BROADWAY_DEBUG_SERVLET|true\ndefault_session|RECONNECT_MAX_DELAY_MS|1000\nfabric|ENABLE_DB_INTERFACE_PROXY|true\nfabric|WEBSERVER_FILTERS|[{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/studio/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":true}},{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/socket.io/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":false}}];\nfabric|OVERRIDE_API_SCHEMA|HTTPS|ADD\nfabric|OVERRIDE_API_PORT|443|ADD\nsystem_db|SYSTEM_DB_TYPE|SQLITE\nsystem_db|SYSTEM_DB_HOST|/opt/apps/fabric/workspace/internal_db\nfabric|SERVER_AUTHENTICATOR|fabric\n'
+      #cp_files: ''
 
 secretsList:
-  - name: config-secrets
-    data:
-      config: ''
-      cp_files: ''
-      idp_cert: ""
-      local_key: ''
   - name: common-env-secrets
     data:
       CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secret/config'
-      COPY_FILES: ''
-      INIT_CONF: ''
-      PROJECT_ID: ''
-      PROJECT_NAME: ''
-      SPACE_NAME: ''
-  - name: cassandra-secrets
-    data:
-      cassandra.default.user: "cassandra"
-      cassandra.default.password: "cassandra"
-      cassandra.default.hosts: "cassandra-service"
+      #COPY_FILES: ''
+      PROJECT_NAME: 'Test'
+      SPACE_NAME: 'space-tenant'
 
 initSecretsList:
   - name: config-init-secrets
     data:
-      IDP_CERT_PATH: ''
-      IDP_ROLE: ''
-      GIT_BRANCH: ''
-      GIT_PATH_IN_REPO: ''
-      GIT_REPO: ''
-      GIT_TOKEN: ''
-      START_FABRIC: 'false'
+      #GIT_BRANCH: ''
+      #GIT_PATH_IN_REPO: ''
+      #GIT_REPO: ''
+      #GIT_TOKEN: ''
+      START_FABRIC: 'false' 

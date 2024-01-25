@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace.name }}
   labels: &id001
     app: fabric
-    {{- range $label := .Values.labelsList }}
+    {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
@@ -31,6 +31,11 @@ spec:
           {{- if .Values.container.image.repoSecret.enabled }}
           imagePullSecrets:
             - name: {{ .Values.container.image.repoSecret.name }}
+          {{- end }}
+          {{- if ne .Values.serviceAccount.name "" }}
+          serviceAccountName: {{ .Values.serviceAccount.name }}
+          {{- else if .Values.serviceAccount.create }}
+          serviceAccountName: {{ .Values.namespace.name }}-sa
           {{- end }}
           initContainers:
           - command:
@@ -79,7 +84,6 @@ spec:
               mountPath: /opt/apps/fabric/workspace
             - name: {{ .Values.mountSecret.name }}
               mountPath: {{ .Values.mountSecret.mountPath }}
-          
           containers:
           - command:
             - /bin/bash
