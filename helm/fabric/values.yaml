@@ -70,7 +70,7 @@ scaling:
 
 # Deploy network policy that allow to fabric egress only to cassandra pod
 networkPolicy:
-  enabled: true
+  enabled: false
 
 ingress:
   enabled: true
@@ -103,8 +103,13 @@ secretsList:
     data:
       CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secret/config'
       #COPY_FILES: ''
-      PROJECT_NAME: 'Test'
+      #PROJECT_NAME: ''
       SPACE_NAME: 'space-tenant'
+  #- name: cassandra-secrets
+  #  data:
+  #    cassandra.default.user: "cassandra"
+  #    cassandra.default.password: "cassandra"
+  #    cassandra.default.hosts: "cassandra-service"
 
 initSecretsList:
   - name: config-init-secrets
