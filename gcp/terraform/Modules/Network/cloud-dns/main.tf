@@ -6,12 +6,6 @@ resource "google_dns_managed_zone" "cluster_dns" {
   dns_name    = "${var.domain}."
   description = "DNS for ${var.cluster_name} cluster"
   visibility  = "public"
-  # labels = {
-  #   project = var.project
-  #   env     = var.env
-  #   owner   = var.owner
-  #   name    = "${var.cluster_name}_dns"
-  # }
 }
 
 /******************************************

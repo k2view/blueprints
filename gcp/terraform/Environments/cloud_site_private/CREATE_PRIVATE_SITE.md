@@ -29,7 +29,6 @@ This document describes how to create cloud manager site with private nodes, mea
 2. Terraform installed
 3. Kubectl installed
 4. Helm installed
-5. Certbot installed
 
 ## Site Creation
 
@@ -60,27 +59,17 @@ terraform apply
 ```
 
 ### Configure Site Domain
-In order ot configure site domain copy the "ns" values of the DNS record of type "NS" created by terraform. The values also will be in the outputs of the terraform.
-Go to relevant K2view AWS account (ReseachDevelopment/DFaaS) -> Route 53 -> Hosted zones.
-Choose the relevant hosted zone and add a new record of type NS, fill the subdomain and Value (NS values from GCP) and click "Create records.
+If you want your site domain name to be configured in K2view DNS copy the "ns" values of the DNS record of type "NS" created by terraform and provide to K2view representative.
 
 ### Create Site SSL certificates
-In order to create SSL certificate for the site, use the certbot command with your site domain.
-```bash
-sudo certbot certonly --manual -d *.[DOMAIN].k2view.com -d [DOMAIN].k2view.com --agree-tos --manual-public-ip-logging-ok --preferred-challenges dns-01 --server https://acme-v02.api.letsencrypt.org/directory --register-unsafely-without-email --rsa-key-size 4096
-``` 
-Follow the instructions. You will be asked to create a TXT record in the site DNS.
-Go to GCP -> Cloud DNS, click on your DNS, click on "ADD STANDARD".
-The record should look like `_acme-challenge.[CLUSTER_NAME].[MANAGER_NAME].k2view.com.`
-Example: `_acme-challenge.my-cluster.cloud.k2view.com.`
-Add the requested TXT values to the record.
+If you want to use your own SSL certificates for the site, provide the certificate and the private key to K2view representative.
 
 ### Configure custom error page
-After you created the certificates copy the private key and the certificate contents to `helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets`.
+Copy the private key and the certificate contents to `helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets`.
 Example:
 ```bash
-sudo cat /etc/letsencrypt/live/[DOMAIN]/privkey.pem > helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets/key.pem
-sudo cat /etc/letsencrypt/live/[DOMAIN]/fullchain.pem > helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets/cert.pem
+cat [YOUR_PRIVATE_KEY] > helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets/key.pem
+cat [YOUR_CERTIFICATE] > helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets/cert.pem
 ```
 Than run again `terraform apply` to update the custom error pages helm release.
 

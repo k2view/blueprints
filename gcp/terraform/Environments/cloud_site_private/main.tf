@@ -177,12 +177,6 @@ provider "kubectl" {
   cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
 
-# Create admin service account
-module "admin_service_account" {
-  depends_on = [module.gke]
-  source     = "../../Modules/Kubernetes/admin-service-account"
-}
-
 provider "helm" {
   kubernetes {
     host                   = "https://${module.gke.endpoint}"
