@@ -1,29 +1,19 @@
-{{ if eq .Values.deploy.type "StatefulSet" }}
+{{ if eq .Values.deploy.type "Deployment" }}
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-  name: fabric-stateful-sets
+  name: fabric-deployment
   namespace: {{ .Values.namespace.name }}
   labels: &id001
     app: fabric
-    {{- range $label := .Values.labelsList }}
+    {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
     replicas: {{ .Values.container.replicas }}
-    serviceName: fabric-stateful-sets
     selector:
       matchLabels:
         app: fabric
-    volumeClaimTemplates:
-    - metadata:
-        name: fabric-storage-private
-      spec:
-        storageClassName: {{ .Values.storage.class }}
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: {{ .Values.storage.alocated_amount }}
     template:
         metadata:
           labels: *id001
@@ -31,6 +21,11 @@ spec:
           {{- if .Values.container.image.repoSecret.enabled }}
           imagePullSecrets:
             - name: {{ .Values.container.image.repoSecret.name }}
+          {{- end }}
+          {{- if ne .Values.serviceAccount.name "" }}
+          serviceAccountName: {{ .Values.serviceAccount.name }}
+          {{- else if .Values.serviceAccount.create }}
+          serviceAccountName: {{ .Values.namespace.name }}-sa
           {{- end }}
           initContainers:
           - command:
@@ -75,11 +70,10 @@ spec:
             {{- end }}
             {{- end }}
             volumeMounts:
-            - name: fabric-storage-private
+            - name: fabric-storage
               mountPath: /opt/apps/fabric/workspace
             - name: {{ .Values.mountSecret.name }}
               mountPath: {{ .Values.mountSecret.mountPath }}
-          
           containers:
           - command:
             - /bin/bash
@@ -124,8 +118,10 @@ spec:
                 - /bin/bash
                 - /opt/apps/fabric/isAlive.sh
             volumeMounts:
-            - name: fabric-storage-private
+            - name: fabric-storage
               mountPath: /opt/apps/fabric/workspace
+            - name: fabric-storage-private
+              mountPath: /opt/apps/fabric/temp
             {{- if .Values.mountSecret.enabled }}
             - name: {{ .Values.mountSecret.name }}
               mountPath: {{ .Values.mountSecret.mountPath }}
@@ -137,6 +133,12 @@ spec:
             fsGroup: 1000
           {{ end }}
           volumes:
+          - name: fabric-storage
+            persistentVolumeClaim:
+              claimName: fabric-claim
+          - name: fabric-storage-private
+            emptyDir:
+              sizeLimit: 10Gi
           - name: {{ .Values.mountSecret.name }}
             secret:
               secretName: {{ .Values.mountSecret.name }}

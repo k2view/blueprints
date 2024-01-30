@@ -1,19 +1,19 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: fabric-service
+  name: cassandra-service
+  namespace: {{ .Values.namespace.name }}
   labels:
-    app: fabric
-    {{- range $label := .Values.labelsList }}
+    app: cassandra
+    {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
-  namespace: {{ .Values.namespace.name }}
 spec:
   type: 
   ports:
   - port: {{ .Values.listening_port }}
     targetPort: {{ .Values.listening_port }}
     protocol: TCP
-    name: fabric-port
+    name: cassandra-port
   selector:
-    app: fabric
+    app: cassandra

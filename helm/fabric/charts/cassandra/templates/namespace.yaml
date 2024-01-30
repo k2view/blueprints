@@ -5,7 +5,8 @@ metadata:
   name: {{ .Values.namespace.name }}
   labels:
     app: fabric
-    {{- range $label := .Values.labelsList }}
+    {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    subdomain: {{ .Values.namespace.name }}
 {{- end }}
