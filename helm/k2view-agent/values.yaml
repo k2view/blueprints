@@ -24,12 +24,12 @@ secrets:
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
   #kubeToken: ""
-  #CLOUD: "" # GCP|AWS
-  #REGION: ""
+  CLOUD: "" # GCP|AWS
+  REGION: ""
   SPACE_SA_ARN: "" # AWS SA only 
+  PROJECT: ""
 
-tls_certificate:
-  create: false
+secrets_from_file:
   TLS_KEY_PATH: "secrets/key.pem"
   TLS_CERT_PATH: "secrets/cert.pem"
 
