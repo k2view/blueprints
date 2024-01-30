@@ -9,6 +9,7 @@ resource "kubernetes_namespace" "ingress_nginx_ns" {
 }
 
 resource "helm_release" "ingress_nginx" {
+  depends_on = [ kubernetes_namespace.ingress_nginx_ns ]
   name       = "ingress-nginx"
   namespace  = var.nginx_namespace
 
@@ -24,11 +25,18 @@ resource "helm_release" "ingress_nginx" {
   force_update      = true
   recreate_pods     = true
   disable_webhooks  = false
-
-  depends_on = [ kubernetes_namespace.ingress_nginx_ns ]
 }
 
+resource "null_resource" "delay" {
+   depends_on = [ helm_release.ingress_nginx ]
+
+   provisioner "local-exec" {
+     command = "sleep 60"  // Waits for 60 seconds
+   }
+ }
+
 data "kubernetes_service" "nginx_controller_svc" {
+  depends_on = [null_resource.delay]
   metadata {
     name      = "ingress-nginx-controller"
     namespace = var.nginx_namespace
