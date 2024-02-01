@@ -1,0 +1,4 @@
+Nginx Ingress Contoller has been deployed on Specified Kubernetes Cluster
+
+You may test this out going to the following link:
+  ingress-test.{cluster_name}.{parent.domain}

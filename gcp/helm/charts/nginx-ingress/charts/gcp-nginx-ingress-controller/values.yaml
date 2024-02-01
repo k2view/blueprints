@@ -1,0 +1,23 @@
+# Default values for gcp-nginx-ingress-controller.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+# Parent Domain - example google.com...
+domainName: "kdev-cluster-gcp.cloud-dev.k2view.com"
+
+# If the domain has a A lets Encrypt Certificate supply it here...
+tlsSecret:
+  enabled: false
+  keyPath: ""
+  crtPath: ""
+
+
+# CUSTOM ERRORS
+
+# Following is a flip switch to enable Custom Error pages in the Ingress Nginx Controller
+addErrorPage: true
+
+# Should deploy the test page of ingress?
+ingressTest:
+  enabled: true

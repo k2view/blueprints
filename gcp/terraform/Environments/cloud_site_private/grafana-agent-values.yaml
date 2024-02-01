@@ -1,0 +1,20 @@
+cluster:
+  name: [CLUSTER_NAME]
+externalServices:
+  prometheus:
+    host: [PROMETHEUS_URL]
+    basicAuth:
+      username: [PROMETHEUS_USER]
+      password: [GRAFANA_TOKEN]
+  loki:
+    host: [LOKI_URL]
+    basicAuth:
+      username: [LOKI_USER]
+      password: [GRAFANA_TOKEN]
+opencost:
+  opencost:
+    exporter:
+      defaultClusterId: [CLUSTER_NAME]
+    prometheus:
+      external:
+        url: [PROMETHEUS_URL]
