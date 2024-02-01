@@ -36,6 +36,15 @@ spec:
                   key: {{ $key }}
             {{- end }}
             {{- end }}
+            {{- range $key, $value :=  .Values.secrets_from_file }}
+            {{- if not (empty $value) }}
+            - name: {{ $key }}
+              valueFrom:
+                secretKeyRef:
+                  name: agent-config-secrets
+                  key: {{ $key }}
+            {{- end }}
+            {{- end }}
             {{- range .Values.externalSecrets }}
             - name: {{ .varName }}
               valueFrom:

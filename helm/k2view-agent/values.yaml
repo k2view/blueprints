@@ -23,9 +23,13 @@ secrets:
   K2_MAILBOX_ID: ""
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
-  #kubeToken: ""
-  #CLOUD: "AWS"
-  #REGION: "eu-central-1"
+  CLOUD: "" # GCP|AWS
+  REGION: ""
+  PROJECT: ""
+
+secrets_from_file:
+  TLS_KEY_PATH: ""
+  TLS_CERT_PATH: ""
 
 externalSecrets:
   #- secretName: "keyspace_secret"

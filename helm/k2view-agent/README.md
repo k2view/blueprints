@@ -26,6 +26,8 @@ A Helm chart for K2view cloud manager site agent
 | secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com/api/mailbox"` | K2view cloud manager url. |
 | secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | K8s API interface, need to be accessble from the agent. |
 | secrets.kubeToken | string | `""` | Token to access k8s API, If serviceAccount.create is true this env will be ignored and will use the tocken of creates SA. |
+| secrets_from_file.TLS_KEY_PATH | string | `""` | Path to TLS private key file (will be base64 encoded twice). |
+| secrets_from_file.TLS_CERT_PATH | string | `""` | Path to TLS certificate file (will be base64 encoded twice). |
 | externalSecrets | list | `""` | List of secrets to point enviroment variables to, used for secrets that not deployed by this helm, list of {secretName, key, varName}. |
 | serviceAccount.create | bool | `true` | Create service account for agent. |
 | serviceAccount.attach | bool | `false` | Attach service account to agent pod. |
@@ -68,3 +70,17 @@ AWS_KEYSPACE_PASSWORD - AWS Keyspace password.
 AWS_ACCESS_KEY_ID     - AWS IAM user key id (in case used user access mode).
 AWS_SECRET_ACCESS_KEY - AWS IAM user key secret (in case used user access mode).
 GCP_CONF_FILE         - GCP service account json (in case used service acount access mode).
+
+#### TLS Certifiacte
+If you want to deploy your own TLS certificate, execute the following:
+1. Create your TLS certificate files - private key and certificate.
+2. Copy your certificate files to "secrets" directory
+3. Change "secrets_from_file.TLS_KEY_PATH" and "secrets_from_file.TLS_CERT_PATH" if needed
+4. Install the agent
+
+* The contents of private key and certificate will be base64 encoded twice to enable storing them encoded in agent environment variables.
+
+Example:
+```bash
+helm install k2agent --set secrets_from_file.TLS_KEY_PATH='secrets/key.pem',secrets_from_file.TLS_CERT_PATH='secrets/cert.pem' .
+```
