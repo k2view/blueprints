@@ -1,158 +1,121 @@
-cassandra:
-  enabled: true
-  namespace:
-    create: true
-    name: "space-tenant"
 
-  labels:
-    - name: tenant
-      value: my-tenant
-    - name: space
-      value: my-space
+namespace:
+  create: true
+  name: "space-tenant"
 
-  container:
-    replicas: 1
-    image:
-      url: cassandra:3.11.8
+labels:
+  - name: tenant
+    value: my-tenant
+  - name: space
+    value: my-space
 
-      repoSecret:
-        name: "registry-secret"
-        enabled: false
-    storage_path: "/var/lib/cassandra"
-    
-    resource_allocation:
-      limits:
-        memory: 4Gi
-        cpu: '1'
-      requests:
-        memory: 2Gi
-        cpu: '0.4'
-    
-    envList:
-    - key: HEAP_NEWSIZE
-      value: 128M
-    - key: MAX_HEAP_SIZE
-      value: 2G
-    - key: CASSANDRA_DC
-      value: DC1
-    - key: CASSANDRA_ENDPOINT_SNITCH
-      value: GossipingPropertyFileSnitch
+deploy:
+  type: Deployment 
+  # type = StatefulSet|Deployment
 
-  credentials:
-    cassandra_username: cassandra
-    cassandra_password: cassandra
+serviceAccount:
+  create: false   # For new sa, creation of sa only in k8s side
+  #name: ""       # For existing sa, if create is true, name should be an empty string
+  #provider: ""   # aws|gcp
+  #arn: ""        # For AWS role
+  #gcp_service_account_name: "" # For GCP sa
+  #project_id: "" # For GCP SA
+  #cluster_name: ""
 
-  # Deploy network policy that allow ingress only from Fabric pod
-  networkPolicy:
-    enabled: false
+container:
+  replicas: 1
+  annotationsList:
+  - name: description
+    value: Fabric on Kubernetes
+  resource_allocation:
+    limits:
+      memory: 4Gi
+      cpu: '1'
+    requests:
+      memory: 2Gi
+      cpu: '0.4'
+  livenessProbe:
+    initialDelaySeconds: 120
+    periodSeconds: 60
 
-  # Cassandra port
-  listening_port: 9042
-
-  storage:
-    class: efs-cassandra
-    alocated_amount: 10Gi
-
-fabric:
-  enabled: true
-  namespace:
-    create: false
-    name: "space-tenant"
-
-  labels:
-    - name: tenant
-      value: my-tenant
-    - name: space
-      value: my-space
-
-  deploy:
-    type: Deployment
-
-  serviceAccount:
-    create: false   # For new sa, creation of sa only in k8s side
-      
-  container:
-    replicas: 1
-    resource_allocation:
-      limits:
-        memory: 4Gi
-        cpu: '1'
-      requests:
-        memory: 2Gi
-        cpu: '0.4'
-    livenessProbe:
-      initialDelaySeconds: 300
-      periodSeconds: 60
-    
-    # Fabric Image to be populated into Deployment
-    image:
-      url: ""
-      repoSecret:
-        enabled: false
-
-  storage:
-    pvc:
-      enabled: true
-    securityContext: true
-    class: efs-sc
-    alocated_amount: 10Gi
-
-  # Wether if Fabric will scale up or not
-  scaling:
-    enabled: false
-
-  # Deploy network policy that allow to fabric egress only to cassandra pod
-  networkPolicy:
-    enabled: false
-
-  ingress:
-    port: 3213
-    host: space-tenant.domain
-    tlsSecret:
+  # Fabric Image to be populated into Deployment
+  image:
+    url: "" 
+    repoSecret:
+      name: "registry-secret"
       enabled: false
-    annotations:
-      - key: kubernetes.io/ingress.class
-        value: nginx
-      - key: nginx.ingress.kubernetes.io/proxy-body-size
-        value: "0"
-      - key: nginx.ingress.kubernetes.io/proxy-read-timeout
-        value: "7d"
-      - key: nginx.ingress.kubernetes.io/ssl-redirect
-        value: "false"
+      dockerRegistry:
+        auths:
+          "docker.share.cloud.k2view.com":
+            username: ""
+            password: ""
 
-  # Each key in the data will be mounted as a file under mountPath
-  mountSecret:
+
+# Fabrics Advertising Bound Port (Where it accessable)
+listening_port: 3213
+
+storage:
+  pvc:
+    enabled: true
+  securityContext: true
+  class: regional-pd
+  alocated_amount: 10Gi
+
+# Wether if Fabric will scale up or not
+scaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPU: 90
+
+# Deploy network policy that allow to fabric egress only to cassandra pod
+networkPolicy:
+  enabled: false
+
+ingress:
+  enabled: true
+  port: 3213
+  host: space-tenant.domain
+  tlsSecret:
+    enabled: false
+    key: ""
+    crt: ""
+  annotations:
+    - key: kubernetes.io/ingress.class
+      value: nginx
+    - key: nginx.ingress.kubernetes.io/proxy-body-size
+      value: "0"
+    - key: nginx.ingress.kubernetes.io/proxy-read-timeout
+      value: "7d"
+    - key: nginx.ingress.kubernetes.io/ssl-redirect
+      value: "false"
+
+mountSecret:
     name: config-secrets
     enabled: false # true for mount the secret on fabric pod, false for mount only on init container
     mountPath: /opt/apps/fabric/config-secrets
     data:
-      config: 'fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache\ndefault_pubsub|TYPE|MEMORY\ncommon_area_pubsub|TYPE|MEMORY\nfabric|OVERRIDE_API_SCHEMA|HTTPS|ADD\nfabric|OVERRIDE_API_PORT|443|ADD'
+      config: 'fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache\ndefault_pubsub|TYPE|MEMORY\ncommon_area_pubsub|TYPE|MEMORY\nfabric|WEB_SESSION_EXPIRATION_TIME_OUT|540\nfabric|ENABLE_BROADWAY_DEBUG_SERVLET|true\ndefault_session|RECONNECT_MAX_DELAY_MS|1000\nfabric|ENABLE_DB_INTERFACE_PROXY|true\nfabric|WEBSERVER_FILTERS|[{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/studio/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":true}},{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/socket.io/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":false}}];\nfabric|OVERRIDE_API_SCHEMA|HTTPS|ADD\nfabric|OVERRIDE_API_PORT|443|ADD\nsystem_db|SYSTEM_DB_TYPE|SQLITE\nsystem_db|SYSTEM_DB_HOST|/opt/apps/fabric/workspace/internal_db\nfabric|SERVER_AUTHENTICATOR|fabric\n'
       #cp_files: ''
-      #idp_cert: ''
 
-  # Each key will be added as enviroment to the fabric container
-  secretsList:
-    - name: common-env-secrets
-      data:
-        CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secret/config'
-        #COPY_FILES: ''
-        #IDP_CERT_PATH: ''
-        #IDP_ROLE: ''
-        PROJECT_NAME: ''
-        SPACE_NAME: 'space-tenant'
-    - name: cassandra-secrets
-      data:
-        cassandra.default.user: "cassandra"
-        cassandra.default.password: "cassandra"
-        cassandra.default.hosts: "cassandra-service"
-  
-  initSecretsList:
+secretsList:
+  - name: common-env-secrets
+    data:
+      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secret/config'
+      #COPY_FILES: ''
+      #PROJECT_NAME: ''
+      SPACE_NAME: 'space-tenant'
+  #- name: cassandra-secrets
+  #  data:
+  #    cassandra.default.user: "cassandra"
+  #    cassandra.default.password: "cassandra"
+  #    cassandra.default.hosts: "cassandra-service"
+
+initSecretsList:
   - name: config-init-secrets
     data:
-      #IDP_CERT_PATH: ''
-      #IDP_ROLE: ''
-      #GIT_BRANCH: 'main'
+      #GIT_BRANCH: ''
       #GIT_PATH_IN_REPO: ''
       #GIT_REPO: ''
       #GIT_TOKEN: ''
-      START_FABRIC: 'false'
+      START_FABRIC: 'false' 
