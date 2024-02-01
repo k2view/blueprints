@@ -10,5 +10,5 @@ terraform.tfstate
 *.tfvars
 
 # Ignore results of "helm dependency build"
-*.tgz
+#*.tgz
 Chart.lock
