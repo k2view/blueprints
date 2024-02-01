@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  fabric:
+  - apiVersion: v2
+    appVersion: 1.2.0
+    created: "2024-02-01T18:43:14.3379623+02:00"
+    description: A Fabric Helm chart for Kubernetes
+    digest: 9a0726036117b26bd335a98f8444cd66e372fcb9679f4553f3cd885b8635c113
+    name: fabric
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/k2view/blueprints/tree/main/helm/fabric/fabric-1.1.0.tgz
+    version: 1.1.0
+generated: "2024-02-01T18:43:14.3371296+02:00"
