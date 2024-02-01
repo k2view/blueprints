@@ -188,7 +188,7 @@ provider "helm" {
 # Deploy ingress controller and custom error page
 resource "helm_release" "ingress_nginx" {
   name  = "nginx-ingress"
-  chart = "../../../../helm/nginx-ingress"
+  chart = "../../../helm/charts/nginx-ingress"
 
   depends_on = [module.gke]
 
@@ -219,7 +219,7 @@ resource "helm_release" "ingress_nginx" {
 resource "helm_release" "grafana_agent" {
   count = var.deploy_grafana_agent ? 1 : 0
   name  = "grafana-agent"
-  chart = "../../../../helm/grafana-agent/k8s-monitoring"
+  chart = "../../../helm/charts/grafana-agent/k8s-monitoring"
 
   depends_on       = [module.gke]
   namespace        = "grafana-agent"
