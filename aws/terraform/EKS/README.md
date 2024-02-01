@@ -1,21 +1,12 @@
 # K2view EKS BluePrint
-
 This Terraform BluePrint aims to automate the creation and management of K2VIEW Kubernetes Related infrastructure resources on AWS.
 
-## Table of Contents
-
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Directory Structure](#directory-structure)
-
 ## Requirements
-
 To use this Terraform project, you will need the following prerequisites:
 
-1. [Terraform](https://www.terraform.io/downloads.html)
-2. [AWS CLI](https://cloud-provider-link/cli)
-3. [Helm](https://helm.sh/docs/intro/install/)
+1. Tarraform - [hashicorp install guide](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+2. AWS cli - [AWS CLI](https://cloud-provider-link/cli)
+3. Helm - [Helm install](https://helm.sh/docs/intro/install/)
 
 4. AWS IAM User
 
@@ -40,7 +31,6 @@ To use this Terraform project, you will need the following prerequisites:
    After obtaining the `metricsWriter.json` key file, place it in the following directory: Helm/k2-defaults/charts/gcp-monitoring-collectors/additionals/
 
 ## Installation
-
 1. Clone this repository to your local machine:
 
 ```bash
@@ -58,7 +48,6 @@ export AWS_ACCOUNT_ID=
 >Depends on your setup you may need to config the IAM user, like login to awscli or add credentials to aws provider
 
 ## Usage
-
 1. Review and customize the variables.tf file to set your desired configuration
 2. Build Helm dependencies and Initialize Terraform:
 
@@ -92,6 +81,7 @@ In case the perent DNS can't be updated by this terraform (permissions/difrent s
 * nginx ingress deployment pending - nginx ingress controller use certificate manages by AWS ACM, the controller will wate to ACM certificate to be issued.
 * NLB not created - The NLB created by the nginx-ingress controller, it will take few minutes to be created after the ACM certificate issued.
 * Hosted zone not point to NLB - If the NLB not created during the terraform run the A record that point to the NLB will net created.
+
 #### Steps to fix the issue
 1. Pont from your domanit to the subdomain that managed in AWS.
 2. Wait to NLB to be created.

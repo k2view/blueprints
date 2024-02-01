@@ -1,30 +1,33 @@
-# K2view site (AKS)
-This terraform is a example of k2view site on Azure.
+# K2view Site Deployment on Azure Kubernetes Service (AKS) using Terraform
+This Terraform module is an example configuration for deploying a K2view site on Azure, specifically focusing on Azure Kubernetes Service (AKS) setup.
 
 ## Create cluster example
-Run init
+### Initializing Terraform
+Run the following command to initialize Terraform and download required providers:
 ```text
 terraform init
 ```
 
-Create AKS cluster
+### Creating an AKS Cluster
+Deploy your AKS cluster using the following Terraform commands:
 ```text
 terraform plan -var-file=terraform.tfvars -out tfplan
 terraform apply tfplan
 ```
 
 ## Post-actions
-* Push images to acr - Push all relevant images (Fabric image) to thr ACR that created by this terraform.
-* Create DNS record -  Point from your DNS to the DNS zone that created by this terraform.
-* Install k2view agent - [k2view-agent](https://github.com/k2view/blueprints/tree/main/helm/k2view-agent)
+After deploying the AKS cluster, perform the following actions:
+* Push images to acr - Push all relevant images, including the Fabric image, to the Azure Container Registry (ACR) created by this Terraform module.
+* Create DNS record -  Point your domain's DNS to the DNS zone that is created by this Terraform module.
+* Install k2view agent - Follow the instructions to install the [k2view-agent](https://github.com/k2view/blueprints/tree/main/helm/k2view-agent)
 
 ## Requirements
-Tarraform installed.
-> [hashicorp install guide ](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+Ensure you have the following prerequisites installed:
+1. Tarraform - [hashicorp install guide](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/install-cli)
+2. Azure cli - [az install guide](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+3. Helm - [Helm install](https://helm.sh/docs/intro/install/)
 
-access to Azure
-> [az install guide ](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-
+## Required Providers
 | Name | Version |
 |------|---------|
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | 2.78.0 |
@@ -75,7 +78,7 @@ access to Azure
 ## Outputs
 | Name | Description |
 |------|-------------|
-| <a name="output_acr_admin_password"></a> [acr\_admin\_password](#output\_acr\_admin\_password) | n/a |
-| <a name="output_acr_user"></a> [acr\_user](#output\_acr\_user) | n/a |
-| <a name="output_dns_name_servers"></a> [dns\_name\_servers](#output\_dns\_name\_servers) | n/a |
-| <a name="output_nginx_lb_ip"></a> [nginx\_lb\_ip](#output\_nginx\_lb\_ip) | n/a |
+| <a name="output_acr_admin_password"></a> [acr\_admin\_password](#output\_acr\_admin\_password) | "The IP address of the load balancer associated with the Nginx ingress controller." |
+| <a name="output_acr_user"></a> [acr\_user](#output\_acr\_user) | "The list of name servers associated with the DNS zone created." |
+| <a name="output_dns_name_servers"></a> [dns\_name\_servers](#output\_dns\_name\_servers) | "The username for the Azure Container Registry (ACR) created by the module." |
+| <a name="output_nginx_lb_ip"></a> [nginx\_lb\_ip](#output\_nginx\_lb\_ip) | "The admin password for the Azure Container Registry (ACR), marked as sensitive." |

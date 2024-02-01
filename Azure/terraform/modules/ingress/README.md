@@ -1,16 +1,15 @@
-# Deploy ngenix ingress  
-This sample terraform template deploys ngenix ingress controller to kubernetes cluster
+# Deploy Nginx Ingress Controller with Terraform
+This Terraform template is designed to deploy the Nginx ingress controller to a Kubernetes cluster. It simplifies the process of setting up a robust and scalable ingress solution for your Kubernetes applications.
 
 ## Usage
-Basic usage of this submodule is as follows:
+This submodule can be used to deploy an Nginx ingress controller into your Azure Kubernetes Service (AKS) cluster. Modify the following Terraform configuration to fit your specific requirements:
 ```hcl
 module "AKS-ingress" {
-  source                  = "./modules/ingress"
-  domain                  = var.domain
-  cluster_name            = var.cluster_name
+  source        = "./modules/ingress"
+  domain        = var.domain           # Domain for ingress routing
+  cluster_name  = var.cluster_name     # Name of your AKS cluster
 }
 ```
-
 
 ## Providers
 | Name | Version |
@@ -38,4 +37,5 @@ module "AKS-ingress" {
 ## Outputs
 | Name | Description |
 |------|-------------|
-| <a name="output_ingress_test_url"></a> [ingress\_test\_url](#output\_ingress\_test\_url) | n/a |
+| <a name="output_ingress_test_url"></a> [ingress\_test\_url](#output\_ingress\_test\_url) | "The URL of the test ingress to validate successful deployment." |
+| <a name="nginx_lb_ip"></a> [nginx\_lb\_ip](#output\_nginx\_lb\_ip) | "The IP address of the load balancer for the Nginx ingress controller." |

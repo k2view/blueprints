@@ -1,17 +1,19 @@
-# dns zone
-Module to create Azure DNS zone and a record to point to ingress controller LB.
+# Azure DNS Zone Module
+This Terraform module facilitates the creation of an Azure DNS zone and a corresponding A record that points to an ingress controller's load balancer. It simplifies the process of setting up domain name resolution for services deployed in Azure.
 
 ## Usage
-Basic usage of this submodule is as follows:
+To create a DNS zone and set up an A record in Azure using this module, include the following configuration in your Terraform script:
 ```hcl
 module "DNS_zone" {
   source                  = "../modules/dns_zone"
-  resource_group_name     = var.resource_group_name
-  domain                  = var.domain
-  record_ip               = module.AKS_ingress.nginx_lb_ip
-  tags                    = var.tags
+  resource_group_name     = var.resource_group_name         # Azure Resource Group
+  domain                  = var.domain                      # Domain for DNS zone
+  record_ip               = module.AKS_ingress.nginx_lb_ip  # IP for DNS record
+  tags                    = var.tags                        # Tags for resource identification
 }
 ```
+
+This configuration sets up a DNS zone for your specified domain and creates an A record with the IP address of your ingress controller's load balancer.
 
 ## Providers
 | Name | Version |
@@ -27,7 +29,6 @@ module "DNS_zone" {
 | [azurerm_resource_group.rg](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | Create RG in Azure | `bool` | `false` | no |
@@ -39,7 +40,6 @@ module "DNS_zone" {
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags value | `map` | n/a | yes |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
-| <a name="output_dns_name_servers"></a> [dns\_name\_servers](#output\_dns\_name\_servers) | n/a |
+| <a name="output_dns_name_servers"></a> [dns\_name\_servers](#output\_dns\_name\_servers) | "The name servers associated with the Azure DNS zone." |

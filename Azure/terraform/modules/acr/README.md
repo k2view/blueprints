@@ -1,20 +1,21 @@
-# ACR module
-module to create ACR (Azure Container Registry) and allow pull images form the AKS (Azure Kubernetes Service)
+# Azure Container Registry (ACR) Module for AKS Integration
+This module facilitates the integration of Azure Container Registry (ACR) with Azure Kubernetes Service (AKS). It's designed to streamline the process of creating and configuring ACR to work seamlessly with AKS, enabling efficient management and deployment of containerized applications.
 
 ## Usage
-Basic usage of this submodule is as follows:
+To integrate ACR with your AKS, use the following Terraform configuration. This setup involves specifying parameters like the ACR name, the resource group it belongs to, and its location.
+
 ```hcl
 module "create_acr" {
   source              = "../modules/acr"
-  acr_name            = var.acr_name
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  tags                = var.tags
+  acr_name            = var.acr_name             # Name of your ACR
+  resource_group_name = var.resource_group_name  # Azure Resource Group
+  location            = var.location             # Geographic location
+  tags                = var.tags                 # Tags for resource identification
   principal_id        = azurerm_kubernetes_cluster.aks_cluster.kubelet_identity.0.object_id
 }
 ```
 
-NOTE:acr_name should be unic and use only lowercase letters 
+>NOTE: acr_name should be unic and use only lowercase letters 
 
 ## Providers
 | Name | Version |
@@ -41,5 +42,5 @@ NOTE:acr_name should be unic and use only lowercase letters
 ## Outputs
 | Name | Description |
 |------|-------------|
-| <a name="output_acr_admin_password"></a> [acr\_admin\_password](#output\_acr\_admin\_password) | n/a |
-| <a name="output_acr_name"></a> [acr\_name](#output\_acr\_name) | n/a |
+| <a name="output_acr_admin_password"></a> [acr\_admin\_password](#output\_acr\_admin\_password) | "The admin password for the ACR." |
+| <a name="output_acr_name"></a> [acr\_name](#output\_acr\_name) | "The name of the Azure Container Registry." |

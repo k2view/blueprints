@@ -27,7 +27,7 @@ resource "helm_release" "ingress_nginx" {
   disable_webhooks  = false
 }
 
-resource "null_resource" "delay" {
+ resource "null_resource" "delay" {
    depends_on = [ helm_release.ingress_nginx ]
 
    provisioner "local-exec" {
