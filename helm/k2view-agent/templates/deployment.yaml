@@ -19,6 +19,9 @@ spec:
       imagePullSecrets:
         -name: {{ .Values.image.dockerRegistrySecret }}
       {{- end }}
+      {{- if .Values.serviceAccount.attach }}
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: {{ .Values.image.url }}
@@ -41,6 +44,13 @@ spec:
                   name: agent-config-secrets
                   key: {{ $key }}
             {{- end }}
+            {{- end }}
+            {{- range .Values.externalSecrets }}
+            - name: {{ .varName }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretName }}
+                  key: {{ .key }}
             {{- end }}
             {{- if .Values.serviceAccount.create }}
             - name: kubeToken

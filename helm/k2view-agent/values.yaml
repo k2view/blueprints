@@ -26,12 +26,16 @@ secrets:
   #kubeToken: ""
   CLOUD: "" # GCP|AWS
   REGION: ""
-  SPACE_SA_ARN: "" # AWS SA only 
   PROJECT: ""
 
 secrets_from_file:
   TLS_KEY_PATH: "secrets/key.pem"
   TLS_CERT_PATH: "secrets/cert.pem"
+
+externalSecrets:
+  #- secretName: "keyspace_secret"
+  #  key: "AWS_KEYSPACE_USER"
+  #  varName: "AWS_KEYSPACE_USER"
 
 resources:
   requests:
@@ -44,6 +48,10 @@ resources:
 serviceAccount:
   # will create service account with cluster role and secret with tocken of this SA
   create: true
+  # Attach SA to agent pod
+  attach: false
+  # The name of the service account to use.
+  name: "k2view-agent"
   provider: ""   #aws|gcp
   arn: ""        # For AWS role
   gcp_service_account_name: "" # For GCP sa
