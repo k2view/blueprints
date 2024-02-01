@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-errors
+  namespace: {{ .Values.namespace.name }}
+  labels: &id001
+    app.kubernetes.io/name: nginx-errors
+    app.kubernetes.io/part-of: {{ .Values.namespace.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx-errors
+      app.kubernetes.io/part-of: {{ .Values.namespace.name }}
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      containers:
+      - imagePullPolicy: IfNotPresent
+        image: {{ .Values.image }}
+        name: dev-404
+        env:
+          - name: K2_MANAGER_URL
+            valueFrom:
+              secretKeyRef:
+                name: 404-config-secrets
+                key: K2_MANAGER_URL
+        ports:
+        -  containerPort: 80
+        securityContext:
+          allowPrivilegeEscalation: false
+        resources:
+          limits:
+            memory: {{ .Values.resource_allocation.limits.memory }}
+            cpu: {{ .Values.resource_allocation.limits.cpu }}
+          requests:
+            memory: {{ .Values.resource_allocation.requests.memory }}
+            cpu: {{ .Values.resource_allocation.requests.cpu }}
