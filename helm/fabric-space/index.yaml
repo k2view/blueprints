@@ -3,7 +3,7 @@ entries:
   fabric-space:
   - apiVersion: v2
     appVersion: 1.2.5
-    created: "2024-02-01T18:06:24.3358594+02:00"
+    created: "2024-02-01T18:11:09.7083203+02:00"
     dependencies:
     - condition: cassandra.enabled
       name: cassandra
@@ -14,10 +14,10 @@ entries:
       repository: file://./charts/fabric
       version: ~0.1.0-0
     description: The following Helm Chart Deploys Fabric and Cassandra
-    digest: 3a2d7f3c29893d1370ccc25fd4dc5db6373105e37b8e1076c350bf334cb29feb
+    digest: ee1f300220e27d8a5fcf3abf183c1ed2e1c9fb62746278209813e573fd6a28e2
     name: fabric-space
     type: application
     urls:
     - fabric-space-0.1.0.tgz
     version: 0.1.0
-generated: "2024-02-01T18:06:24.3341691+02:00"
+generated: "2024-02-01T18:11:09.7068413+02:00"
