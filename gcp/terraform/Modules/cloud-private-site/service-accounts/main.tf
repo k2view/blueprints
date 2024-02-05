@@ -23,6 +23,7 @@ resource "google_project_iam_member" "deployer_alloydb_role" {
 }
 
 resource "google_service_account_iam_member" "deployer_workload_identity_binding" {
+  depends_on         = [resource.google_service_account.deployer_service_account]
   service_account_id = "projects/${var.project_id}/serviceAccounts/${var.cluster_name}-deployer-sa@${var.project_id}.iam.gserviceaccount.com"
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[${var.k2view_agent_namespace}/deployer-sa]"
