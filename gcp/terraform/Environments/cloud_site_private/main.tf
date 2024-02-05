@@ -107,6 +107,7 @@ module "gke" {
   enable_private_nodes       = true
   remove_default_node_pool   = true
   deletion_protection        = false
+  kubernetes_version         = var.kubernetes_version
 
   node_pools = [
     {

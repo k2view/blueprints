@@ -52,6 +52,12 @@ variable "cluster_name" {
   description = "The name of the GKE cluster"
 }
 
+variable "kubernetes_version" {
+  type        = string
+  description = "Kubernetes version of the GKE cluster"
+  default     = "1.28"
+}
+
 variable "machine_type" {
   type        = string
   description = "The GCP VM type for cluster workers"
