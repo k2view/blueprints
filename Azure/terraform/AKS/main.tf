@@ -8,6 +8,7 @@ module "AKS_private_network" {
   source                        = "../modules/private_network"
   resource_group_name           = var.create_resource_group ? azurerm_resource_group.rg[0].name : var.resource_group_name
   location                      = var.location
+  prefix_name                   = var.cluster_name
   virtual_network_address_space = var.virtual_network_address_space
   subnet_address_prefixes       = var.subnet_address_prefixes
 }
