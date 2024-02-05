@@ -1,5 +1,5 @@
 resource "azurerm_virtual_network" "aks_vnet" {
-  name                = "aksVnet"
+  name                = "${var.prefix_name}Vnet"
   address_space       = [ var.virtual_network_address_space ]
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -7,7 +7,7 @@ resource "azurerm_virtual_network" "aks_vnet" {
 
 resource "azurerm_subnet" "aks_subnet" {
   depends_on = [ azurerm_virtual_network.aks_vnet ]
-  name                 = "aksSubnet"
+  name                 = "${var.prefix_name}Subnet"
   resource_group_name  = var.resource_group_name
   virtual_network_name = azurerm_virtual_network.aks_vnet.name
   address_prefixes     = [ var.subnet_address_prefixes ]
@@ -15,7 +15,7 @@ resource "azurerm_subnet" "aks_subnet" {
 
 resource "azurerm_public_ip" "aks_nat_gateway_ip" {
   depends_on = [ azurerm_virtual_network.aks_vnet ]
-  name                = "aksNatGatewayIp"
+  name                = "${var.prefix_name}NatGatewayIp"
   location            = var.location
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"
@@ -24,7 +24,7 @@ resource "azurerm_public_ip" "aks_nat_gateway_ip" {
 
 resource "azurerm_nat_gateway" "aks_nat_gateway" {
   depends_on = [ azurerm_virtual_network.aks_vnet ]
-  name                = "aksNatGateway"
+  name                = "${var.prefix_name}NatGateway"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku_name            = "Standard"

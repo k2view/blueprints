@@ -9,6 +9,11 @@ variable "location" {
   default     = "West Europe"
 }
 
+variable "prefix_name" {
+  type        = string
+  description = "Prefix for network names"
+}
+
 variable "virtual_network_address_space" {
   type        = string
   description = "Virtual network address space CIDR"
