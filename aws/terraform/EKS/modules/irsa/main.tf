@@ -14,8 +14,8 @@ resource "aws_iam_policy" "iam_fabric_space_policy" {
                 "s3:ListBucket"
             ],
             "Resource": [
-                "arn:aws:s3:::*${var.tenant}*/*",
-                "arn:aws:s3:::*${var.tenant}*"
+                "arn:aws:s3:::*/*",
+                "arn:aws:s3:::*"
             ]
         },
         {
@@ -56,7 +56,7 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 		{
 			"Effect": "Allow",
 			"Action": "s3:DeleteBucket",
-			"Resource": "arn:aws:s3:::*${var.tenant}*"
+			"Resource": "arn:aws:s3:::*"
 		},
 		{
 			"Effect": "Allow",
@@ -67,8 +67,8 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 				"s3:ListBucket"
 			],
 			"Resource": [
-				"arn:aws:s3:::*${var.tenant}*/*",
-				"arn:aws:s3:::*${var.tenant}*"
+				"arn:aws:s3:::*/*",
+				"arn:aws:s3:::*"
 			]
 		},
 		{

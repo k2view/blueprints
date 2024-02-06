@@ -1,9 +1,3 @@
-
-variable "tenant" {
-    type = string
-    description = "Tenant identifier to be used in IAM Role condition"
-}
-
 variable "aws_region" {
     type        = string
     description = "The AWS region to run on."

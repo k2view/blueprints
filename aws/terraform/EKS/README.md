@@ -100,6 +100,7 @@ In case the perent DNS can't be updated by this terraform (permissions/difrent s
 | <a name="module_eks"></a> [eks](#module\_eks) | terraform-aws-modules/eks/aws | 19.17.2 |
 | <a name="module_subdomain-hz"></a> [subdomain-hz](#module\_subdomain-hz) | ./modules/Route53/subdomain-hz/ | n/a |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | 5.0 |
+| <a name="module_irsa"></a> [irsa](#module\_irsa) | ./modules/irsa | n/a |
 
 ## Resources
 | Name | Type |

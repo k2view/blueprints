@@ -126,3 +126,20 @@ module "create-a-record" {
     data.aws_lb.nginx-nlb,
   ]
 }
+
+module "irsa" {
+  source                  = ".modules/irsa"
+  aws_region              = var.aws_region
+  cluster_name            = var.cluster_name
+  owner                   = var.owner
+  project                 = var.project
+  env                     = var.env
+
+  providers = {
+    aws = aws
+  }
+
+  depends_on = [
+    module.eks
+  ]
+}
