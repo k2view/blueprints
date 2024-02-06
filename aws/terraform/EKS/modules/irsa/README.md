@@ -23,7 +23,6 @@ Currently it gives access to S3 and Keyspaces resources.
 |------|-------------|------|---------|:--------:|
 | <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | The AWS region to run on. | `string` | `"eu-central-1"` | yes |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_eks\_name) | Desiered EKS Cluster Name | `string` | n/a | yes |
-| <a name="input_tenant"></a> [tenant](#input\_tenant) | Tenant identifier to be used in IAM Role condition | `string` | n/a | yes |
 | <a name="input_env"></a> [env](#input\_env) | Environment for tag (Dev/QA/Prod). | `string` | `"Dev"` | no |
 | <a name="input_owner"></a> [owner](#input\_owner) | Owner name for tag. | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | Project name for tag. | `string` | n/a | no |
