@@ -22,6 +22,7 @@ resource "aws_iam_policy" "iam_fabric_space_policy" {
             "Effect": "Allow",
             "Action": [
                 "cassandra:Create",
+                "cassandra:CreateMultiRegionResource",
                 "cassandra:Drop",
                 "cassandra:Alter",
                 "cassandra:Select",
