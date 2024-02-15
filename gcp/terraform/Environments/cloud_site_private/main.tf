@@ -86,6 +86,11 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
 
+# Create list of strings containing zones for GKE
+locals {
+  region_zones = [for zone in var.zones : "${var.region}-${zone}"]
+}
+
 module "gke" {
   depends_on = [module.vpc]
   source     = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
@@ -94,7 +99,8 @@ module "gke" {
   project_id                 = var.project_id
   name                       = var.cluster_name
   region                     = var.region
-  zones                      = ["${var.region}-a", "${var.region}-b"]
+  regional                   = var.regional
+  zones                      = local.region_zones
   network                    = module.vpc.network_name
   subnetwork                 = module.vpc.subnets_names[0]
   ip_range_pods              = "${module.vpc.subnets_names[0]}-pods"
@@ -113,7 +119,7 @@ module "gke" {
     {
       name                      = "${var.cluster_name}-np"
       machine_type              = var.machine_type
-      node_locations            = "${var.region}-a,${var.region}-b"
+      node_locations            = var.regional ? join(",", local.region_zones) : "${var.region}-${var.zones[0]}"
       min_count                 = var.min_node
       max_count                 = var.max_node
       local_ssd_count           = 0

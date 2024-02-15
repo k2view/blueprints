@@ -52,6 +52,12 @@ variable "cluster_name" {
   description = "The name of the GKE cluster"
 }
 
+variable "regional" {
+  type        = bool
+  description = "A boolean flag to control whether GKE cluster is regional or zonal"
+  default     = true
+}
+
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version of the GKE cluster"
@@ -92,6 +98,12 @@ variable "disk_type" {
   type        = string
   description = "The disk type for cluster workers"
   default     = "pd-standard"
+}
+
+variable "zones" {
+  type        = list(string)
+  description = "Zones for GKE master and worker nodes"
+  default     = ["a", "b"]
 }
 
 ## Deployments
