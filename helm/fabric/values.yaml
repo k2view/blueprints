@@ -114,8 +114,8 @@ secretsList:
 initSecretsList:
   - name: config-init-secrets
     data:
-      #GIT_BRANCH: ''
-      #GIT_PATH_IN_REPO: ''
-      #GIT_REPO: ''
-      #GIT_TOKEN: ''
+      GIT_BRANCH: ''
+      GIT_PATH_IN_REPO: ''
+      GIT_REPO: ''
+      GIT_TOKEN: ''
       START_FABRIC: 'false' 

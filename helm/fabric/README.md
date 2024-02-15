@@ -85,3 +85,17 @@ Fabric Helm Chart for Kubernetes
 | serviceAccount.arn | string | `""` | IAM role ARN for AWS service accounts. |
 | serviceAccount.gcp_service_account_name | string |`""`| Service account name for GCP. |
 | serviceAccount.project_id | string |`""`| Project ID for GCP service accounts. |
+
+### Deploy type
+For single node that can be "paused" prefered to use Deployment (mainly for Studio spaces).
+For multi node it prefered to use StatefulSet, in this case eace pod will have private PVC, in this case change deploy.type to StatefulSet and storage.pvc.enabled to false.
+
+> NOTE: Pause space will change the replica of all deployments to 0 to release resources when the space not used.
+### Configure Fabric
+To change any config in Fabric config.ini you can add it as a string to mountSecret.data.config and point to it with environment variable CONFIG_UPDATE_FILE.
+The convention of config string is: 'section|key|value\n'
+
+
+## For more information, read below:
+
+[ Horizontal pod autoscale ](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
