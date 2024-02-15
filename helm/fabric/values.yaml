@@ -14,13 +14,13 @@ deploy:
   # type = StatefulSet|Deployment
 
 serviceAccount:
-  create: false   # For new sa, creation of sa only in k8s side
-  #name: ""       # For existing sa, if create is true, name should be an empty string
-  #provider: ""   # aws|gcp
-  #arn: ""        # For AWS role
-  #gcp_service_account_name: "" # For GCP sa
-  #project_id: "" # For GCP SA
-  #cluster_name: ""
+  create: false                # For new sa, creation of sa only in k8s side
+  name: ""                     # For existing sa, if create is true, name should be an empty string
+  provider: ""                 # aws|gcp
+  arn: ""                      # For AWS role
+  gcp_service_account_name: "" # For GCP SA
+  project_id: ""               # For GCP SA
+  cluster_name: ""
 
 container:
   replicas: 1

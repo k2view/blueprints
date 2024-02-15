@@ -2,26 +2,32 @@
 
 ![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.17.0](https://img.shields.io/badge/AppVersion-1.17.0-informational?style=flat-square)
 
-A Helm chart for K2view cloud manager site agent
+This Helm chart is used for deploying the K2view cloud manager site agent.
+
+## Pre-requisites
+* Helm - [Helm install](https://helm.sh/docs/intro/install/)
+* MAILBOX ID - ID for K2view cloud manager, need to be provoided by K2view cloud manager owner, used to assosiate site with agent (the ID unic and used for one agent).
+* Access to Kubernetes cluster
 
 ## Values
+Below is a table detailing the various configurable parameters for the K2view agent Helm chart and their default values.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| image.url | string | `"docker.share.cloud.k2view.com/k2view/k2v-agent:latest"` | URL for the K2view agent Docker image. |
+| image.repoSecret.enabled | bool | `false` | Set true if you want to pull image from external repo, set false if your k8s already have access to the repo. |
+| image.repoSecret.name | string | `"registry-secret"` | Name of the repository secret. |
 | image.repoSecret.dockerRegistry.auths."<REPO_URL>".password | string | `""` | External repo password. |
 | image.repoSecret.dockerRegistry.auths."<REPO_URL>".username | string | `""` | External repo user. |
-| image.repoSecret.enabled | bool | `false` | Set true if you want to pull image from external repo, set false if your k8s already have access to the repo. |
-| image.repoSecret.name | string | `"registry-secret"` | Repo secret name. |
-| image.url | string | `"docker.share.cloud.k2view.com/k2view/k2v-agent:latest"` | K2view agent image url. |
+| namespace.name | string | `"k2view-agent"` | Name of the namespace for the agent. |
 | namespace.create | bool | `true` | Create new namespace for agent. |
-| namespace.name | string | `"k2view-agent"` | Namespace name. |
-| resources.limits.cpu | string | `"0.4"` | agent container CPU limit. |
-| resources.limits.memory | string | `"256Mi"` | agent container memory limit. |
 | resources.requests.cpu | string | `"0.1"` | agent container CPU requests. |
 | resources.requests.memory | string | `"128Mi"` | gent container memory requests. |
-| role.name | string | `"k2view-agent"` | Agent role name. |
+| resources.limits.cpu | string | `"0.4"` | agent container CPU limit. |
+| resources.limits.memory | string | `"256Mi"` | agent container memory limit. |
+| role.name | string | `"k2view-agent"` | Name of the agent role. |
 | secrets | list |  | List of secrets for K2view agent, list of name and value. |
-| secrets.K2_MAILBOX_ID | string | `""` | ID for K2view cloud manager, need to be provoided by K2view cloud manager owner, used to assosiate site with agent. |
+| secrets.K2_MAILBOX_ID | string | `""` | ID for K2view cloud manager, need to be provoided by K2view cloud manager owner, used to assosiate site with agent (the ID unic and used for one agent). |
 | secrets.SPACE_SA_ARN | string | `""` | For aws only, iam role arn attached to the k8s fabric namespace service account |
 | secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com/api/mailbox"` | K2view cloud manager url. |
 | secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | K8s API interface, need to be accessble from the agent. |
@@ -29,9 +35,9 @@ A Helm chart for K2view cloud manager site agent
 | secrets_from_file.TLS_KEY_PATH | string | `""` | Path to TLS private key file (will be base64 encoded twice). |
 | secrets_from_file.TLS_CERT_PATH | string | `""` | Path to TLS certificate file (will be base64 encoded twice). |
 | externalSecrets | list | `""` | List of secrets to point enviroment variables to, used for secrets that not deployed by this helm, list of {secretName, key, varName}. |
+| serviceAccount.name | string | `"k2view-agent"` | Service account name for agent. |
 | serviceAccount.create | bool | `true` | Create service account for agent. |
 | serviceAccount.attach | bool | `false` | Attach service account to agent pod. |
-| serviceAccount.name | string | `"k2view-agent"` | Service account name for agent. |
 | serviceAccount.role.name | string | `"k2view-agent"` | Cluster role that will be atached to agent service account. |
 | serviceAccount.role.rules | list |  | List of rules for Cluster role. |
 | serviceAccount.provider | string | `""` | aws or gcp. |
@@ -57,19 +63,31 @@ dockerRegistry:
       password: "<PASSWORD>"
 ```
 
-* make sure the value of image.repoSecret.enabled is true
+* In this case make sure the value of image.repoSecret.enabled is true
 
 #### Additional secrets
-Each secret (key:"value") will be added to agent-config-secrets secret and to agent container as a environment variable
+Additional secrets are specified in the format key: "value". They are added to the agent-config-secrets and passed as environment variables to the agent container.
 
 ##### Common additional secrets
-CLOUD                 - The cloud provider AWS|GCP.
-REGION                - The region on cloud.
-AWS_KEYSPACE_USER     - AWS Keyspace username.
-AWS_KEYSPACE_PASSWORD - AWS Keyspace password.
-AWS_ACCESS_KEY_ID     - AWS IAM user key id (in case used user access mode).
-AWS_SECRET_ACCESS_KEY - AWS IAM user key secret (in case used user access mode).
+CLOUD                 - The cloud provider AWS|GCP|AZURE.\
+REGION                - The cloud region.\
+AWS_KEYSPACE_USER     - AWS Keyspace username.\
+AWS_KEYSPACE_PASSWORD - AWS Keyspace password.\
+AWS_ACCESS_KEY_ID     - AWS IAM user key id (in case used user access mode).\
+AWS_SECRET_ACCESS_KEY - AWS IAM user key secret (in case used user access mode).\
 GCP_CONF_FILE         - GCP service account json (in case used service acount access mode).
+
+## Installation
+1. Clone this repository to your local machine:
+```bash
+git clone https://github.com/k2view/blueprints.git
+cd blueprints/helm/k2view-agent/
+```
+
+2. Install
+```bash
+helm install k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
+```
 
 #### TLS Certifiacte
 If you want to deploy your own TLS certificate, execute the following:
@@ -84,3 +102,10 @@ Example:
 ```bash
 helm install k2agent --set secrets_from_file.TLS_KEY_PATH='secrets/key.pem',secrets_from_file.TLS_CERT_PATH='secrets/cert.pem' .
 ```
+
+## For more information, read below:
+
+[ AWS Keyspaces user ](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_keyspaces.html)\
+[ AWS IAM user ](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)\
+[ GCP service account keys ](https://cloud.google.com/iam/docs/keys-create-delete)\
+[ Pull an Image from a Private Registry ](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)\
