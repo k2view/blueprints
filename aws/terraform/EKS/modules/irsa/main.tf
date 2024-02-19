@@ -1,45 +1,66 @@
-resource "aws_iam_policy" "iam_fabric_space_policy" {
-    name        = "${var.cluster_name}_iam_fabric_space_policy"
-    description = "Fabric space policy"
-    policy      =  <<EOF
-{
-	"Version": "2012-10-17",
-	"Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:DeleteObject",
-                "s3:ListBucket"
-            ],
-            "Resource": [
-                "arn:aws:s3:::*/*",
-                "arn:aws:s3:::*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "cassandra:Create",
-                "cassandra:CreateMultiRegionResource",
-                "cassandra:Drop",
-                "cassandra:Alter",
-                "cassandra:Select",
-                "cassandra:Modify"
-            ],
-			"Resource": "*"
-		}
-	]
-}
-EOF
+locals {
+  s3_permissions = var.include_s3_permissions ? [{
+    Effect   = "Allow",
+    Action   = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+    ],
+    Resource = [
+      "arn:aws:s3:::*/*",
+      "arn:aws:s3:::*",
+    ],
+  }] : []
 
-    tags = {
-        Name    = "${var.cluster_name}_iam_fabric_space_policy"
-        Env     = var.env
-        Owner   = var.owner
-        Project = var.project
+  cassandra_permissions = var.include_cassandra_permissions ? [{
+    Effect   = "Allow",
+    Action   = [
+      "cassandra:Create",
+      "cassandra:CreateMultiRegionResource",
+      "cassandra:Drop",
+      "cassandra:Alter",
+      "cassandra:Select",
+      "cassandra:Modify",
+    ],
+    Resource = "*",
+  }] : []
+
+  rds_permissions = var.include_rds_permissions ? [
+    {
+      Effect = "Allow",
+      Action = [
+        "rds-db:connect",
+      ],
+      Resource = "*",
+    },
+    {
+      Effect = "Allow",
+      Action = [
+        "rds-data:BatchExecuteStatement",
+        "rds-data:BeginTransaction",
+        "rds-data:CommitTransaction",
+        "rds-data:RollbackTransaction",
+      ],
+      Resource = "*",
     }
+  ] : []
+}
+
+resource "aws_iam_policy" "iam_fabric_space_policy" {
+  name        = "${var.cluster_name}_iam_fabric_space_policy"
+  description = "Fabric space policy"
+  policy      = jsonencode({
+    Version   = "2012-10-17",
+    Statement = concat(local.s3_permissions, local.cassandra_permissions, local.rds_permissions),
+  })
+
+  tags = {
+    Name    = var.cluster_name,
+    Env     = var.env,
+    Owner   = var.owner,
+    Project = var.project,
+  }
 }
 
 resource "aws_iam_policy" "iam_deployer_policy" {
@@ -82,6 +103,35 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 				"cassandra:UntagResource"
 			],
 			"Resource": "*"
+		},
+        		{
+			"Effect": "Allow",
+			"Action": [
+				"rds-db:connect"
+			],
+			"Resource": [
+				"*"
+			]
+		},
+		{
+			"Effect": "Allow",
+			"Action": [
+				"rds:CreateDBCluster",
+				"rds:CreateDBInstance",
+				"rds:DeleteDBCluster",
+				"rds:DeleteDBInstance",
+				"rds:ModifyDBCluster",
+				"rds:ModifyDBInstance",
+                "rds:StartDBCluster",
+				"rds:StartDBInstance",
+				"rds:StopDBCluster",
+				"rds:StopDBInstance",
+				"rds:AddTagsToResource",
+				"rds:RemoveTagsFromResource"
+			],
+			"Resource": [
+				"*"
+			]
 		}
 	]
 }
