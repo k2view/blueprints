@@ -71,7 +71,7 @@ module "cloud-nat" {
 
 # Deploy Service Accounts
 module "service-accounts" {
-  source                 = "../../Modules/cloud-private-site/service-accounts"
+  source                 = "../Modules/cloud-private-site/service-accounts"
   cluster_name           = var.cluster_name
   project_id             = var.project_id
   k2view_agent_namespace = var.k2view_agent_namespace
@@ -195,7 +195,7 @@ provider "helm" {
 # Deploy ingress controller and custom error page
 resource "helm_release" "ingress_nginx" {
   name  = "nginx-ingress"
-  chart = "../../../helm/charts/nginx-ingress"
+  chart = "../../helm/charts/nginx-ingress"
 
   depends_on = [module.gke]
 
@@ -226,7 +226,7 @@ resource "helm_release" "ingress_nginx" {
 resource "helm_release" "grafana_agent" {
   count = var.deploy_grafana_agent ? 1 : 0
   name  = "grafana-agent"
-  chart = "../../../helm/charts/grafana-agent/k8s-monitoring"
+  chart = "../../helm/charts/grafana-agent/k8s-monitoring"
 
   depends_on       = [module.gke]
   namespace        = "grafana-agent"
