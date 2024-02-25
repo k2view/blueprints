@@ -240,7 +240,7 @@ resource "helm_release" "grafana_agent" {
 # Deploy storage classes
 module "GKE_storage_classes" {
   depends_on = [module.gke]
-  source     = "../../Modules/Kubernetes/gke-storage-classes"
+  source     = "../Modules/Kubernetes/gke-storage-classes"
   region     = var.region
 }
 
@@ -253,7 +253,7 @@ data "kubernetes_service" "nginx_lb" {
 }
 
 module "cloud_dns" {
-  source       = "../../Modules/Network/cloud-dns"
+  source       = "../Modules/Network/cloud-dns"
   project_id   = var.project_id
   cluster_name = var.cluster_name
   domain       = var.domain
