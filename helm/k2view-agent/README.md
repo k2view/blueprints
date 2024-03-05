@@ -71,11 +71,13 @@ Additional secrets are specified in the format key: "value". They are added to t
 ##### Common additional secrets
 CLOUD                 - The cloud provider AWS|GCP|AZURE.\
 REGION                - The cloud region.\
+PROJECT               - GCP project.\
 AWS_KEYSPACE_USER     - AWS Keyspace username.\
 AWS_KEYSPACE_PASSWORD - AWS Keyspace password.\
 AWS_ACCESS_KEY_ID     - AWS IAM user key id (in case used user access mode).\
 AWS_SECRET_ACCESS_KEY - AWS IAM user key secret (in case used user access mode).\
-GCP_CONF_FILE         - GCP service account json (in case used service acount access mode).
+GCP_CONF_FILE         - GCP service account json (in case used service acount access mode).\
+SPACE_SA_ARN          - AWS deployer IAM role ARN.
 
 ## Installation
 1. Clone this repository to your local machine:
@@ -108,4 +110,4 @@ helm install k2agent --set secrets_from_file.TLS_KEY_PATH='secrets/key.pem',secr
 [ AWS Keyspaces user ](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_keyspaces.html)\
 [ AWS IAM user ](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)\
 [ GCP service account keys ](https://cloud.google.com/iam/docs/keys-create-delete)\
-[ Pull an Image from a Private Registry ](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)\
+[ Pull an Image from a Private Registry ](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/)
