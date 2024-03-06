@@ -1,4 +1,3 @@
-
 namespace:
   create: true
   name: "space-tenant"
@@ -14,13 +13,13 @@ deploy:
   # type = StatefulSet|Deployment
 
 serviceAccount:
-  create: false   # For new sa, creation of sa only in k8s side
-  #name: ""       # For existing sa, if create is true, name should be an empty string
-  #provider: ""   # aws|gcp
-  #arn: ""        # For AWS role
-  #gcp_service_account_name: "" # For GCP sa
-  #project_id: "" # For GCP SA
-  #cluster_name: ""
+  create: false                # For new sa, creation of sa only in k8s side
+  name: ""                     # For existing sa, if create is true, name should be an empty string
+  provider: ""                 # aws|gcp
+  arn: ""                      # For AWS role
+  gcp_service_account_name: "" # For GCP SA
+  project_id: ""               # For GCP SA
+  cluster_name: ""
 
 container:
   replicas: 1
@@ -101,7 +100,8 @@ mountSecret:
 secretsList:
   - name: common-env-secrets
     data:
-      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secret/config'
+      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
+      CLUSTER_ID: ''
       #COPY_FILES: ''
       #PROJECT_NAME: ''
       SPACE_NAME: 'space-tenant'
@@ -114,8 +114,8 @@ secretsList:
 initSecretsList:
   - name: config-init-secrets
     data:
-      #GIT_BRANCH: ''
-      #GIT_PATH_IN_REPO: ''
-      #GIT_REPO: ''
-      #GIT_TOKEN: ''
+      GIT_BRANCH: ''
+      GIT_PATH_IN_REPO: ''
+      GIT_REPO: ''
+      GIT_TOKEN: ''
       START_FABRIC: 'false' 

@@ -9,6 +9,6 @@ entries:
     name: k2view-agent
     type: application
     urls:
-    - https://raw.githubusercontent.com/k2view/blueprints/main/helm/fabric/k2view-agent-1.1.0.tgz
+    - https://raw.githubusercontent.com/k2view/blueprints/main/helm/k2view-agent/k2view-agent-1.1.0.tgz
     version: 1.1.0
 generated: "2024-02-01T18:52:30.0955797+02:00"

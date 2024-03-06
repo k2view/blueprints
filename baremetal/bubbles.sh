@@ -223,7 +223,20 @@ spinner() {
     echo ""
 }
 
-#!/bin/bash
+function basic_spinner()
+{
+    local pid=$!
+    local delay=0.1
+    local spinstr='|/-\'
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf " [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        printf "\b\b\b\b\b\b"
+    done
+    printf "    \b\b\b\b\n"
+}
 
 print_in_box() {
     local color="$1"
@@ -252,4 +265,21 @@ print_in_box() {
 
     # Print the bottom border
     print_colored_bold "$color" "${lower_left_corner}${padding// /─}${lower_right_corner}\n"
+}
+
+function _tee() {
+  if ! [ -t 0 ]; then
+    if ! command -v tee >/dev/null; then
+      local out="${1:-/dev/null}"
+      while IFS= read -r line; do
+        echo "$line"
+        echo "$line" >> $out
+      done
+    else
+      tee -a "$@"
+    fi
+  else
+    echo "no data from stdin" >&2
+    return 1
+  fi
 }

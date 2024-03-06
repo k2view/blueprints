@@ -71,7 +71,7 @@ module "cloud-nat" {
 
 # Deploy Service Accounts
 module "service-accounts" {
-  source                 = "../../Modules/cloud-private-site/service-accounts"
+  source                 = "../Modules/cloud-private-site/service-accounts"
   cluster_name           = var.cluster_name
   project_id             = var.project_id
   k2view_agent_namespace = var.k2view_agent_namespace
@@ -86,6 +86,11 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.gke.ca_certificate)
 }
 
+# Create list of strings containing zones for GKE
+locals {
+  region_zones = [for zone in var.zones : "${var.region}-${zone}"]
+}
+
 module "gke" {
   depends_on = [module.vpc]
   source     = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
@@ -94,7 +99,8 @@ module "gke" {
   project_id                 = var.project_id
   name                       = var.cluster_name
   region                     = var.region
-  zones                      = ["${var.region}-a", "${var.region}-b"]
+  regional                   = var.regional
+  zones                      = local.region_zones
   network                    = module.vpc.network_name
   subnetwork                 = module.vpc.subnets_names[0]
   ip_range_pods              = "${module.vpc.subnets_names[0]}-pods"
@@ -113,7 +119,7 @@ module "gke" {
     {
       name                      = "${var.cluster_name}-np"
       machine_type              = var.machine_type
-      node_locations            = "${var.region}-a,${var.region}-b"
+      node_locations            = var.regional ? join(",", local.region_zones) : "${var.region}-${var.zones[0]}"
       min_count                 = var.min_node
       max_count                 = var.max_node
       local_ssd_count           = 0
@@ -189,7 +195,7 @@ provider "helm" {
 # Deploy ingress controller and custom error page
 resource "helm_release" "ingress_nginx" {
   name  = "nginx-ingress"
-  chart = "../../../helm/charts/nginx-ingress"
+  chart = "../../helm/charts/nginx-ingress"
 
   depends_on = [module.gke]
 
@@ -220,7 +226,7 @@ resource "helm_release" "ingress_nginx" {
 resource "helm_release" "grafana_agent" {
   count = var.deploy_grafana_agent ? 1 : 0
   name  = "grafana-agent"
-  chart = "../../../helm/charts/grafana-agent/k8s-monitoring"
+  chart = "../../helm/charts/grafana-agent/k8s-monitoring"
 
   depends_on       = [module.gke]
   namespace        = "grafana-agent"
@@ -234,7 +240,7 @@ resource "helm_release" "grafana_agent" {
 # Deploy storage classes
 module "GKE_storage_classes" {
   depends_on = [module.gke]
-  source     = "../../Modules/Kubernetes/gke-storage-classes"
+  source     = "../Modules/Kubernetes/gke-storage-classes"
   region     = var.region
 }
 
@@ -247,7 +253,7 @@ data "kubernetes_service" "nginx_lb" {
 }
 
 module "cloud_dns" {
-  source       = "../../Modules/Network/cloud-dns"
+  source       = "../Modules/Network/cloud-dns"
   project_id   = var.project_id
   cluster_name = var.cluster_name
   domain       = var.domain

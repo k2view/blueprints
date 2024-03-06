@@ -25,7 +25,15 @@ secrets:
   kubeInterface: "https://kubernetes.default.svc"
   CLOUD: "" # GCP|AWS
   REGION: ""
+  # AWS parameters
+  SPACE_SA_ARN: "" # For AWS role for Fabric spaces
+  AWS_KEYSPACE_USER: ""
+  AWS_KEYSPACE_PASSWORD: ""
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+  # GCP parameters
   PROJECT: ""
+  GCP_CONF_FILE: ""
 
 secrets_from_file:
   TLS_KEY_PATH: ""
@@ -86,4 +94,6 @@ serviceAccount:
       - apiGroups: [""]
         resources: ["serviceaccounts"]
         verbs: ["create", "delete", "get", "list", "patch"]
-
+      - apiGroups: ["autoscaling"]
+        resources: ["horizontalpodautoscalers"]
+        verbs: ["create", "delete", "get", "list", "patch"]
