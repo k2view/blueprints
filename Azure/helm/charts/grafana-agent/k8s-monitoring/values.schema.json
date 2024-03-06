@@ -1,0 +1,928 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "cluster": {
+            "type": "object",
+            "properties": {
+                "kubernetesAPIService": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string",
+                    "enum": [
+                        "",
+                        "openshift"
+                    ]
+                }
+            },
+            "required": [
+                "name"
+            ]
+        },
+        "configValidator": {
+            "type": "object",
+            "properties": {
+                "nodeSelector": {
+                    "type": "object",
+                    "properties": {
+                        "kubernetes.io/os": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "tolerations": {
+                    "type": "array"
+                }
+            }
+        },
+        "externalServices": {
+            "type": "object",
+            "properties": {
+                "loki": {
+                    "type": "object",
+                    "properties": {
+                        "authMode": {
+                            "type": "string"
+                        },
+                        "basicAuth": {
+                            "type": "object",
+                            "properties": {
+                                "password": {
+                                    "type": "string"
+                                },
+                                "passwordKey": {
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "usernameKey": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "externalLabels": {
+                            "type": "object"
+                        },
+                        "host": {
+                            "type": "string"
+                        },
+                        "hostKey": {
+                            "type": "string"
+                        },
+                        "proxyURL": {
+                            "type": "string"
+                        },
+                        "queryEndpoint": {
+                            "type": "string"
+                        },
+                        "secret": {
+                            "type": "object",
+                            "properties": {
+                                "create": {
+                                    "type": "boolean"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "namespace": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "tenantId": {
+                            "type": [
+                                "string",
+                                "integer"
+                            ]
+                        },
+                        "tenantIdKey": {
+                            "type": "string"
+                        },
+                        "tls": {
+                            "type": "object"
+                        },
+                        "writeEndpoint": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "prometheus": {
+                    "type": "object",
+                    "properties": {
+                        "authMode": {
+                            "type": "string"
+                        },
+                        "basicAuth": {
+                            "type": "object",
+                            "properties": {
+                                "password": {
+                                    "type": "string"
+                                },
+                                "passwordKey": {
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "usernameKey": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "externalLabels": {
+                            "type": "object"
+                        },
+                        "host": {
+                            "type": "string"
+                        },
+                        "hostKey": {
+                            "type": "string"
+                        },
+                        "processors": {
+                            "type": "object",
+                            "properties": {
+                                "batch": {
+                                    "type": "object",
+                                    "properties": {
+                                        "maxSize": {
+                                            "type": "integer"
+                                        },
+                                        "size": {
+                                            "type": "integer"
+                                        },
+                                        "timeout": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "memoryLimiter": {
+                                    "type": "object",
+                                    "properties": {
+                                        "checkInterval": {
+                                            "type": "string"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "limit": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "protocol": {
+                            "type": "string"
+                        },
+                        "proxyURL": {
+                            "type": "string"
+                        },
+                        "queryEndpoint": {
+                            "type": "string"
+                        },
+                        "secret": {
+                            "type": "object",
+                            "properties": {
+                                "create": {
+                                    "type": "boolean"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "namespace": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "tenantId": {
+                            "type": [
+                                "string",
+                                "integer"
+                            ]
+                        },
+                        "tenantIdKey": {
+                            "type": "string"
+                        },
+                        "tls": {
+                            "type": "object"
+                        },
+                        "writeEndpoint": {
+                            "type": "string"
+                        },
+                        "writeRelabelConfigRules": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "tempo": {
+                    "type": "object",
+                    "properties": {
+                        "authMode": {
+                            "type": "string"
+                        },
+                        "basicAuth": {
+                            "type": "object",
+                            "properties": {
+                                "password": {
+                                    "type": "string"
+                                },
+                                "passwordKey": {
+                                    "type": "string"
+                                },
+                                "username": {
+                                    "type": [
+                                        "string",
+                                        "integer"
+                                    ]
+                                },
+                                "usernameKey": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "host": {
+                            "type": "string"
+                        },
+                        "hostKey": {
+                            "type": "string"
+                        },
+                        "protocol": {
+                            "type": "string"
+                        },
+                        "secret": {
+                            "type": "object",
+                            "properties": {
+                                "create": {
+                                    "type": "boolean"
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "namespace": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "tenantId": {
+                            "type": [
+                                "string",
+                                "integer"
+                            ]
+                        },
+                        "tenantIdKey": {
+                            "type": "string"
+                        },
+                        "tls": {
+                            "type": "object"
+                        },
+                        "tlsOptions": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "extraConfig": {
+            "type": "string"
+        },
+        "global": {
+            "type": "object",
+            "properties": {
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "pullSecrets": {
+                            "type": "array"
+                        },
+                        "registry": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "kube-state-metrics": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "logs": {
+            "type": "object",
+            "properties": {
+                "cluster_events": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "namespaces": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "extraConfig": {
+                    "type": "string"
+                },
+                "pod_logs": {
+                    "type": "object",
+                    "properties": {
+                        "annotation": {
+                            "type": "string"
+                        },
+                        "discovery": {
+                            "type": "string",
+                            "enum": [
+                                "all",
+                                "annotation"
+                            ]
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraStageBlocks": {
+                            "type": "string"
+                        },
+                        "namespaces": {
+                            "type": "array"
+                        }
+                    }
+                }
+            }
+        },
+        "metrics": {
+            "type": "object",
+            "properties": {
+                "agent": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "labelMatchers": {
+                            "type": "object",
+                            "properties": {
+                                "app.kubernetes.io/name": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "apiserver": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "autoDiscover": {
+                    "type": "object",
+                    "properties": {
+                        "annotations": {
+                            "type": "object",
+                            "properties": {
+                                "instance": {
+                                    "type": "string"
+                                },
+                                "job": {
+                                    "type": "string"
+                                },
+                                "metricsPath": {
+                                    "type": "string"
+                                },
+                                "metricsPortName": {
+                                    "type": "string"
+                                },
+                                "metricsPortNumber": {
+                                    "type": "string"
+                                },
+                                "scrape": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "null"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "null"
+                        }
+                    }
+                },
+                "cadvisor": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "cost": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "labelMatchers": {
+                            "type": "object",
+                            "properties": {
+                                "app.kubernetes.io/name": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "extraMetricRelabelingRules": {
+                    "type": "string"
+                },
+                "extraRelabelingRules": {
+                    "type": "string"
+                },
+                "kube-state-metrics": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "labelMatchers": {
+                            "type": "object",
+                            "properties": {
+                                "app.kubernetes.io/name": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        },
+                        "service": {
+                            "type": "object",
+                            "properties": {
+                                "isTLS": {
+                                    "type": "boolean"
+                                },
+                                "port": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "kubeControllerManager": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "port": {
+                            "type": "integer"
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "kubeProxy": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "port": {
+                            "type": "integer"
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "kubeScheduler": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array"
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "port": {
+                            "type": "integer"
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "kubelet": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "kubernetesMonitoring": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        }
+                    }
+                },
+                "node-exporter": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "labelMatchers": {
+                            "type": "object",
+                            "properties": {
+                                "app.kubernetes.io/name": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        },
+                        "service": {
+                            "type": "object",
+                            "properties": {
+                                "isTLS": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                },
+                "podMonitors": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "namespaces": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "probes": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "namespaces": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "scrapeInterval": {
+                    "type": "string"
+                },
+                "serviceMonitors": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "namespaces": {
+                            "type": "array"
+                        }
+                    }
+                },
+                "windows-exporter": {
+                    "type": "object",
+                    "properties": {
+                        "allowList": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "extraMetricRelabelingRules": {
+                            "type": "string"
+                        },
+                        "extraRelabelingRules": {
+                            "type": "string"
+                        },
+                        "labelMatchers": {
+                            "type": "object",
+                            "properties": {
+                                "app.kubernetes.io/name": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "scrapeInterval": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "opencost": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "prometheus-node-exporter": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "prometheus-operator-crds": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "prometheus-windows-exporter": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "test": {
+            "type": "object",
+            "properties": {
+                "attempts": {
+                    "type": "integer"
+                },
+                "extraQueries": {
+                    "type": "array"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "image": {
+                            "type": "string"
+                        },
+                        "pullSecrets": {
+                            "type": "array"
+                        },
+                        "registry": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "nodeSelector": {
+                    "type": "object",
+                    "properties": {
+                        "kubernetes.io/os": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "tolerations": {
+                    "type": "array"
+                }
+            }
+        },
+        "traces": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "processors": {
+                    "type": "object",
+                    "properties": {
+                        "batch": {
+                            "type": "object",
+                            "properties": {
+                                "maxSize": {
+                                    "type": "integer"
+                                },
+                                "size": {
+                                    "type": "integer"
+                                },
+                                "timeout": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "receiver": {
+                    "type": "object",
+                    "properties": {
+                        "grpc": {
+                            "type": "object",
+                            "properties": {
+                                "disable_debug_metrics": {
+                                    "type": "boolean"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "port": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "http": {
+                            "type": "object",
+                            "properties": {
+                                "disable_debug_metrics": {
+                                    "type": "boolean"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "port": {
+                                    "type": "integer"
+                                }
+                            }
+                        },
+                        "port": {
+                            "type": "null"
+                        },
+                        "zipkin": {
+                            "type": "object",
+                            "properties": {
+                                "disable_debug_metrics": {
+                                    "type": "boolean"
+                                },
+                                "enabled": {
+                                    "type": "boolean"
+                                },
+                                "port": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "required": [
+        "cluster"
+    ]
+}

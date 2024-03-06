@@ -81,7 +81,7 @@ provider "helm" {
 resource "helm_release" "grafana_agent" {
   count = var.deploy_grafana_agent ? 1 : 0
   name  = "grafana-agent"
-  chart = "../../../helm/grafana-agent/k8s-monitoring"
+  chart = "../../helm/charts/grafana-agent/k8s-monitoring"
 
   depends_on       = [ azurerm_kubernetes_cluster.aks_cluster ]
   namespace        = "grafana-agent"
