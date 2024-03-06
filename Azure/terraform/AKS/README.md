@@ -14,6 +14,13 @@ Deploy your AKS cluster using the following Terraform commands:
 terraform plan -var-file=terraform.tfvars -out tfplan
 terraform apply tfplan
 ```
+**IMPORTANT**
+To disable monitoring set "deploy_grafana_agent" to "false".
+If you want to enable the monitoring, first [configure Grafana Cloud](#configure-grafana-monitoring)
+
+### Configure grafana monitoring
+To configure grafana monitoring ask K2view representative to generate a token and supply grafana agent configuration file.
+Paste the configuration to [grafana-agent-values.yaml](./grafana-agent-values.yaml) and run ```terraform apply```
 
 ## Post-actions
 After deploying the AKS cluster, perform the following actions:
@@ -74,6 +81,7 @@ Ensure you have the following prerequisites installed:
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags value | `map` | n/a | yes |
 | <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space) | Virtual network address space CIDR | `string` | `"10.0.0.0/8"` | no |
 | <a name="input_vm_sku"></a> [vm\_sku](#input\_vm\_sku) | VM sku | `string` | `"Standard_D8s_v3"` | no |
+| <a name="input_deploy_grafana_agent"></a> [deploy\_grafana\_agent](#input\_deploy\_grafana\_agent) | A boolean flag to control whether to install grafana agent | `boolean` | `"false"` | no |
 
 ## Outputs
 | Name | Description |

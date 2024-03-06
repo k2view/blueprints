@@ -226,7 +226,7 @@ resource "helm_release" "ingress_nginx" {
 resource "helm_release" "grafana_agent" {
   count = var.deploy_grafana_agent ? 1 : 0
   name  = "grafana-agent"
-  chart = "../../helm/charts/grafana-agent/k8s-monitoring"
+  chart = "../../../helm/grafana-agent/k8s-monitoring"
 
   depends_on       = [module.gke]
   namespace        = "grafana-agent"

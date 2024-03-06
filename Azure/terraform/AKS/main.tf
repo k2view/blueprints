@@ -77,6 +77,20 @@ provider "helm" {
   }
 }
 
+# Deploy Grafana agent
+resource "helm_release" "grafana_agent" {
+  count = var.deploy_grafana_agent ? 1 : 0
+  name  = "grafana-agent"
+  chart = "../../../helm/grafana-agent/k8s-monitoring"
+
+  depends_on       = [ azurerm_kubernetes_cluster.aks_cluster ]
+  namespace        = "grafana-agent"
+  create_namespace = true
+  values = [
+    "${file("grafana-agent-values.yaml")}"
+  ]
+}
+
 module "AKS_ingress" {
   depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
   source                  = "../modules/ingress"
