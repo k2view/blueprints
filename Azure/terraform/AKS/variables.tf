@@ -71,6 +71,13 @@ variable "kubeconfig_file_path" {
   default     = ""
 }
 
+# Grafana agent
+variable "deploy_grafana_agent" {
+  type        = bool
+  description = "A boolean flag to control whether to install grafana agent"
+  default     = false
+}
+
 # Global
 variable "tags" {
   type        = map
