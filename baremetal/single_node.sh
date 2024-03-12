@@ -1,7 +1,4 @@
 #!/bin/bash
-DEBUG=0
-INSTALL_CMD='yum'
-
 main_pid=$$
 date=$(date "+%Y%m%d%H%M%S")
 self_name=$(basename "$0")
@@ -42,7 +39,15 @@ function init() {
                 *)  DISTRO="Unknown" ;;
             esac
             OS="linux"
-            print_colored_bold "green" "Installing $OS ($DISTRO) dependencies completed ...\n" | _tee $installLogFile
+            print_colored_bold "cyan" "Checking for required dependencies ($OS - $DISTRO) ...\n" | _tee $installLogFile
+            if ! snap=$(snap version 2> /dev/null); then
+              print_colored_bold "red" "snapd not found. Please install it manually. Aborting!\n" | _tee $installLogFile
+              exit 1
+            fi
+            if echo "$snap" | grep -q "snapd *unavailable"; then
+              print_colored_bold "red" "snapd is not running. Aborting!\n" | _tee $installLogFile
+              exit 1
+            fi
             ;;
         Darwin*)
             configRollingText $installLogFile
@@ -117,18 +122,9 @@ function install_k8s_block1() {
   sudo sysctl -p
   local pkg
   case "$DISTRO" in
-    alma|centos|rocky)
+    alma|centos|rocky|rhel|fedora)
       pkg="kmod"
-      sudo $INSTALL_CMD install epel-release
       ;;
-    rhel)
-      pkg="kmod"
-      if ! sudo yum repolist enabled | grep -q "epel"; then
-        print_colored_bold "red" "EPEL is required to install snapd. Please install it manually. Aborting!" | _tee $rollingTextFile
-        exit 1
-      fi
-      ;;
-    fedora) pkg="kmod" ;;
     ubuntu|debian)
       pkg="linux-modules-extra-$(uname -r)"
       sudo $INSTALL_CMD update
@@ -140,14 +136,6 @@ function install_k8s_block1() {
 }
 
 function install_k8s_block2() {
-  sudo $INSTALL_CMD install snapd
-  if [[ "$DISTRO" =~ alma|centos|rocky|rhel|fedora ]]; then
-    sudo systemctl enable --now snapd.socket
-    [[ ! -L "/snap" ]] && sudo ln -s /var/lib/snapd/snap /snap
-  fi
-}
-
-function install_k8s_block3() {
   snap version
   sudo snap install microk8s --classic --channel=1.27
   if ! sudo snap list | grep -q "microk8s"; then
@@ -177,14 +165,10 @@ case "$OS" in
         echo "" && install_k8s_block1 &
         basic_spinner >> $rollingTextFile
 
-        print_colored_bold "cyan" '√ Installing Snap ...' | _tee $rollingTextFile
-        echo "" && install_k8s_block2 &
-        basic_spinner >> $rollingTextFile
-
         [[ -z "$microk8s" ]] && _microk8s
 
         print_colored_bold "cyan" '√ Installing Kubernetes ...' | _tee $rollingTextFile
-        echo "" && install_k8s_block3 &
+        echo "" && install_k8s_block2 &
         basic_spinner >> $rollingTextFile
 
         if $microk8s status | grep -q "microk8s is running"
