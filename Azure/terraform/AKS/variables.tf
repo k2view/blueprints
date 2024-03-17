@@ -71,6 +71,32 @@ variable "kubeconfig_file_path" {
   default     = ""
 }
 
+# Ingress
+variable "keyPath" {
+  type        = string
+  description = "Path to the TLS key file."
+  default     = ""
+}
+
+variable "crtPath" {
+  type        = string
+  description = "Path to the TLS cert file."
+  default     = ""
+}
+
+# K2view agent
+variable "mailbox_id" {
+  type        = string
+  description = "k2view cloud mailbox ID."
+  default     = ""
+}
+
+variable "mailbox_url" {
+  type        = string
+  description = "k2view cloud mailbox URL."
+  default     = "https://cloud.k2view.com/api/mailbox"
+}
+
 # Global
 variable "tags" {
   type        = map
