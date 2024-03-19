@@ -38,7 +38,6 @@ module "AKS_k2v_agent" {
 | <a name="input_mailbox_id"></a> [mailbox\_id](#input\_mailbox\_id) | k2view cloud mailbox ID. | `string` | n/a | yes |
 | <a name="input_mailbox_url"></a> [mailbox\_url](#input\_mailbox\_url) | k2view cloud mailbox URL. | `string` | `"https://cloud.k2view.com/api/mailbox"` | no |
 | <a name="input_namespace"></a> [namespace](#input\_namespace) | k2view agent namespace name. | `string` | `"k2view-agent"` | no |
-| <a name="input_progect"></a> [progect](#input\_progect) | Name of GCP project. | `string` | `""` | no |
-| <a name="input_project_id"></a> [project\_id](#input\_project\_id) | Name of GCP project. | `string` | `""` | no |
+| <a name="input_project"></a> [project\_id](#input\_project) | Name of GCP project. | `string` | `""` | no |
 | <a name="input_region"></a> [region](#input\_region) | The name of the cloud region. | `string` | `""` | no |
 | <a name="input_space_iam_arn"></a> [space\_iam\_arn](#input\_space\_iam\_arn) | IAM of AWS role for spaces. | `string` | `""` | no |

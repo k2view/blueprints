@@ -1,40 +1,40 @@
 resource "helm_release" "ingress-nginx" {
-  name       = "ingress-nginx-controller"
-  chart      = "../../helm/charts/ingress-nginx-k2v"
+  name    = "ingress-nginx-controller"
+  chart   = "../../helm/charts/ingress-nginx-k2v"
 
   set {
-    name = "provider"
+    name  = "provider"
     value = "azure"
   }
 
   set {
-    name = "ingressTest.domain"
+    name  = "ingressTest.domain"
     value = "${var.domain}"
   }
 
   set {
-    name = "errorPage.domain"
+    name  = "errorPage.domain"
     value = "${var.domain}"
   }
 
   # ssl cert
   set {
-    name = "tlsSecret.enabled"
+    name  = "tlsSecret.enabled"
     value = true
   }
 
   set {
-    name = "tlsSecret.default_ssl_certificate"
+    name  = "tlsSecret.default_ssl_certificate"
     value = true
   }
 
   set {
-    name = "tlsSecret.keyPath"
+    name  = "tlsSecret.keyPath"
     value = "${var.keyPath}"
   }
 
   set {
-    name = "tlsSecret.crtPath"
+    name  = "tlsSecret.crtPath"
     value = "${var.crtPath}"
   }
 

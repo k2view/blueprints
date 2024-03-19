@@ -42,27 +42,27 @@ resource "helm_release" "k2view_agent" {
 
   set {
     name  = "secrets.PROJECT"
-    value = "${var.progect}"
+    value = "${var.project}"
   }
 
   # serviceAccount
   set {
-    name  = "secrets.PROJECT"
+    name  = "serviceAccount.provider"
     value = "${var.cloud_provider}"
   }
 
   set {
-    name  = "secrets.PROJECT"
+    name  = "serviceAccount.arn"
     value = "${var.deployer_iam_arn}"
   }
 
   set {
-    name  = "secrets.PROJECT"
+    name  = "serviceAccount.gcp_service_account_name"
     value = "${var.gcp_service_account_name}"
   }
 
   set {
-    name  = "secrets.PROJECT"
+    name  = "serviceAccount.project_id"
     value = "${var.project_id}"
   }
 

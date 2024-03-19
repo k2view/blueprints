@@ -44,7 +44,7 @@ variable "space_iam_arn" {
 }
 
 ## GCP secrets
-variable "progect" {
+variable "project" {
   type        = string
   description = "Name of GCP project."
   default     = ""
