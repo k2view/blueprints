@@ -81,7 +81,20 @@ module "AKS_ingress" {
   depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
   source                  = "../modules/ingress"
   domain                  = var.domain
-  cluster_name            = var.cluster_name
+  keyPath                 = var.keyPath
+  crtPath                 = var.crtPath
+  cloud_provider          = "azure"
+}
+
+module "AKS_k2v_agent" {
+  depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
+  count                   = var.mailbox_id != "" ? 1 : 0
+  source                  = "../modules/k2v_agent"
+  mailbox_id              = var.mailbox_id
+  mailbox_url             = var.mailbox_url
+  region                  = var.location
+  cloud                   = "azure"
+  cloud_provider          = "azure"
 }
 
 module "DNS_zone" {
