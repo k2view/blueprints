@@ -18,3 +18,9 @@ variable "cloud_provider" {
   description = "The name of the cloud provider."
   default     = ""
 }
+
+variable "delay_command" {
+  type        = string
+  description = "The command for delay (depend on the env)."
+  default     = "sleep 60" #"sleep 60" for linux, for windows is "powershell -Command Start-Sleep -Seconds 60"
+}

@@ -35,7 +35,7 @@ errorPage:
  
   # The redirect to link to be set in the custom error
   secrets:
-    K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
+    K2_MANAGER_URL: "https://cloud.k2view.com"
 
   resource_allocation:
     requests:

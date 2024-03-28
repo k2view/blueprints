@@ -20,13 +20,13 @@ variable "location" {
 variable "virtual_network_address_space" {
   type        = string
   description = "Virtual network address space CIDR"
-  default     = "10.0.0.0/8"
+  default     = "10.0.0.0/8" #minimal /24
 }
 
 variable "subnet_address_prefixes" {
   type        = string
   description = "Virtual network subnet address prefixes CIDR"
-  default     = "10.240.0.0/16"
+  default     = "10.240.0.0/16" #minimal /26
 }
 
 # Cluster
@@ -38,7 +38,7 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version."
-  default     = "1.27.7"
+  default     = "1.27.9"
 }
 
 variable "vm_sku" {
@@ -71,6 +71,25 @@ variable "kubeconfig_file_path" {
   default     = ""
 }
 
+variable "private_cluster_enabled" {
+  type        = bool
+  description = "hould this Kubernetes Cluster have its API server only exposed on internal IP addresses?"
+  default     = false # If set to true modules that deploy helm to the cluster will fail (like AKS_ingress and AKS_k2v_agent) and will be needed be deployed manually
+}
+
+# ACR
+variable "create_acr" {
+  type        = bool
+  description = "Create ACR in Azure"
+  default     = true
+}
+
+variable "acr_name" {
+  type        = string
+  description = "ACR name in Azure (Resource names may contain alpha numeric characters only and must be between 5 and 50 characters, needs to be globally unique.)"
+  default     = ""
+}
+
 # Ingress
 variable "keyPath" {
   type        = string
@@ -82,6 +101,18 @@ variable "crtPath" {
   type        = string
   description = "Path to the TLS cert file."
   default     = ""
+}
+
+variable "delay_command" {
+  type        = string
+  description = "The command for delay (depend on the env)."
+  default     = "sleep 60" #"sleep 60" for linux, for windows is "powershell -Command Start-Sleep -Seconds 60"
+}
+
+variable "create_dns" {
+  type        = bool
+  description = "Create DNS zone in Azure that point all the trafic to the LB"
+  default     = true
 }
 
 # K2view agent
