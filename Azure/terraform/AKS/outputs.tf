@@ -5,17 +5,17 @@ output "nginx_lb_ip" {
 }
 
 output "dns_name_servers" {
-  value = module.DNS_zone.dns_name_servers
+  value = var.create_dns ? module.DNS_zone[0].dns_name_servers : []
   description = "The list of name servers associated with the DNS zone created."
 }
 
 output "acr_user" {
-  value = module.create_acr.acr_name
+  value = var.create_acr ? module.create_acr[0].acr_name : ""
   description = "The username for the Azure Container Registry (ACR) created by the module."
 }
 
 output "acr_admin_password" {
-  value = module.create_acr.acr_admin_password
+  value = var.create_acr ? module.create_acr[0].acr_admin_password : ""
   description = "The admin password for the Azure Container Registry (ACR), marked as sensitive."
   sensitive = true
 }

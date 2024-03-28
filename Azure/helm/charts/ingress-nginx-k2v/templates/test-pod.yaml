@@ -42,9 +42,6 @@ spec:
   tls:
   - hosts:
     - ingress-test.{{ .Values.ingressTest.domain }}
-    {{- if .Values.tlsSecret.enabled }}
-    secretName: wildcard-certificate
-    {{- end }}
   rules:
   - host: ingress-test.{{ .Values.ingressTest.domain }}
     http:

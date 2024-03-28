@@ -1,0 +1,9 @@
+cluster_name = "resource_group_name_aks"
+resource_group_name = "resource_group_name"
+location = "West Europe"
+tags = { Env = "Dev", Project = "K2view" }
+domain = "resource_group_name_aks.domain.com"
+mailbox_id = "mailbox_id"
+keyPath = "./local/privkey.pem"
+crtPath = "./local/fullchain.pem"
+acr_name="resourceGroupNameAksAcr"

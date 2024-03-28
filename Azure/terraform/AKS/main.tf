@@ -2,6 +2,7 @@ resource "azurerm_resource_group" "rg" {
   count    = var.create_resource_group ? 1 : 0
   name     = var.resource_group_name
   location = var.location
+  tags     = var.tags
 }
 
 module "AKS_private_network" {
@@ -11,14 +12,18 @@ module "AKS_private_network" {
   prefix_name                   = var.cluster_name
   virtual_network_address_space = var.virtual_network_address_space
   subnet_address_prefixes       = var.subnet_address_prefixes
+  tags                          = var.tags
 }
 
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
-  depends_on          = [ module.AKS_private_network ]
-  name                = var.cluster_name
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  dns_prefix          = var.cluster_name
+  depends_on              = [ module.AKS_private_network ]
+  name                    = var.cluster_name
+  sku_tier                = "Paid" #Standard
+  location                = var.location
+  resource_group_name     = var.resource_group_name
+  dns_prefix              = var.cluster_name
+  private_cluster_enabled = var.private_cluster_enabled
+  kubernetes_version      = var.kubernetes_version
 
   default_node_pool {
     name                = "default"
@@ -45,16 +50,17 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
 }
 
 resource "random_string" "acr_suffix" {
-  length  = 4
+  count   = var.acr_name == "" ? 1 : 0
+  length  = 6
   special = false
-  upper   = false
   numeric  = true
 }
 
 module "create_acr" {
+  count               = var.create_acr ? 1 : 0
   depends_on          = [ azurerm_kubernetes_cluster.aks_cluster ]
   source              = "../modules/acr"
-  acr_name            = "${random_string.acr_suffix.result}acr"
+  acr_name            = var.acr_name != "" ? var.acr_name : "${random_string.acr_suffix[0].result}acr"
   resource_group_name = var.resource_group_name
   location            = var.location
   tags                = var.tags
@@ -84,6 +90,7 @@ module "AKS_ingress" {
   keyPath                 = var.keyPath
   crtPath                 = var.crtPath
   cloud_provider          = "azure"
+  delay_command           = var.delay_command
 }
 
 module "AKS_k2v_agent" {
@@ -98,6 +105,7 @@ module "AKS_k2v_agent" {
 }
 
 module "DNS_zone" {
+  count                   = var.create_dns ? 1 : 0
   depends_on              = [ module.AKS_ingress ]
   source                  = "../modules/dns_zone"
   resource_group_name     = var.resource_group_name

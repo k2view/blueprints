@@ -49,7 +49,7 @@ resource "null_resource" "delay" {
   depends_on = [ helm_release.ingress-nginx ]
 
   provisioner "local-exec" {
-    command = "sleep 60"  // Waits for 60 seconds
+    command = "${var.delay_command}"  // Waits for 60 seconds
   }
 }
 

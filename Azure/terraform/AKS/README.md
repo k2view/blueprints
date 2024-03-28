@@ -1,6 +1,16 @@
 # K2view Site Deployment on Azure Kubernetes Service (AKS) using Terraform
 This Terraform module is an example configuration for deploying a K2view site on Azure, specifically focusing on Azure Kubernetes Service (AKS) setup.
 
+## Pre-requisites
+1. Azure Account with Owner role in the relevant subscription.
+1. Tarraform - [hashicorp install guide](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/install-cli)
+2. Azure cli - [az install guide](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+3. Helm - [Helm install](https://helm.sh/docs/intro/install/)
+4. Kubectl - [Kubectl install](https://kubernetes.io/docs/tasks/tools/)
+5. Mailbox id - K2view cloud manager mailbox id.
+6. Domain - domain that can be poinded to the clester (A record of *.domain.com will point to the load balancer IP). 
+7. TLS wildcard certificate - wildcard certificate for the domain (privkey.pem and fullchain.pem).
+
 ## Create cluster example
 ### Initializing Terraform
 Run the following command to initialize Terraform and download required providers:
@@ -9,6 +19,12 @@ terraform init
 ```
 
 ### Creating an AKS Cluster
+Copy [terraform.tfvars.template](./terraform.tfvars.template) to "terraform.tfvars" and fill the values.
+```text
+cp terraform.tfvars.template terraform.tfvars
+```
+Make sure to set the required variables.
+
 Deploy your AKS cluster using the following Terraform commands:
 ```text
 terraform plan -var-file=terraform.tfvars -out tfplan
@@ -19,7 +35,6 @@ terraform apply tfplan
 After deploying the AKS cluster, perform the following actions:
 * Push images to acr - Push all relevant images, including the Fabric image, to the Azure Container Registry (ACR) created by this Terraform module.
 * Create DNS record -  Point your domain's DNS to the DNS zone that is created by this Terraform module.
-* Install k2view agent - Follow the instructions to install the [k2view-agent](https://github.com/k2view/blueprints/tree/main/helm/k2view-agent)
 
 ## Requirements
 Ensure you have the following prerequisites installed:

@@ -25,3 +25,10 @@ variable "subnet_address_prefixes" {
   description = "Virtual network subnet address prefixes CIDR"
   default     = "10.240.0.0/16"
 }
+
+variable "tags" {
+  type        = map
+  description = "Tags value"
+  default     = {}
+  #tags={ Env = “Dev”, Owner = “k2view”, Project = "k2vDev" }
+}
