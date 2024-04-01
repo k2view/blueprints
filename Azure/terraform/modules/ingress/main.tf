@@ -34,10 +34,29 @@ resource "helm_release" "ingress-nginx" {
   }
 
   set {
-    name  = "tlsSecret.crtPath"
-    value = "${var.crtPath}"
+    name  = "tlsSecret.certPath"
+    value = "${var.certPath}"
   }
 
+  set {
+    name  = "tlsSecret.key"
+    value = "${var.keyString}"
+  }
+
+  set {
+    name  = "tlsSecret.cert"
+    value = "${var.certString}"
+  }
+
+  set {
+    name  = "tlsSecret.key_b64"
+    value = "${var.keyb64String}"
+  }
+
+  set {
+    name  = "tlsSecret.cert_b64"
+    value = "${var.certb64String}"
+  }
 
   timeout           = 600
   force_update      = true
@@ -45,6 +64,7 @@ resource "helm_release" "ingress-nginx" {
   disable_webhooks  = false
 }
 
+# The ingress controller will create LB, it can take some time to get it ready and get the IP
 resource "null_resource" "delay" {
   depends_on = [ helm_release.ingress-nginx ]
 
@@ -53,6 +73,7 @@ resource "null_resource" "delay" {
   }
 }
 
+# The IP of the service will be the IP of the LB 
 data "kubernetes_service" "nginx_controller_svc" {
   depends_on = [null_resource.delay]
   metadata {
@@ -60,4 +81,3 @@ data "kubernetes_service" "nginx_controller_svc" {
     namespace = "ingress-nginx"
   }
 }
-

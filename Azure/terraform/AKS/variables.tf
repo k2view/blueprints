@@ -97,7 +97,7 @@ variable "keyPath" {
   default     = ""
 }
 
-variable "crtPath" {
+variable "certPath" {
   type        = string
   description = "Path to the TLS cert file."
   default     = ""
@@ -139,4 +139,3 @@ variable "domain" {
   type        = string
   description = "the domain will be used for ingress"
 }
-

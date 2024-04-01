@@ -18,6 +18,10 @@ tlsSecret:
   default_ssl_certificate: false
   keyPath: ""
   crtPath: ""
+  key: ""
+  cert: ""
+  key_b64: ""
+  cert_b64: ""
 
 # Deploy tes page
 #   Will return SUCCESS on https://ingress-test.{{ .Values.domainName }}

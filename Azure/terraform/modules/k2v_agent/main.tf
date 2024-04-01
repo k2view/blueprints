@@ -27,7 +27,7 @@ resource "helm_release" "k2view_agent" {
 
   set {
     name  = "secrets.CLOUD"
-    value = "${var.cloud}"
+    value = upper(var.cloud_provider)
   }
 
   set {
@@ -48,7 +48,7 @@ resource "helm_release" "k2view_agent" {
   # serviceAccount
   set {
     name  = "serviceAccount.provider"
-    value = "${var.cloud_provider}"
+    value = lower(var.cloud_provider)
   }
 
   set {

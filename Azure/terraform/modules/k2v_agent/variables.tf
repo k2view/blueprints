@@ -24,12 +24,6 @@ variable "mailbox_url" {
   default     = "https://cloud.k2view.com/api/mailbox"
 }
 
-variable "cloud" {
-  type        = string
-  description = "The name of the cloud provider."
-  default     = ""
-}
-
 variable "region" {
   type        = string
   description = "The name of the cloud region."
