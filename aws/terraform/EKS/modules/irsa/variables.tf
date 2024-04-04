@@ -8,6 +8,24 @@ variable "cluster_name" {
     description = "EKS Cluster Name"
 }
 
+variable "include_s3_permissions" {
+  description = "Whether to include S3 permissions in the policy"
+  type        = bool
+  default     = true
+}
+
+variable "include_cassandra_permissions" {
+  description = "Whether to include Cassandra permissions in the policy"
+  type        = bool
+  default     = true
+}
+
+variable "include_rds_permissions" {
+  description = "Whether to include RDS permissions in the policy"
+  type        = bool
+  default     = true
+}
+
 # Default tags
 variable "owner" {
     type        = string
