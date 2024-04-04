@@ -8,12 +8,7 @@ resource "helm_release" "ingress-nginx" {
   }
 
   set {
-    name  = "ingressTest.domain"
-    value = "${var.domain}"
-  }
-
-  set {
-    name  = "errorPage.domain"
+    name  = "domain"
     value = "${var.domain}"
   }
 
