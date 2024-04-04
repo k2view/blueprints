@@ -104,7 +104,7 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 			],
 			"Resource": "*"
 		},
-        		{
+    {
 			"Effect": "Allow",
 			"Action": [
 				"rds-db:connect"
@@ -122,7 +122,7 @@ resource "aws_iam_policy" "iam_deployer_policy" {
 				"rds:DeleteDBInstance",
 				"rds:ModifyDBCluster",
 				"rds:ModifyDBInstance",
-                "rds:StartDBCluster",
+        "rds:StartDBCluster",
 				"rds:StartDBInstance",
 				"rds:StopDBCluster",
 				"rds:StopDBInstance",
