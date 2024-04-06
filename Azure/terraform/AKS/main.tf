@@ -87,10 +87,10 @@ module "AKS_ingress" {
   depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
   source                  = "../modules/ingress"
   domain                  = var.domain
-  keyPath                 = var.keyPath
-  crtPath                 = var.crtPath
   cloud_provider          = "azure"
   delay_command           = var.delay_command
+  keyb64String            = base64encode(file(var.keyPath))
+  certb64String           = base64encode(file(var.certPath))
 }
 
 module "AKS_k2v_agent" {
@@ -100,7 +100,6 @@ module "AKS_k2v_agent" {
   mailbox_id              = var.mailbox_id
   mailbox_url             = var.mailbox_url
   region                  = var.location
-  cloud                   = "azure"
   cloud_provider          = "azure"
 }
 

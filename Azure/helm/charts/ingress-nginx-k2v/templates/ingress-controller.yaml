@@ -373,11 +373,13 @@ spec:
   - IPv4
   ipFamilyPolicy: SingleStack
   ports:
+  {{- if .Values.nginx.httpPort.enabled }}
   - appProtocol: http
     name: http
     port: 80
     protocol: TCP
     targetPort: http
+  {{- end }}
   - appProtocol: https
     name: https
     port: 443
@@ -487,9 +489,11 @@ spec:
           timeoutSeconds: 1
         name: controller
         ports:
+        {{- if .Values.nginx.httpPort.enabled }}
         - containerPort: 80
           name: http
           protocol: TCP
+        {{- end }}
         - containerPort: 443
           name: https
           protocol: TCP
