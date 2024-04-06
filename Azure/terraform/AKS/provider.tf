@@ -6,23 +6,23 @@ terraform {
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "2.78.0"
+      version = "3.97.0"
     }
     helm={
       source = "Hashicorp/helm"
-      version = "2.9.0"
+      version = "2.13.0" #"2.9.0"
     }
     kubernetes={
       source = "Hashicorp/kubernetes"
-      version = "2.19.0"
+      version = "2.27.0" #"2.19.0"
     }
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.0"
+      version = "~> 3.6"
     }
     local = {
       source = "hashicorp/local"
-      version = "2.5.1"
+      version = "~> 2.5"
     }
     null={
       source  = "hashicorp/null"

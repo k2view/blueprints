@@ -17,6 +17,12 @@ variable "location" {
 }
 
 # Network
+variable "create_network" {
+  type        = bool
+  description = "Create Vnet for the AKS cluster"
+  default     = true
+}
+
 variable "virtual_network_address_space" {
   type        = string
   description = "Virtual network address space CIDR"
@@ -27,6 +33,12 @@ variable "subnet_address_prefixes" {
   type        = string
   description = "Virtual network subnet address prefixes CIDR"
   default     = "10.240.0.0/16" #minimal /26
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "Virtual network subnet ID for existing Vnet"
+  default     = ""
 }
 
 # Cluster
