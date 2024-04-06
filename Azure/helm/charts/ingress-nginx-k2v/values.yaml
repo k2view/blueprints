@@ -20,7 +20,7 @@ tlsSecret:
   enabled: false
   default_ssl_certificate: false
   keyPath: ""
-  crtPath: ""
+  certPath: ""
   key: ""
   cert: ""
   key_b64: ""

@@ -6,6 +6,7 @@ resource "azurerm_resource_group" "rg" {
 }
 
 module "AKS_private_network" {
+  count                         = var.create_network ? 1 : 0
   source                        = "../modules/private_network"
   resource_group_name           = var.create_resource_group ? azurerm_resource_group.rg[0].name : var.resource_group_name
   location                      = var.location
@@ -16,9 +17,8 @@ module "AKS_private_network" {
 }
 
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
-  depends_on              = [ module.AKS_private_network ]
   name                    = var.cluster_name
-  sku_tier                = "Paid" #Standard
+  sku_tier                = "Standard"
   location                = var.location
   resource_group_name     = var.resource_group_name
   dns_prefix              = var.cluster_name
@@ -26,15 +26,15 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   kubernetes_version      = var.kubernetes_version
 
   default_node_pool {
-    name                = "default"
-    node_count          = var.system_node_count
-    vm_size             = var.vm_sku # "Standard_D8s_v3"
-    type                = "VirtualMachineScaleSets"
-    availability_zones  = [1,]
-    max_count           = var.max_size
-    min_count           = var.min_size
-    enable_auto_scaling = true
-    vnet_subnet_id      = module.AKS_private_network.aks_subnet_id
+    name                 = "default"
+    node_count           = var.system_node_count
+    vm_size              = var.vm_sku # "Standard_D8s_v3"
+    type                 = "VirtualMachineScaleSets"
+    zones                = [1,]
+    max_count            = var.max_size
+    min_count            = var.min_size
+    enable_auto_scaling  = true
+    vnet_subnet_id       = var.subnet_id != "" ? var.subnet_id : module.AKS_private_network[0].aks_subnet_id
   }
 
   identity {
@@ -42,7 +42,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 
   network_profile {
-    load_balancer_sku = "Standard"
+    load_balancer_sku = "standard"
     network_plugin    = "kubenet" # CNI
   }
 
