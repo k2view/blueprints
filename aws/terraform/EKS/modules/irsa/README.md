@@ -1,7 +1,6 @@
 # AWS IRSA Terraform module
 
-Terraform module which creates Cloud Deployer and Fabric Space IRSA resources on AWS.
-Currently it gives access to S3 and Keyspaces resources.
+Terraform module which creates Cloud Deployer and Fabric Space IRSA (IAM Roles for Service Accounts) resources on AWS. Currently, it gives access to S3, Keyspaces, and RDS resources.
 
 ## Resources
 
@@ -15,17 +14,20 @@ Currently it gives access to S3 and Keyspaces resources.
 | [aws_iam_role_policy_attachment.iam_deployer_role_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_eks_cluster.eks_cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_cluster) | data source |
-| [tls_certificat.tls](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/certificate) | data source |
+| [tls_certificate.tls](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/data-sources/certificate) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | The AWS region to run on. | `string` | `"eu-central-1"` | yes |
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_eks\_name) | Desiered EKS Cluster Name | `string` | n/a | yes |
-| <a name="input_env"></a> [env](#input\_env) | Environment for tag (Dev/QA/Prod). | `string` | `"Dev"` | no |
-| <a name="input_owner"></a> [owner](#input\_owner) | Owner name for tag. | `string` | n/a | yes |
-| <a name="input_project"></a> [project](#input\_project) | Project name for tag. | `string` | n/a | no |
+| <a name="input_aws_region"></a> [aws_region](#input_aws_region) | The AWS region to run on. | `string` | `"eu-central-1"` | yes |
+| <a name="input_cluster_name"></a> [cluster_name](#input_cluster_name) | Desired EKS Cluster Name | `string` | n/a | yes |
+| <a name="input_env"></a> [env](#input_env) | Environment for tag (Dev/QA/Prod). | `string` | `"Dev"` | no |
+| <a name="input_include_s3_permissions"></a> [include_s3_permissions](#input_include_s3_permissions) | Whether to include S3 permissions in the policy | `bool` | `true` | no |
+| <a name="input_include_cassandra_permissions"></a> [include_cassandra_permissions](#input_include_cassandra_permissions) | Whether to include Cassandra permissions in the policy | `bool` | `true` | no |
+| <a name="input_include_rds_permissions"></a> [include_rds_permissions](#input_include_rds_permissions) | Whether to include RDS permissions in the policy | `bool` | `true` | no |
+| <a name="input_owner"></a> [owner](#input_owner) | Owner name for tag. | `string` | n/a | yes |
+| <a name="input_project"></a> [project](#input_project) | Project name for tag. | `string` | n/a | no |
 
 ## Permissions
 
@@ -50,6 +52,14 @@ This role has permissions for the following actions:
   - `cassandra:Modify`
     - Resources: All Keyspaces resources in the specified tenant.
 
+- **Amazon RDS**
+  - `rds-db:connect`
+  - `rds-data:BatchExecuteStatement`
+  - `rds-data:BeginTransaction`
+  - `rds-data:CommitTransaction`
+  - `rds-data:RollbackTransaction`
+    - Resources: All RDS resources in the specified tenant.
+
 ### IAM Deployer Role Permissions
 
 #### Defines an IAM role that Cloud Deployer pod will be assumed using k8s SA to interact with AWS resources
@@ -72,3 +82,18 @@ This role is granted permissions for:
   - `cassandra:TagResource`
   - `cassandra:UntagResource`
     - Resources: All Keyspaces resources in the specified tenant.
+
+- **Amazon RDS**
+  - `rds:CreateDBCluster`
+  - `rds:CreateDBInstance`
+  - `rds:DeleteDBCluster`
+  - `rds:DeleteDBInstance`
+  - `rds:ModifyDBCluster`
+  - `rds:ModifyDBInstance`
+  - `rds:StartDBCluster`
+  - `rds:StartDBInstance`
+  - `rds:StopDBCluster`
+  - `rds:StopDBInstance`
+  - `rds:AddTagsToResource`
+  - `rds:RemoveTagsFromResource`
+    - Resources: All RDS resources in the specified tenant.

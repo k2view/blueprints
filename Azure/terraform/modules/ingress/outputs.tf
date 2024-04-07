@@ -1,5 +1,5 @@
 output "ingress_test_url" {
-  value = "http://ingress-test.${var.domain}"
+  value = "https://ingress-test.${var.domain}"
   description = "The URL of the test ingress to validate successful deployment."
 }
 

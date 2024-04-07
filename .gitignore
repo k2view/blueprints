@@ -13,3 +13,6 @@ terraform.tfstate
 # Ignore results of "helm dependency build"
 # *.tgz
 Chart.lock
+
+# Ignore local values 
+Azure/terraform/AKS/local

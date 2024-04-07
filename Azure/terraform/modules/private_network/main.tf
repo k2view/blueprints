@@ -3,6 +3,7 @@ resource "azurerm_virtual_network" "aks_vnet" {
   address_space       = [ var.virtual_network_address_space ]
   location            = var.location
   resource_group_name = var.resource_group_name
+  tags                = var.tags
 }
 
 resource "azurerm_subnet" "aks_subnet" {
@@ -20,6 +21,7 @@ resource "azurerm_public_ip" "aks_nat_gateway_ip" {
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = var.tags
 }
 
 resource "azurerm_nat_gateway" "aks_nat_gateway" {
@@ -28,6 +30,7 @@ resource "azurerm_nat_gateway" "aks_nat_gateway" {
   location            = var.location
   resource_group_name = var.resource_group_name
   sku_name            = "Standard"
+  tags                = var.tags
 }
 
 resource "azurerm_nat_gateway_public_ip_association" "aks_nat_gateway_ip_association" {
