@@ -16,3 +16,5 @@ Chart.lock
 
 # Ignore local values 
 Azure/terraform/AKS/local
+gcp/terraform/GKE/local
+gcp/helm/charts/ingress-nginx-k2v/local

@@ -178,12 +178,6 @@ module "gke" {
   }
 }
 
-provider "kubectl" {
-  host                   = "https://${module.gke.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
-}
-
 provider "helm" {
   kubernetes {
     host                   = "https://${module.gke.endpoint}"
@@ -192,34 +186,24 @@ provider "helm" {
   }
 }
 
-# Deploy ingress controller and custom error page
-resource "helm_release" "ingress_nginx" {
-  name  = "nginx-ingress"
-  chart = "../../helm/charts/nginx-ingress"
+# Deploy ingress controller
+module "GKE_ingress" {
+  depends_on              = [module.gke]
+  source                  = "../Modules/ingress"
+  domain                  = var.domain
+  keyb64String            = base64encode(file(var.keyPath))
+  certb64String           = base64encode(file(var.certPath))
+}
 
-  depends_on = [module.gke]
-
-  # INGRESS CONTROLLER
-  set {
-    name  = "gcp-nginx-ingress-controller.domainName"
-    value = var.domain
-  }
-
-  # CUSTOM ERROR PAGE
-
-  set {
-    name  = "nginx-ingress-controller-custom-errors.domain"
-    value = var.domain
-  }
-  set {
-    name  = "nginx-ingress-controller-custom-errors.tlsSecret.keyPath"
-    value = "secrets/key.pem"
-  }
-  set {
-    name  = "nginx-ingress-controller-custom-errors.tlsSecret.crtPath"
-    value = "secrets/cert.pem"
-  }
-
+# Deploy K2view agent
+module "k2v_agent" {
+  depends_on              = [module.gke]
+  count                   = var.mailbox_id != "" ? 1 : 0
+  source                  = "../Modules/k2v_agent"
+  mailbox_id              = var.mailbox_id
+  mailbox_url             = var.mailbox_url
+  region                  = var.region
+  cloud_provider          = "gcp"
 }
 
 # Deploy Grafana agent
@@ -245,7 +229,7 @@ module "GKE_storage_classes" {
 }
 
 data "kubernetes_service" "nginx_lb" {
-  depends_on = [helm_release.ingress_nginx]
+  depends_on = [module.GKE_ingress]
   metadata {
     name      = "ingress-nginx-controller"
     namespace = "ingress-nginx"
