@@ -11,8 +11,7 @@ module "AKS_k2v_agent" {
   mailbox_id              = var.mailbox_id    # k2view cloud mailbox ID
   mailbox_url             = var.mailbox_url   # k2view cloud mailbox URL
   region                  = var.location      # The name of the cloud region
-  cloud                   = "azure"           # The name of the cloud provider.
-  cloud_provider          = "azure"           # The name of the cloud provider.
+  cloud_provider          = "gcp"             # The name of the cloud provider
 }
 ```
 
