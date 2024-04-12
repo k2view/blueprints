@@ -9,7 +9,7 @@ source ./bubbles.sh
 
 function configRollingText() {
   rollingTextFile="${1:-/$self_path/$self_name.$date.out}"
-  touch ${rollingTextFile} && >${rollingTextFile}
+  touch ${rollingTextFile} && true >${rollingTextFile}
   sh -c "tail -f ${rollingTextFile}" &
   tail_pid=0
   sh -c "while ps -p ${main_pid} >/dev/null; do sleep 1; done; kill -9 ${tail_pid} &>/dev/null" &
@@ -86,26 +86,26 @@ function install_git() {
 function install_docker() {
   case "$DISTRO" in
   ubuntu | debian)
-    echo '''
-      exec &>/tmp/install_docker.log
-      apt update
-      apt install -y apt-transport-https ca-certificates curl software-properties-common
-      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/docker-archive-keyring.gpg >/dev/null
-      add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-      apt update
-      DEBIAN_FRONTEND=noninteractive apt install -y docker-ce
-      systemctl enable docker
-      systemctl start docker
-      ''' >/tmp/install_docker.sh
+    cat << __EOF__ >/tmp/install_docker.sh
+exec &>/tmp/install_docker.log
+apt update
+apt install -y apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/docker-archive-keyring.gpg >/dev/null
+add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y docker-ce
+systemctl enable docker
+systemctl start docker
+__EOF__
     chmod +x /tmp/install_docker.sh
     ;;
   alma | centos | rocky | rhel | fedora)
-    echo '''
-      sudo ${INSTALL_CMD} install yum-utils
-      sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-      sudo ${INSTALL_CMD} install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-      sudo systemctl start docker
-      ''' >/tmp/install_docker.sh
+    cat << __EOF__ >/tmp/install_docker.sh
+sudo ${INSTALL_CMD} install yum-utils
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo ${INSTALL_CMD} install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl start docker
+__EOF__
     chmod +x /tmp/install_docker.sh
     ;;
   esac
