@@ -41,15 +41,6 @@ After deploying the AKS cluster, perform the following actions:
 * Push images to GCR - Push all relevant images, including the Fabric image, to the Artifact Registry (GCR) created by this Terraform module.
 * Create DNS record -  Point your domain's DNS to the DNS zone that is created by this Terraform module (point *.site.domain.com to the LB).
 
-### Configure custom error page
-Copy the private key and the certificate contents to `helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets`.
-Example:
-```bash
-cat [YOUR_PRIVATE_KEY] > helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets/key.pem
-cat [YOUR_CERTIFICATE] > helm/nginx-ingress/charts/nginx-ingress-controller-custom-errors/secrets/cert.pem
-```
-Than run again `terraform apply` to update the custom error pages helm release.
-
 ### Configure grafana monitoring
 To configure grafana monitoring ask K2view representative to generate a token and supply grafana agent configuration file.
 Paste the configuration to [grafana-agent-values.yaml](./grafana-agent-values.yaml) and run ```terraform apply```
