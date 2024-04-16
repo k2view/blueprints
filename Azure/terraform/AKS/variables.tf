@@ -83,6 +83,13 @@ variable "kubeconfig_file_path" {
   default     = ""
 }
 
+
+# Grafana agent
+variable "deploy_grafana_agent" {
+  type        = bool
+  description = "A boolean flag to control whether to install grafana agent"
+  default     = false
+
 variable "private_cluster_enabled" {
   type        = bool
   description = "hould this Kubernetes Cluster have its API server only exposed on internal IP addresses?"
