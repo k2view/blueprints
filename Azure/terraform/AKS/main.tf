@@ -5,6 +5,32 @@ resource "azurerm_resource_group" "rg" {
   tags     = var.tags
 }
 
+# Adding Azure Storage Account creation
+resource "azurerm_storage_account" "tfstate_storage" {
+  count               = var.create_resource_group && var.create_storage_account ? 1 : 0
+  name                = "tfstate${random_string.storage_suffix.result}"
+  resource_group_name = azurerm_resource_group.rg[0].name
+  location            = azurerm_resource_group.rg[0].location
+  account_tier        = "Standard"
+  account_replication_type = "GRS"
+}
+
+# Adding random string for unique storage account name
+resource "random_string" "storage_suffix" {
+  count   = var.create_storage_account ? 1 : 0 
+  length  = 6
+  special = false
+  upper   = false
+}
+
+# Adding Blob Container creation for tfstate files
+resource "azurerm_storage_container" "tfstate_container" {
+  count                 = var.create_storage_account && var.create_resource_group ? 1 : 0
+  name                  = "tfstate"
+  storage_account_name  = azurerm_storage_account.tfstate_storage[0].name
+  container_access_type = "private"
+}
+
 module "AKS_private_network" {
   count                         = var.create_network ? 1 : 0
   source                        = "../modules/private_network"
