@@ -68,3 +68,23 @@ variable "project_id" {
   description = "Name of GCP project."
   default     = ""
 }
+
+variable "aso_namespace" {
+  type        = string
+  description = "the namespace used by Azure Service Operator"
+}
+
+variable "resource_group_name" {
+  type        = string
+  description = "RG name in Azure"
+}
+
+variable "oidc_issuer_url" {
+  type        = string
+  description = "The URL of OIDC Issuer"
+}
+
+variable "aks_public_ip" {
+  type        = string
+  description = "The public IP address of the AKS private network"
+}

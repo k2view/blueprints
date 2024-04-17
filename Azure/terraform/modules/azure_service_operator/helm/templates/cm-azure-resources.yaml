@@ -1,0 +1,16 @@
+{{- $namespace := required "A valid .Values.namespace is required!" .Values.namespace -}}
+{{- $resource_group_name := required "A valid .Values.resource_group_name is required!" .Values.resource_group_name -}}
+{{- $location := required "A valid .Values.location is required!" .Values.location -}}
+{{- $aks_public_ip := required "A valid .Values.aks_public_ip is required!" .Values.aks_public_ip -}}
+{{- $oidc_endpoint := required "A valid .Values.oidc_endpoint is required!" .Values.oidc_endpoint -}}
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: azure-resources
+data:
+  resource_group_name: {{ .Values.resource_group_name }}
+  location: {{ .Values.location }}
+  aks_public_ip: {{ .Values.aks_public_ip }}
+  oidc_endpoint: {{ .Values.oidc_endpoint }}

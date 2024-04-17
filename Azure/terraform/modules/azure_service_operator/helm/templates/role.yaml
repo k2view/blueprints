@@ -1,0 +1,13 @@
+{{- if .Values.k2agent.config -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: azure-service-operator-cr
+  namespace: {{ .Values.k2agent.namespace.name }}
+rules:
+  {{- range $rule := .Values.k2agent.role.rules }}
+  - apiGroups: [{{ range $i, $apiGroup := $rule.apiGroups }}"{{ $apiGroup }}"{{ if ne (len $rule.apiGroups) (add $i 1) }},{{ end }}{{ end }}]
+    resources: [{{ range $i, $resource := $rule.resources }}"{{ $resource }}"{{ if ne (len $rule.resources) (add $i 1) }},{{ end }}{{ end }}]
+    verbs: [{{ range $i, $verb := $rule.verbs }}"{{ $verb }}"{{ if ne (len $rule.verbs) (add $i 1) }},{{ end }}{{ end }}]
+    {{- end }}
+  {{- end }}

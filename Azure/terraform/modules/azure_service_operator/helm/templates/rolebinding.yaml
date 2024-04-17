@@ -1,0 +1,15 @@
+{{- if .Values.k2agent.config -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: azure-service-operator-crb
+  namespace: {{ .Values.k2agent.namespace.name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole 
+  name: azure-service-operator-cr
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.k2agent.namespace.name }}-sa
+    namespace: {{ .Values.k2agent.namespace.name }}
+{{- end }}

@@ -1,0 +1,34 @@
+# Default values for aso_blobcontainer.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: ""
+resource_group_name: ""
+location: ""
+aks_public_ip: ""
+oidc_endpoint: ""
+
+k2agent:
+  config: false
+  namespace:
+    name: "k2view-agent"
+  role:
+    rules:
+      - apiGroups: ["rbac.authorization.k8s.io"]
+        resources: ["roles", "rolebindings"]
+        verbs: ["create", "get", "list"]
+      - apiGroups: ["resources.azure.com"]
+        resources: ["resourcegroups"]
+        verbs: ["create", "delete", "get", "list"]
+      - apiGroups: ["managedidentity.azure.com"]
+        resources: ["userassignedidentities", "federatedidentitycredentials"]
+        verbs: ["create", "delete", "get", "list"]
+      - apiGroups: ["authorization.azure.com"]
+        resources: ["roleassignments"]
+        verbs: ["create", "delete", "get", "list"]
+      - apiGroups: ["storage.azure.com"]
+        resources: ["storageaccounts"]
+        verbs: ["create", "delete", "get", "list"]
+      - apiGroups: ["dbforpostgresql.azure.com"]
+        resources: ["flexibleservers", "flexibleserversdatabases", "flexibleserversfirewallrules"]
+        verbs: ["create", "delete", "get", "list"]

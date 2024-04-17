@@ -17,13 +17,15 @@ module "AKS_private_network" {
 }
 
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
-  name                    = var.cluster_name
-  sku_tier                = "Standard"
-  location                = var.location
-  resource_group_name     = var.resource_group_name
-  dns_prefix              = var.cluster_name
-  private_cluster_enabled = var.private_cluster_enabled
-  kubernetes_version      = var.kubernetes_version
+  name                      = var.cluster_name
+  sku_tier                  = "Standard"
+  location                  = var.location
+  resource_group_name       = var.resource_group_name
+  dns_prefix                = var.cluster_name
+  private_cluster_enabled   = var.private_cluster_enabled
+  kubernetes_version        = var.kubernetes_version
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
 
   default_node_pool {
     name                 = "default"
@@ -47,6 +49,10 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 
   tags = var.tags
+}
+
+locals {
+  subscription = substr(azurerm_kubernetes_cluster.aks_cluster.id,15,36)
 }
 
 resource "random_string" "acr_suffix" {
@@ -113,8 +119,12 @@ module "AKS_k2v_agent" {
   source                  = "../modules/k2v_agent"
   mailbox_id              = var.mailbox_id
   mailbox_url             = var.mailbox_url
-  region                  = var.location
+  region                  = azurerm_kubernetes_cluster.aks_cluster.location
   cloud_provider          = "azure"
+  aso_namespace           = var.aso_namespace
+  resource_group_name     = azurerm_kubernetes_cluster.aks_cluster.node_resource_group
+  oidc_issuer_url         = azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url
+  aks_public_ip           = module.AKS_private_network[0].aks_public_ip
 }
 
 module "DNS_zone" {
@@ -125,4 +135,20 @@ module "DNS_zone" {
   domain                  = var.domain
   record_ip               = module.AKS_ingress.nginx_lb_ip
   tags                    = var.tags
+}
+
+module "azure_service_operator" {
+  depends_on          = [
+    azurerm_kubernetes_cluster.aks_cluster,
+    module.AKS_private_network
+  ]
+  count               = var.create_aso ? 1 : 0
+  source              = "../modules/azure_service_operator"
+  aso_namespace       = var.aso_namespace
+  subscription        = local.subscription
+  location            = azurerm_kubernetes_cluster.aks_cluster.location
+  node_resource_group = azurerm_kubernetes_cluster.aks_cluster.node_resource_group
+  oidc_issuer_url     = azurerm_kubernetes_cluster.aks_cluster.oidc_issuer_url
+  aks_public_ip       = module.AKS_private_network[0].aks_public_ip
+  k2agent_config      = var.mailbox_id == "" ? false : true
 }

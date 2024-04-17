@@ -159,3 +159,15 @@ variable "domain" {
   type        = string
   description = "the domain will be used for ingress"
 }
+
+variable "create_aso" {
+  type        = string
+  description = "Create Azure Service Operator resources"
+  default     = false
+}
+
+variable "aso_namespace" {
+  type        = string
+  description = "the namespace used by Azure Service Operator"
+  default     = "azureserviceoperator-system"
+}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: azure-service-operator
+description: Helm chart to inject Azure resources required by k2view-agent / spaces to interact with Azure Service Operator
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

@@ -66,6 +66,21 @@ resource "helm_release" "k2view_agent" {
     value = "${var.project_id}"
   }
 
+  set {
+    name  = "secrets.RESOURCE_GROUP_NAME"
+    value = "${var.resource_group_name}"
+  }
+
+  set {
+    name  = "secrets.OIDC_ENDPOINT"
+    value = "${var.oidc_issuer_url}"
+  }
+
+  set {
+    name  = "secrets.AKS_PUBLIC_IP"
+    value = "${var.aks_public_ip}"
+  }
+
   timeout           = 600
   force_update      = true
   recreate_pods     = true
