@@ -63,6 +63,7 @@ After deploying the AKS cluster, perform the following actions:
 | <a name="module_AKS_private_network"></a> [AKS\_private\_network](#module\_AKS\_private\_network) | ../modules/private_network | n/a |
 | <a name="module_DNS_zone"></a> [DNS\_zone](#module\_DNS\_zone) | ../modules/dns_zone | n/a |
 | <a name="module_create_acr"></a> [create\_acr](#module\_create\_acr) | ../modules/acr | n/a |
+| <a name="module_remote_backend"></a> [remote\_backend](#module\_remote\_backend) | ../remote/backend | n/a |
 
 ## Resources
 
@@ -110,50 +111,3 @@ After deploying the AKS cluster, perform the following actions:
 | <a name="output_acr_user"></a> [acr\_user](#output\_acr\_user) | The username for the Azure Container Registry (ACR) created by the module. |
 | <a name="output_dns_name_servers"></a> [dns\_name\_servers](#output\_dns\_name\_servers) | The list of name servers associated with the DNS zone created. |
 | <a name="output_nginx_lb_ip"></a> [nginx\_lb\_ip](#output\_nginx\_lb\_ip) | The IP address of the load balancer associated with the Nginx ingress controller. |
-
-## Storing Terraform State in a Remote Backend
-
-To store your Terraform state file in a remote backend, follow these steps:
-
-### Step 1: Enable Storage Account Creation
-
-Set the `create_storage_account` variable to `true` in variables.tf file. This action enables the creation of an Azure Storage Account necessary for storing the state file remotely.
-
-```hcl
-create_storage_account = true
-```
-
-### Step 2: Initial Deployment
-
-Perform the first deployment by following the steps in create cluster example section.
-
-### Step 3: 
-
-Configure the Remote Backend
-
-1. Navigate to the file named terraform.backend.tf.template in your project directory.
-2. Rename this file to backend.tf.
-3. Open backend.tf and fill in the relevant variables (e.g., resource_group_name, storage_account_name, container_name, and key).
-
-Example configuration snippet for backend.tf:
-```hcl
-terraform {
-  backend "azurerm" {
-    resource_group_name  = "<resource-group-name>"
-    storage_account_name = "<storage-account-name>"
-    container_name       = "<container-name>"
-    key                  = "terraform.tfstate"
-  }
-}
-```
-Replace placeholders with actual values corresponding to your Azure setup.
-
-### Step 4: Reinitialize Terraform
-
-To move the local state file to the configured remote backend, reinitialize Terraform:
-
-```bash
-terraform init
-```
-
-During initialization, Terraform will detect the change in the backend configuration. When prompted, confirm the migration of the state file to the new remote backend. This step is crucial for maintaining the state management consistency.
