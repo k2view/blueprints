@@ -85,9 +85,9 @@ provider "helm" {
 
 # Deploy Grafana agent
 resource "helm_release" "grafana_agent" {
-  count = var.deploy_grafana_agent ? 1 : 0
-  name  = "grafana-agent"
-  chart = "../../helm/charts/grafana-agent/k8s-monitoring"
+  count            = var.deploy_grafana_agent && !var.private_cluster_enabled ? 1 : 0
+  name             = "grafana-agent"
+  chart            = "../../helm/charts/grafana-agent/k8s-monitoring"
 
   depends_on       = [ azurerm_kubernetes_cluster.aks_cluster ]
   namespace        = "grafana-agent"
@@ -98,6 +98,7 @@ resource "helm_release" "grafana_agent" {
 }
 
 module "AKS_ingress" {
+  count                   = var.deploy_ingress && !var.private_cluster_enabled ? 1 : 0
   depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
   source                  = "../modules/ingress"
   domain                  = var.domain
@@ -109,7 +110,7 @@ module "AKS_ingress" {
 
 module "AKS_k2v_agent" {
   depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
-  count                   = var.mailbox_id != "" ? 1 : 0
+  count                   = var.mailbox_id != "" && !var.private_cluster_enabled ? 1 : 0
   source                  = "../modules/k2v_agent"
   mailbox_id              = var.mailbox_id
   mailbox_url             = var.mailbox_url
@@ -119,10 +120,9 @@ module "AKS_k2v_agent" {
 
 module "DNS_zone" {
   count                   = var.create_dns ? 1 : 0
-  depends_on              = [ module.AKS_ingress ]
   source                  = "../modules/dns_zone"
   resource_group_name     = var.resource_group_name
   domain                  = var.domain
-  record_ip               = module.AKS_ingress.nginx_lb_ip
+  record_ip               = var.lb_ip != "" ? var.lb_ip : module.AKS_ingress[0].nginx_lb_ip
   tags                    = var.tags
 }
