@@ -10,12 +10,6 @@ variable "create_resource_group" {
   default     = true
 }
 
-variable "create_storage_account" {
-  type        = bool
-  description = "Create storage account for storing terraform.tfstate in Azure"
-  default     = false
-}
-
 variable "location" {
   type        = string
   description = "Resources location in Azure"

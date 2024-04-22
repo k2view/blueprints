@@ -2,19 +2,6 @@
 
 This Terraform module is designed to store your Terraform state file in a remote backend.
 
-## Usage
-
-To use this module for setting up a remote backend, include the following configuration in your Terraform script:
-
-```hcl
-module "remote_backend" {
-  source                        = "../modules/remote_backend"
-  resource_group_name           = var.resource_group_name
-}
-```
-
-This configuration sets up storage account with a unique name and initializing a container to store the terraform.tfstate file.
-
 ## Providers
 
 | Name | Version |
@@ -46,21 +33,13 @@ This configuration sets up storage account with a unique name and initializing a
 
 ## State Migration Process:
 
-### Step 1: Enable Storage Account Creation
+### Step 1: Initial Deployment
 
-Set the `create_storage_account` variable to `true` in AKS folder - variables.tf file. This action enables the creation of an Azure Storage Account necessary for storing the state file remotely.
+Deploy the module resources.
 
-```hcl
-create_storage_account = true
-```
+### Step 2: 
 
-### Step 2: Initial Deployment
-
-Perform the first deployment by following the steps in create cluster example section.
-
-### Step 3: 
-
-Configure the Remote Backend
+Configure the Remote Backend in the AKS module
 
 1. Navigate to the file named backend.tf.template in AKS folder.
 2. Rename the file to backend.tf.
@@ -79,7 +58,7 @@ terraform {
 ```
 Replace placeholders with actual values corresponding to your Azure setup.
 
-### Step 4: Reinitialize Terraform
+### Step 3: Reinitialize Terraform
 
 To move the local state file to the configured remote backend, reinitialize Terraform:
 

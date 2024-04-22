@@ -16,13 +16,6 @@ module "AKS_private_network" {
   tags                          = var.tags
 }
 
-module "remote_backend" {
-  count                         = var.create_storage_account ? 1 : 0
-  source                        = "../modules/remote_backend"
-  resource_group_name           = var.create_resource_group ? azurerm_resource_group.rg[0].name : var.resource_group_name
-  tags                          = var.tags
-}
-
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
   name                    = var.cluster_name
   sku_tier                = "Standard"

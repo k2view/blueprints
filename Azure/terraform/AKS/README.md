@@ -63,7 +63,6 @@ After deploying the AKS cluster, perform the following actions:
 | <a name="module_AKS_private_network"></a> [AKS\_private\_network](#module\_AKS\_private\_network) | ../modules/private_network | n/a |
 | <a name="module_DNS_zone"></a> [DNS\_zone](#module\_DNS\_zone) | ../modules/dns_zone | n/a |
 | <a name="module_create_acr"></a> [create\_acr](#module\_create\_acr) | ../modules/acr | n/a |
-| <a name="module_remote_backend"></a> [remote\_backend](#module\_remote\_backend) | ../remote/backend | n/a |
 
 ## Resources
 
@@ -83,7 +82,6 @@ After deploying the AKS cluster, perform the following actions:
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Create DNS zone in Azure that point all the trafic to the LB | `bool` | `true` | no |
 | <a name="input_create_network"></a> [create\_network](#input\_create\_network) | Create Vnet for the AKS cluster | `bool` | `true` | no |
 | <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | Create RG name in Azure | `bool` | `true` | no |
-| <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account) | Create storage account for storing terraform.tfstate in Azure | `bool` | `false` | no |
 | <a name="input_delay_command"></a> [delay\_command](#input\_delay\_command) | The command for delay (depend on the env). | `string` | `"sleep 60"` | no |
 | <a name="input_domain"></a> [domain](#input\_domain) | the domain will be used for ingress | `string` | n/a | yes |
 | <a name="input_keyPath"></a> [keyPath](#input\_keyPath) | Path to the TLS key file. | `string` | `""` | no |
