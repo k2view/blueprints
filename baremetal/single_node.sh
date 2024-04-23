@@ -298,7 +298,7 @@ function install_k2agent() {
 
   set -x -e
   rm -rf blueprints || true
-  git clone ${k2_agent_helm_repo}
+  git clone ${k2_agent_helm_repo} blueprints
   cd blueprints/helm/k2view-agent
   $HELM uninstall k2-agent &>/dev/null || true
   print_colored_bold 'cyan' 'Deploying K2View Agent...\n' | _tee ${rollingTextFile}
