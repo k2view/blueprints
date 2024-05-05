@@ -83,6 +83,11 @@ variable "kubeconfig_file_path" {
   default     = ""
 }
 
+variable "private_cluster_enabled" {
+  type        = bool
+  description = "hould this Kubernetes Cluster have its API server only exposed on internal IP addresses?"
+  default     = false # If set to true modules that deploy helm to the cluster will fail (like AKS_ingress and AKS_k2v_agent) and will be needed be deployed manually
+}
 
 # Grafana agent
 variable "deploy_grafana_agent" {
@@ -105,6 +110,18 @@ variable "acr_name" {
 }
 
 # Ingress
+variable "deploy_ingress" {
+  type        = bool
+  description = "Deploy nginx ingress in the cluster"
+  default     = true
+}
+
+variable "lb_ip" {
+  type        = string
+  description = "LB IP for the DNS to point to"
+  default     = ""
+}
+
 variable "keyPath" {
   type        = string
   description = "Path to the TLS key file."
