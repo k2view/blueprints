@@ -113,11 +113,11 @@ metadata:
   name: nginx-errors-ingress
   namespace: {{ .Values.namespace.name }}
   annotations:
-    kubernetes.io/ingress.class: "nginx"
     nginx.ingress.kubernetes.io/rewrite-target: /$1
     nginx.ingress.kubernetes.io/server-snippet: |
       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 spec:
+  ingressClassName: "nginx"
   tls:
   - hosts:
     - "*.{{ .Values.domain }}"

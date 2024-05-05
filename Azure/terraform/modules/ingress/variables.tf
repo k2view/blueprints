@@ -9,6 +9,12 @@ variable "domain" {
   description = "the domain will be used for ingress"
 }
 
+variable "internal_lb" {
+  type        = bool
+  description = "Internal IP for the LB"
+  default     = false
+}
+
 # SSL cert
 variable "keyPath" {
   type        = string

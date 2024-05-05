@@ -366,6 +366,9 @@ metadata:
   {{ else if eq .Values.provider "azure" }}
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+    {{- if .Values.nginx.internal_lb }}
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    {{- end }}
   {{- end }}
   labels:
     app.kubernetes.io/component: controller

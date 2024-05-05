@@ -31,12 +31,13 @@ module "AKS-ingress" {
 ## Inputs
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_certPath"></a> [certPath](#input\_certPath) | Path to the TLS cert file. | `string` | `""` | no |
 | <a name="input_certString"></a> [certString](#input\_certString) | The TLS cert as a string. | `string` | `""` | no |
 | <a name="input_certb64String"></a> [certb64String](#input\_certb64String) | The TLS cert string in base 64. | `string` | `""` | no |
 | <a name="input_cloud_provider"></a> [cloud\_provider](#input\_cloud\_provider) | The name of the cloud provider. | `string` | `""` | no |
-| <a name="input_certPath"></a> [certPath](#input\_certPath) | Path to the TLS cert file. | `string` | `""` | no |
 | <a name="input_delay_command"></a> [delay\_command](#input\_delay\_command) | The command for delay, the cammand depend on the env the terraform runed on. | `string` | `"sleep 60"` | no |
 | <a name="input_domain"></a> [domain](#input\_domain) | the domain will be used for ingress | `string` | n/a | yes |
+| <a name="input_internal_lb"></a> [internal\_lb](#input\_internal\_lb) | Internal IP for the LB | `bool` | `false` | no |
 | <a name="input_keyPath"></a> [keyPath](#input\_keyPath) | Path to the TLS key file. | `string` | `""` | no |
 | <a name="input_keyString"></a> [keyString](#input\_keyString) | The TLS key as a string. | `string` | `""` | no |
 | <a name="input_keyb64String"></a> [keyb64String](#input\_keyb64String) | The TLS key string in base 64. | `string` | `""` | no |
