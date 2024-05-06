@@ -16,3 +16,4 @@ Chart.lock
 
 # Ignore local values 
 Azure/terraform/AKS/local
+Azure/terraform/AKS/backend.tf

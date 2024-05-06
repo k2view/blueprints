@@ -9,9 +9,22 @@ variable "resource_group_name" {
   type        = string
 }
 
+variable "location" {
+  type        = string
+  description = "Resources location in Azure"
+  default     = "West Europe"
+}
+
 variable "storage_account_name" {
   type        = string
   description = "The name of storage account (only lowercase letters)"
+  default     = ""
+}
+
+variable "container_name" {
+  type        = string
+  description = "The name of the container within the backend storage account where the Terraform state file will be stored."
+  default     = "tfstate"
 }
 
 variable "account_tier" {
