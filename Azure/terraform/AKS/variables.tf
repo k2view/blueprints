@@ -23,6 +23,24 @@ variable "create_network" {
   default     = true
 }
 
+variable "create_nat_gateway" {
+  type        = bool
+  description = "Create NAT gateway."
+  default     = true
+}
+
+variable "create_route_table" {
+  type        = bool
+  description = "Create route table as a gateway."
+  default     = false
+}
+
+variable "route_table_next_hop_ip" {
+  type        = string
+  description = "IP address of the next hop in the routing table."
+  default     = ""
+}
+
 variable "virtual_network_address_space" {
   type        = string
   description = "Virtual network address space CIDR"
@@ -50,7 +68,13 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version."
-  default     = "1.27.9"
+  default     = "1.28.5"
+}
+
+variable "outbound_type" {
+  type        = string
+  description = "Kubernetes version."
+  default     = "userAssignedNATGateway" # loadBalancer (default for AKS) or userAssignedNATGateway (if create_nat_gateway=true) or userDefinedRouting (The user should create the routing and add route_table_next_hop_ip)
 }
 
 variable "vm_sku" {
@@ -89,12 +113,6 @@ variable "private_cluster_enabled" {
   default     = false # If set to true modules that deploy helm to the cluster will fail (like AKS_ingress and AKS_k2v_agent) and will be needed be deployed manually
 }
 
-# Grafana agent
-variable "deploy_grafana_agent" {
-  type        = bool
-  description = "A boolean flag to control whether to install grafana agent"
-  default     = false
-}
 
 # ACR
 variable "create_acr" {
@@ -109,7 +127,21 @@ variable "acr_name" {
   default     = ""
 }
 
+# Grafana agent
+variable "deploy_grafana_agent" {
+  type        = bool
+  description = "A boolean flag to control whether to install grafana agent"
+  default     = false
+}
+
+
 # Ingress
+variable "internal_lb" {
+  type        = bool
+  description = "Internal IP for the LB"
+  default     = false
+}
+
 variable "deploy_ingress" {
   type        = bool
   description = "Deploy nginx ingress in the cluster"

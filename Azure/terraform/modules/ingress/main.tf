@@ -1,5 +1,5 @@
 resource "helm_release" "ingress-nginx" {
-  name    = "ingress-nginx-controller"
+  name    = "nginx-ingress-controller"
   chart   = "../../helm/charts/ingress-nginx-k2v"
 
   set {
@@ -10,6 +10,11 @@ resource "helm_release" "ingress-nginx" {
   set {
     name  = "domain"
     value = "${var.domain}"
+  }
+
+  set {
+    name  = "nginx.internal_lb"
+    value = "${var.internal_lb}"
   }
 
   # ssl cert
