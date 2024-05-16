@@ -319,10 +319,29 @@ subjects:
   namespace: ingress-nginx
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+    app.kubernetes.io/version: {{ .Values.nginx.version }}
 data:
   allow-snippet-annotations: "true"
+  force-ssl-redirect: "true"
+  use-forwarded-headers: "true"
   {{- if .Values.errorPage.enabled }}
   custom-http-errors: "503"
+  {{- end }}
+  {{- if and (eq .Values.nginx.httpPort.enabled true) (ne .Values.provider "aws") }}
+  http-snippet: |
+    server {
+      listen 80;
+      return 308 https://$host$request_uri;
+    }
   {{- end }}
   {{- if eq .Values.provider "aws" }}
   http-snippet: |
@@ -331,18 +350,7 @@ data:
       return 308 https://$host$request_uri;
     }
   proxy-real-ip-cidr: "{{- if eq .Values.aws.vpcCIDR "notSet" }}{{ fail "Please set a valid value for .Values.aws.vpcCIDR" }}{{- else }}{{ .Values.aws.vpcCIDR }}{{- end }}"
-  use-forwarded-headers: "true"
   {{- end }}
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/component: controller
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/part-of: ingress-nginx
-    app.kubernetes.io/version: {{ .Values.nginx.version }}
-  name: ingress-nginx-controller
-  namespace: ingress-nginx
 ---
 apiVersion: v1
 kind: Service
@@ -358,6 +366,9 @@ metadata:
   {{ else if eq .Values.provider "azure" }}
   annotations:
     service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+    {{- if .Values.nginx.internal_lb }}
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    {{- end }}
   {{- end }}
   labels:
     app.kubernetes.io/component: controller

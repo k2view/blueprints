@@ -6,17 +6,22 @@ resource "azurerm_resource_group" "rg" {
 }
 
 module "AKS_private_network" {
-  count                         = var.create_network ? 1 : 0
   source                        = "../modules/private_network"
   resource_group_name           = var.create_resource_group ? azurerm_resource_group.rg[0].name : var.resource_group_name
   location                      = var.location
   prefix_name                   = var.cluster_name
-  virtual_network_address_space = var.virtual_network_address_space
-  subnet_address_prefixes       = var.subnet_address_prefixes
   tags                          = var.tags
+  subnet_address_prefixes       = var.subnet_address_prefixes
+  create_network                = var.create_network
+  subnet_id                     = var.subnet_id
+  virtual_network_address_space = var.virtual_network_address_space
+  create_nat_gateway            = var.create_nat_gateway
+  create_route_table            = var.create_route_table
+  route_table_next_hop_ip       = var.route_table_next_hop_ip
 }
 
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
+  depends_on              = [ module.AKS_private_network ]
   name                    = var.cluster_name
   sku_tier                = "Standard"
   location                = var.location
@@ -34,7 +39,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     max_count            = var.max_size
     min_count            = var.min_size
     enable_auto_scaling  = true
-    vnet_subnet_id       = var.subnet_id != "" ? var.subnet_id : module.AKS_private_network[0].aks_subnet_id
+    vnet_subnet_id       = var.subnet_id != "" ? var.subnet_id : module.AKS_private_network.aks_subnet_id
   }
 
   identity {
@@ -42,11 +47,17 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 
   network_profile {
-    load_balancer_sku = "standard"
     network_plugin    = "kubenet" # CNI
+    outbound_type      = var.outbound_type
   }
 
   tags = var.tags
+}
+
+resource "azurerm_role_assignment" "network_contributor" {
+  scope                = var.subnet_id != "" ? var.subnet_id : module.AKS_private_network.aks_subnet_id
+  role_definition_name = "Network Contributor"
+  principal_id         = azurerm_kubernetes_cluster.aks_cluster.identity[0].principal_id
 }
 
 resource "random_string" "acr_suffix" {
@@ -83,13 +94,12 @@ provider "helm" {
   }
 }
 
-# Deploy Grafana agent
 resource "helm_release" "grafana_agent" {
   count            = var.deploy_grafana_agent && !var.private_cluster_enabled ? 1 : 0
+  depends_on       = [ azurerm_kubernetes_cluster.aks_cluster ]
   name             = "grafana-agent"
   chart            = "../../helm/charts/grafana-agent/k8s-monitoring"
 
-  depends_on       = [ azurerm_kubernetes_cluster.aks_cluster ]
   namespace        = "grafana-agent"
   create_namespace = true
   values = [
@@ -104,13 +114,14 @@ module "AKS_ingress" {
   domain                  = var.domain
   cloud_provider          = "azure"
   delay_command           = var.delay_command
+  internal_lb             = var.internal_lb
   keyb64String            = base64encode(file(var.keyPath))
   certb64String           = base64encode(file(var.certPath))
 }
 
 module "AKS_k2v_agent" {
-  depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
   count                   = var.mailbox_id != "" && !var.private_cluster_enabled ? 1 : 0
+  depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
   source                  = "../modules/k2v_agent"
   mailbox_id              = var.mailbox_id
   mailbox_url             = var.mailbox_url

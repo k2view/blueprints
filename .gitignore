@@ -16,6 +16,7 @@ Chart.lock
 
 # Ignore local values 
 Azure/terraform/AKS/local
+Azure/terraform/AKS/backend.tf
 
 # Ignore results of baremetal/single_node.sh
 single_node.sh.??????????????.log
