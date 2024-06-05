@@ -35,9 +35,10 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     node_count           = var.system_node_count
     vm_size              = var.vm_sku # "Standard_D8s_v3"
     type                 = "VirtualMachineScaleSets"
-    zones                = [1,]
+    zones                = var.node_zones
     max_count            = var.max_size
     min_count            = var.min_size
+    os_disk_size_gb      = var.os_disk_size_gb
     enable_auto_scaling  = true
     vnet_subnet_id       = var.subnet_id != "" ? var.subnet_id : module.AKS_private_network.aks_subnet_id
   }
@@ -132,7 +133,7 @@ module "AKS_k2v_agent" {
 module "DNS_zone" {
   count                   = var.create_dns ? 1 : 0
   source                  = "../modules/dns_zone"
-  resource_group_name     = var.resource_group_name
+  resource_group_name     = var.create_resource_group ? azurerm_resource_group.rg[0].name : var.resource_group_name
   domain                  = var.domain
   record_ip               = var.lb_ip != "" ? var.lb_ip : module.AKS_ingress[0].nginx_lb_ip
   tags                    = var.tags
