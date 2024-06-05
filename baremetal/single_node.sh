@@ -117,8 +117,8 @@ function install_docker() {
 }
 
 function install_k8s_block1() {
-  echo "vm.nr_hugepages=1024" | sudo tee -a /etc/sysctl.d/20-microk8s-hugepages.conf
-  sudo sysctl -w vm.nr_hugepages=1024
+  echo "vm.nr_hugepages=0" | sudo tee -a /etc/sysctl.d/20-microk8s-hugepages.conf
+  sudo sysctl -w vm.nr_hugepages=0
   sudo sysctl -p
   local pkg
   case "$DISTRO" in
