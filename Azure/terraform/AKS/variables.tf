@@ -80,7 +80,19 @@ variable "outbound_type" {
 variable "vm_sku" {
   type        = string
   description = "VM sku"
-  default     = "Standard_D8s_v3"
+  default     = "Standard_D8ds_v5"
+}
+
+variable "node_zones" {
+  type        = list
+  description = "VM az"
+  default     = [1]
+}
+
+variable "os_disk_size_gb" {
+  type        = string
+  description = "OS disk size GB"
+  default     = 300
 }
 
 variable "system_node_count" {
