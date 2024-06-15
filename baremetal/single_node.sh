@@ -8,9 +8,9 @@ microk8s_version='1.29'
 source ./bubbles.sh
 
 function configRollingText() {
-  rollingTextFile="${1:-/$self_path/$self_name.$date.out}"
-  touch ${rollingTextFile} && true >${rollingTextFile}
-  sh -c "tail -f ${rollingTextFile}" &
+  out="${1:-/$self_path/$self_name.$date.out}"
+  touch ${out} && true >${out}
+  sh -c "tail -f ${out}" &
   tail_pid=0
   sh -c "while ps -p ${main_pid} >/dev/null; do sleep 1; done; kill -9 ${tail_pid} &>/dev/null" &
 }
@@ -25,8 +25,8 @@ function _microk8s() {
 }
 
 function init() {
-  installLogFile="$self_path/$self_name.$date.log"
-  touch ${installLogFile} && true >${installLogFile}
+  log="$self_path/$self_name.$date.log"
+  touch ${log} && true >${log}
   case "$(uname -s)" in
   Linux*)
     configRollingText
@@ -45,18 +45,18 @@ function init() {
     esac
     OS='linux'
 
-    print_colored_bold 'cyan' "Checking for required dependencies (${OS} - ${DISTRO})...\n" | _tee ${installLogFile}
+    print_colored_bold 'cyan' "Checking for required dependencies (${OS} - ${DISTRO})...\n" | _tee ${log}
     if ! systemctl is-enabled snapd --quiet; then
-      print_colored_bold 'red' 'snapd is not enabled/installed. Please enable/install it manually. Aborting!\n' | _tee ${installLogFile}
+      print_colored_bold 'red' 'snapd is not enabled/installed. Please enable/install it manually. Aborting!\n' | _tee ${log}
       exit 1
     fi
     if ! systemctl is-active snapd --quiet; then
-      print_colored_bold 'red' 'snapd is not active. Please activate it manually. Aborting!\n' | _tee ${installLogFile}
+      print_colored_bold 'red' 'snapd is not active. Please activate it manually. Aborting!\n' | _tee ${log}
       exit 1
     fi
     ;;
   Darwin*)
-    configRollingText ${installLogFile}
+    configRollingText ${log}
     OS='MacOS'
     DISTRO="${OS}"
     INSTALL_CMD='brew'
@@ -65,20 +65,20 @@ function init() {
     OS='Unknown'
     ;;
   esac
-  print_colored_bold 'green' '√ Initialization completed.\n' | _tee ${installLogFile}
+  print_colored_bold 'green' '√ Initialization completed.\n' | _tee ${log}
 }
 
 function install_git() {
   if git version &>/dev/null; then
-    print_colored_bold 'green' '√ Git is already installed.\n' | _tee ${rollingTextFile}
+    print_colored_bold 'green' '√ Git is already installed.\n' | _tee ${out}
   else
-    print_colored_bold 'cyan' 'Installing Git...' | _tee ${rollingTextFile}
+    print_colored_bold 'cyan' 'Installing Git...' | _tee ${out}
     echo "" && sudo ${INSTALL_CMD} install git &
-    ( basic_spinner; echo ""; ) >>${rollingTextFile}
+    ( basic_spinner; echo ""; ) >>${out}
     if git version &>/dev/null; then
-      print_colored_bold 'green' '√ Git installed successfully.\n' | _tee ${rollingTextFile}
+      print_colored_bold 'green' '√ Git installed successfully.\n' | _tee ${out}
     else
-      print_colored_bold 'red' 'x Git installation failed!\n' | _tee ${rollingTextFile}
+      print_colored_bold 'red' 'x Git installation failed!\n' | _tee ${out}
     fi
   fi
 }
@@ -110,13 +110,13 @@ __EOF__
     ;;
   esac
 
-  print_colored_bold 'cyan' "Installing Docker..." | _tee ${rollingTextFile}
+  print_colored_bold 'cyan' "Installing Docker..." | _tee ${out}
   echo "" && bash -c "/tmp/install_docker.sh" &
-  ( basic_spinner; echo ""; ) >>${rollingTextFile}
+  ( basic_spinner; echo ""; ) >>${out}
   if docker ps &>/dev/null; then
-    print_colored_bold 'green' '√ Docker installed successfully.\n' | _tee ${rollingTextFile}
+    print_colored_bold 'green' '√ Docker installed successfully.\n' | _tee ${out}
   else
-    print_colored_bold 'red' 'x Docker installation failed!\n' | _tee ${rollingTextFile}
+    print_colored_bold 'red' 'x Docker installation failed!\n' | _tee ${out}
   fi
 }
 
@@ -143,7 +143,7 @@ function install_k8s_block2() {
   snap version
   sudo snap install microk8s --classic --channel=${microk8s_version}
   if ! sudo snap list | grep -q 'microk8s'; then
-    print_colored_bold 'red' 'x Kubernetes installation failed! Retring once more in 30s...' | _tee ${rollingTextFile}
+    print_colored_bold 'red' 'x Kubernetes installation failed! Retring once more in 30s...' | _tee ${out}
     sleep 30
     sudo snap install microk8s --classic --channel=${microk8s_version}
   fi
@@ -163,22 +163,22 @@ function install_k8s() {
       print_colored_bold 'cyan' '√ Kubernetes is already installed.\n'
       return
     fi
-    print_colored_bold 'cyan' '√ Installing Kubernetes prerequisites...' | _tee ${rollingTextFile}
+    print_colored_bold 'cyan' '√ Installing Kubernetes prerequisites...' | _tee ${out}
 
     # Block for the spinner to work
     echo "" && install_k8s_block1 &
-    basic_spinner >>${rollingTextFile}
+    basic_spinner >>${out}
 
     [[ -z "${microk8s}" ]] && _microk8s
 
-    print_colored_bold 'cyan' '√ Installing Kubernetes...' | _tee ${rollingTextFile}
+    print_colored_bold 'cyan' '√ Installing Kubernetes...' | _tee ${out}
     echo "" && install_k8s_block2 &
-    basic_spinner >>${rollingTextFile}
+    basic_spinner >>${out}
 
     if ${microk8s} status | grep -q "microk8s is running"; then
-      print_colored_bold 'green' '√ Kubernetes installed successfully.\n' | _tee ${rollingTextFile}
+      print_colored_bold 'green' '√ Kubernetes installed successfully.\n' | _tee ${out}
     else
-      print_colored_bold 'red' 'x Kubernetes installation failed!\n' | _tee ${rollingTextFile}
+      print_colored_bold 'red' 'x Kubernetes installation failed!\n' | _tee ${out}
       exit 1
     fi
     ;;
@@ -221,16 +221,16 @@ function install_k8s() {
 
 function configure_k8s() {
   echo ""
-  print_colored_bold 'cyan' '\nThe following tools will be installed:\n' | _tee ${rollingTextFile}
+  print_colored_bold 'cyan' '\nThe following tools will be installed:\n' | _tee ${out}
   echo -e "
-|Name            |Required |More info                                   |
-|----------------|---------|--------------------------------------------|
-|cert-manager    |Yes      |'https://cert-manager.io/'                  |
-|NGINX Ingress   |Yes      |'https://docs.nginx.com/'                   |
-|hostpath-storage|Yes      |                                            |
-|docker registry |Yes      |'https://microk8s.io/docs/registry-built-in'|
-|metrics-server  |Yes      |                                            |
-" | _tee ${rollingTextFile}
+|Name            |Required |More info                                          |
+|----------------|---------|---------------------------------------------------|
+|cert-manager    |Yes      |'https://cert-manager.io/'                         |
+|NGINX Ingress   |Yes      |'https://docs.nginx.com/'                          |
+|hostpath-storage|Yes      |'https://microk8s.io/docs/addon-hostpath-storage'  |
+|docker registry |Yes      |'https://microk8s.io/docs/registry-built-in'       |
+|metrics-server  |Yes      |'https://github.com/kubernetes-sigs/metrics-server'|
+" | _tee ${out}
 
   case "${OS}" in
   linux)
@@ -242,7 +242,7 @@ function configure_k8s() {
     addon_list="$(${microk8s} status --format short 2>/dev/null)"
     for addon in dns ingress cert-manager hostpath-storage registry metrics-server; do
       if echo "${addon_list}" | grep -q "^core/${addon}: disabled"; then
-        print_colored_bold 'magenta' "Installing ${addon}...\n" | _tee ${rollingTextFile}
+        print_colored_bold 'magenta' "Installing ${addon}...\n" | _tee ${out}
         ${microk8s} enable ${addon}
         ((code += $?))
         if [[ "${addon}" == 'ingress' ]]; then
@@ -251,13 +251,13 @@ function configure_k8s() {
         fi
         sleep 10
       else
-        print_colored_bold 'magenta' "Addon ${addon} is already installed.\n" | _tee ${rollingTextFile}
+        print_colored_bold 'magenta' "Addon ${addon} is already installed.\n" | _tee ${out}
       fi
     done
     if [[ ${code} -eq 0 ]]; then
-      print_colored_bold 'green' '√ Kubernetes configured successfully.\n\n' | _tee ${rollingTextFile}
+      print_colored_bold 'green' '√ Kubernetes configured successfully.\n\n' | _tee ${out}
     else
-      print_colored_bold 'red' 'x Kubernetes configuration failed!\n\n' | _tee ${rollingTextFile}
+      print_colored_bold 'red' 'x Kubernetes configuration failed!\n\n' | _tee ${out}
     fi
     ;;
   MacOS)
@@ -292,7 +292,7 @@ function install_k2agent() {
     ;;
   esac
   if $HELM ls | grep k2-agent; then
-    print_colored_bold 'cyan' '√ k2-agent is already installed.\n' | _tee ${rollingTextFile}
+    print_colored_bold 'cyan' '√ k2-agent is already installed.\n' | _tee ${out}
     return 0
   fi
 
@@ -301,14 +301,14 @@ function install_k2agent() {
   git clone ${k2_agent_helm_repo} blueprints
   cd blueprints/helm/k2view-agent
   $HELM uninstall k2-agent &>/dev/null || true
-  print_colored_bold 'cyan' 'Deploying K2View Agent...\n' | _tee ${rollingTextFile}
+  print_colored_bold 'cyan' 'Deploying K2View Agent...\n' | _tee ${out}
   $HELM install k2-agent . --debug --wait --set secrets.K2_MAILBOX_ID="$MAILBOX_ID" --set secrets.K2_MANAGER_URL="$MANAGER_URL"
   set +x
 
   if $KUBECTL --namespace k2view-agent get deploy k2view-agent | grep -q 'k2view-agent   1/1'; then
-    print_colored_bold 'green' '√ k2-agent deployed successfully.\n' | _tee ${rollingTextFile}
+    print_colored_bold 'green' '√ k2-agent deployed successfully.\n' | _tee ${out}
   else
-    print_colored_bold 'red' 'x k2-agent deployment failed!\n' | _tee ${rollingTextFile}
+    print_colored_bold 'red' 'x k2-agent deployment failed!\n' | _tee ${out}
   fi
 }
 
@@ -321,16 +321,16 @@ echo
 print_colored_bold 'magenta' "The following tools will be installed:\n"
 print_colored_bold 'white' " "
 echo "
-|Name            |Required |More info                                   |
-|----------------|---------|--------------------------------------------|
-|Microk8s        |Yes      |'https://microk8s.io/'                      |
-|Git             |Yes      |'https://git-scm.com/'                      |
-|cert-manager    |Yes      |'https://cert-manager.io/'                  |
-|NGINX Ingress   |Yes      |'https://docs.nginx.com/'                   |
-|hostpath-storage|Yes      |                                            |
-|docker registry |Yes      |'https://microk8s.io/docs/registry-built-in'|
-|metrics-server  |Yes      |                                            |
-|k2-agent        |Yes      |'helm/charts/k2view-agent'                  |
+|Name            |Required |More info                                          |
+|----------------|---------|---------------------------------------------------|
+|microk8s        |Yes      |'https://microk8s.io/'                             |
+|git             |Yes      |'https://git-scm.com/'                             |
+|cert-manager    |Yes      |'https://cert-manager.io/'                         |
+|NGINX Ingress   |Yes      |'https://docs.nginx.com/'                          |
+|hostpath-storage|Yes      |'https://microk8s.io/docs/addon-hostpath-storage'  |
+|docker registry |Yes      |'https://microk8s.io/docs/registry-built-in'       |
+|metrics-server  |Yes      |'https://github.com/kubernetes-sigs/metrics-server'|
+|k2view-agent    |Yes      |'helm/charts/k2view-agent'                         |
 "
 if ! confirm 'Install Kubernetes Components?'; then
   echo 'Bye!'
@@ -342,12 +342,12 @@ init
 case "${OS}" in
 linux)
   if ! git version &>/dev/null; then
-    install_git &>>${installLogFile}
+    install_git &>>${log}
   fi
-  install_k8s &>>${installLogFile}
-  configure_k8s &>>${installLogFile}
+  install_k8s &>>${log}
+  configure_k8s &>>${log}
   presetup_k2agent
-  install_k2agent &>>${installLogFile}
+  install_k2agent &>>${log}
   ;;
 MacOS)
   if ! git version &>/dev/null; then
@@ -360,6 +360,6 @@ MacOS)
   ;;
 esac
 
-print_in_box 'cyan' 'Installation completed! Continue in CloudManager...' | _tee ${installLogFile}
+print_in_box 'cyan' 'Installation completed! Continue in CloudManager...' | _tee ${log}
 
-echo "Full installation log: ${installLogFile}"
+echo "Full installation log: ${log}"
