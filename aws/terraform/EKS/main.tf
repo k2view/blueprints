@@ -77,7 +77,7 @@ module "eks" {
 }
 
 module "efs" {
-  source                  = "./modules/efs"
+  source                  = "../modules/efs"
   cluster_name            = var.cluster_name
   aws_region              = var.aws_region
   owner                   = var.owner
@@ -97,7 +97,7 @@ module "efs" {
 }
 
 module "subdomain-hz" {
-  source                  = "./modules/Route53/subdomain-hz/"
+  source                  = "../modules/Route53/subdomain-hz/"
   count                   = var.domain != "" ? 1 : 0
   cluster_name            = var.cluster_name
   domain                  = var.domain
@@ -111,7 +111,7 @@ module "subdomain-hz" {
 }
 
 module "create-a-record" {
-  source                  = "./modules/Route53/create-a-record/"
+  source                  = "../modules/Route53/create-a-record/"
   count                   = var.domain != "" ? 1 : 0
   domain                  = var.domain
   zone_id                 = module.subdomain-hz[0].hz_zone_id
@@ -128,7 +128,7 @@ module "create-a-record" {
 }
 
 module "irsa" {
-  source                  = ".modules/irsa"
+  source                  = "..modules/irsa"
   aws_region              = var.aws_region
   cluster_name            = var.cluster_name
   owner                   = var.owner
