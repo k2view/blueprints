@@ -1,6 +1,6 @@
 namespace:
-  create: true
   name: "space-tenant"
+  create: false
 
 labels:
   - name: tenant
@@ -13,12 +13,12 @@ deploy:
   # type = StatefulSet|Deployment
 
 serviceAccount:
-  create: false                # For new sa, creation of sa only in k8s side
-  name: ""                     # For existing sa, if create is true, name should be an empty string
-  provider: ""                 # aws|gcp
-  arn: ""                      # For AWS role
-  gcp_service_account_name: "" # For GCP SA
-  project_id: ""               # For GCP SA
+  create: true   # For new sa, creation of sa only in k8s side
+  name: ""       # For existing sa, if create is true, name should be an empty string
+  provider: ""   # aws|gcp
+  arn: ""        # For AWS role
+  # gcp_service_account_name: "" # For GCP sa
+  project_id: "" # For GCP SA
   cluster_name: ""
 
 container:
@@ -28,8 +28,8 @@ container:
     value: Fabric on Kubernetes
   resource_allocation:
     limits:
-      memory: 4Gi
-      cpu: '1'
+      memory: 8Gi
+      cpu: '2'
     requests:
       memory: 2Gi
       cpu: '0.4'
@@ -63,6 +63,8 @@ storage:
 # Wether if Fabric will scale up or not
 scaling:
   enabled: false
+  targetKind: StatefulSet
+  targetName: fabric-stateful-sets
   minReplicas: 1
   maxReplicas: 1
   targetCPU: 90
@@ -73,43 +75,58 @@ networkPolicy:
 
 ingress:
   enabled: true
+  class_name: "nginx"
+  type: "nginx"
+  appgw_ssl_certificate_name: ""
   port: 3213
   host: space-tenant.domain
   tlsSecret:
     enabled: false
     key: ""
     crt: ""
-  annotations:
-    - key: kubernetes.io/ingress.class
-      value: nginx
-    - key: nginx.ingress.kubernetes.io/proxy-body-size
-      value: "0"
-    - key: nginx.ingress.kubernetes.io/proxy-read-timeout
-      value: "7d"
-    - key: nginx.ingress.kubernetes.io/ssl-redirect
-      value: "false"
+    key_b64: ""
+    crt_b64: ""
+
+  custom_annotations:
+    enabled: false
+    annotations:
+      - key: nginx.ingress.kubernetes.io/proxy-body-size
+        value: "0"
+      - key: nginx.ingress.kubernetes.io/proxy-read-timeout
+        value: "7d"
+      - key: nginx.ingress.kubernetes.io/ssl-redirect
+        value: "false"
 
 mountSecret:
     name: config-secrets
     enabled: false # true for mount the secret on fabric pod, false for mount only on init container
     mountPath: /opt/apps/fabric/config-secrets
     data:
-      config: 'fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache\ndefault_pubsub|TYPE|MEMORY\ncommon_area_pubsub|TYPE|MEMORY\nfabric|WEB_SESSION_EXPIRATION_TIME_OUT|540\nfabric|ENABLE_BROADWAY_DEBUG_SERVLET|true\ndefault_session|RECONNECT_MAX_DELAY_MS|1000\nfabric|ENABLE_DB_INTERFACE_PROXY|true\nfabric|WEBSERVER_FILTERS|[{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/studio/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":true}},{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/socket.io/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":false}}];\nfabric|OVERRIDE_API_SCHEMA|HTTPS|ADD\nfabric|OVERRIDE_API_PORT|443|ADD\nsystem_db|SYSTEM_DB_TYPE|SQLITE\nsystem_db|SYSTEM_DB_HOST|/opt/apps/fabric/workspace/internal_db\nfabric|SERVER_AUTHENTICATOR|fabric\n'
-      #cp_files: ''
+      config: |
+        fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache
+        default_pubsub|TYPE|MEMORY
+        common_area_pubsub|TYPE|MEMORY
+        fabric|WEB_SESSION_EXPIRATION_TIME_OUT|540
+        fabric|ENABLE_BROADWAY_DEBUG_SERVLET|true
+        default_session|RECONNECT_MAX_DELAY_MS|1000
+        fabric|ENABLE_DB_INTERFACE_PROXY|true
+        fabric|WEBSERVER_FILTERS|[{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/studio/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":true}},{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/socket.io/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":false}}];
+        fabric|OVERRIDE_API_SCHEMA|HTTPS|ADD
+        fabric|OVERRIDE_API_PORT|443|ADD
+        system_db|SYSTEM_DB_TYPE|SQLITE
+        system_db|SYSTEM_DB_HOST|/opt/apps/fabric/workspace/internal_db
+        fabric|SERVER_AUTHENTICATOR|fabric
+      cp_files: ''
 
 secretsList:
   - name: common-env-secrets
     data:
       CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
-      CLUSTER_ID: ''
-      #COPY_FILES: ''
-      #PROJECT_NAME: ''
-      SPACE_NAME: 'space-tenant'
-  #- name: cassandra-secrets
-  #  data:
-  #    cassandra.default.user: "cassandra"
-  #    cassandra.default.password: "cassandra"
-  #    cassandra.default.hosts: "cassandra-service"
+      COPY_FILES: ''
+      INIT_CONF: ''
+      PROJECT_ID: ''
+      PROJECT_NAME: ''
+      SPACE_NAME: ''
 
 initSecretsList:
   - name: config-init-secrets
@@ -119,3 +136,9 @@ initSecretsList:
       GIT_REPO: ''
       GIT_TOKEN: ''
       START_FABRIC: 'false' 
+
+affinity:
+  type: none  # Options: affinity, anti-affinity, none
+  label: 
+    name: failure-domain.beta.kubernetes.io/zone
+    value: region-a
