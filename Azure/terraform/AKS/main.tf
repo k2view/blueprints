@@ -128,6 +128,7 @@ module "AKS_k2v_agent" {
   mailbox_url             = var.mailbox_url
   region                  = var.location
   cloud_provider          = "azure"
+  ssl_cert_name           = var.ssl_cert_name
 }
 
 module "DNS_zone" {

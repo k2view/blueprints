@@ -45,6 +45,11 @@ resource "helm_release" "k2view_agent" {
     value = "${var.project}"
   }
 
+  set {
+    name  = "secrets.APPGW_SSL_CERTIFICATE_NAME"
+    value = "${var.ssl_cert_name}"
+  }
+
   # serviceAccount
   set {
     name  = "serviceAccount.provider"
