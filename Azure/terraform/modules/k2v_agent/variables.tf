@@ -30,6 +30,13 @@ variable "region" {
   default     = ""
 }
 
+## Azure secrets ssl_cert_name
+variable "ssl_cert_name" {
+  type        = string
+  description = "SSL certificate name used by TLS listener in Application Gateway Ingress Controller"
+  default     = ""
+}
+
 ## AWS secrets
 variable "space_iam_arn" {
   type        = string
