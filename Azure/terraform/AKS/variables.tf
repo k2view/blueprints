@@ -203,6 +203,12 @@ variable "mailbox_url" {
   default     = "https://cloud.k2view.com/api/mailbox"
 }
 
+variable "ssl_cert_name" {
+  type        = string
+  description = "SSL certificate name used by TLS listener in Application Gateway Ingress Controller"
+  default     = ""
+}
+
 # Global
 variable "tags" {
   type        = map
