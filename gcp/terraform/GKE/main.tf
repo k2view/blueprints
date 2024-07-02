@@ -1,9 +1,8 @@
 ### NETWORK ###
-
 # Managed VPC module creating VPC, subnet and secondary ranges for pods and services
 module "vpc" {
   source  = "terraform-google-modules/network/google"
-  version = "9.0"
+  version = "9.1.0"
 
   project_id   = var.project_id
   network_name = var.network_name != "" ? var.network_name : "${var.cluster_name}-vpc"
@@ -13,6 +12,11 @@ module "vpc" {
     {
       subnet_name   = "${var.cluster_name}-subnet-01"
       subnet_ip     = var.subnet_cidr
+      subnet_region = var.region
+    },
+    {
+      subnet_name   = "${var.cluster_name}-nat-subnet-01"
+      subnet_ip     = var.nat_subnet_cidr
       subnet_region = var.region
     }
   ]
@@ -57,16 +61,14 @@ resource "google_compute_router" "router" {
   region  = var.region
 }
 
-## Create Nat Gateway with module
-
+# Create Nat Gateway with module
 module "cloud-nat" {
   source     = "terraform-google-modules/cloud-nat/google"
-  version    = "5.0.0"
+  version    = "5.1.0"
   project_id = var.project_id
   region     = var.region
   router     = google_compute_router.router.name
   name       = "${var.cluster_name}-nat-config"
-
 }
 
 # Deploy Service Accounts
@@ -75,15 +77,31 @@ module "service-accounts" {
   cluster_name           = var.cluster_name
   project_id             = var.project_id
   k2view_agent_namespace = var.k2view_agent_namespace
+  space_roles            = ["roles/storage.objectUser", "roles/cloudsql.client"]
+}
+
+# Deploy NAT instance which routes traffic from all pods via a single IP address
+module "nat_instance" {
+  depends_on               = [module.vpc]
+  count                    = var.create_nat_instnace ? 1 : 0
+  cluster_name             = var.cluster_name
+  source                   = "../Modules/k2_nat_instance"
+  subnet                   = "${var.cluster_name}-nat-subnet-01"
+  dest_range               = var.nat_dest_range
+  region                   = var.region
+  vpc                      = module.vpc.network_name
+  instance_type            = "e2-medium"
+  nat_instance_ingress_gke = ["${var.secondary_cidr_pods}"]
+  nat_instance_fw_ports    = var.nat_dest_ports
 }
 
 ### GKE ###
-data "google_client_config" "default" {}
-
-provider "kubernetes" {
-  host                   = "https://${module.gke.endpoint}"
-  token                  = data.google_client_config.default.access_token
-  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+# Service account for GKE worker nodes
+module "GKE_service_account" {
+  source                       = "../Modules/gke_service_account"
+  project_id                   = var.project_id
+  service_account_id           = "${var.cluster_name}-gke-sa"
+  service_account_display_name = "${var.cluster_name}-gke-sa"
 }
 
 # Create list of strings containing zones for GKE
@@ -94,7 +112,7 @@ locals {
 module "gke" {
   depends_on = [module.vpc]
   source     = "terraform-google-modules/kubernetes-engine/google//modules/private-cluster"
-  version    = "29.0.0"
+  version    = "31.0.0"
 
   project_id                 = var.project_id
   name                       = var.cluster_name
@@ -102,9 +120,9 @@ module "gke" {
   regional                   = var.regional
   zones                      = local.region_zones
   network                    = module.vpc.network_name
-  subnetwork                 = module.vpc.subnets_names[0]
-  ip_range_pods              = "${module.vpc.subnets_names[0]}-pods"
-  ip_range_services          = "${module.vpc.subnets_names[0]}-services"
+  subnetwork                 = "${var.cluster_name}-subnet-01"
+  ip_range_pods              = "${var.cluster_name}-subnet-01-pods"
+  ip_range_services          = "${var.cluster_name}-subnet-01-services"
   http_load_balancing        = false
   network_policy             = false
   horizontal_pod_autoscaling = true
@@ -132,7 +150,7 @@ module "gke" {
       enable_gvnic              = false
       auto_repair               = true
       auto_upgrade              = true
-      service_account           = ""
+      service_account           = module.GKE_service_account.service_account_email
       preemptible               = false
       initial_node_count        = var.initial_node_count
     },
@@ -173,52 +191,46 @@ module "gke" {
   }
 
   node_pools_tags = {
-    all               = []
-    default-node-pool = ["${var.cluster_name}-np", ]
-  }
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = "https://${module.gke.endpoint}"
-    token                  = data.google_client_config.default.access_token
-    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+    all                      = []
+    default-node-pool        = ["${var.cluster_name}-np", ]
+    "${var.cluster_name}-np" = ["use-nat"]
   }
 }
 
 # Deploy ingress controller
 module "GKE_ingress" {
-  depends_on              = [module.gke]
-  source                  = "../Modules/ingress"
-  domain                  = var.domain
-  keyb64String            = base64encode(file(var.keyPath))
-  certb64String           = base64encode(file(var.certPath))
+  depends_on        = [module.gke]
+  source            = "../Modules/ingress"
+  domain            = var.domain
+  keyb64String      = base64encode(file(var.keyPath))
+  certb64String     = base64encode(file(var.certPath))
+  whitelist_enabled = var.whitelist_enabled
+  whitelist_ips     = var.whitelist_ips
 }
 
 # Deploy K2view agent
 module "k2v_agent" {
-  depends_on              = [module.gke]
-  count                   = var.mailbox_id != "" ? 1 : 0
-  source                  = "../Modules/k2v_agent"
-  mailbox_id              = var.mailbox_id
-  mailbox_url             = var.mailbox_url
-  region                  = var.region
-  cloud_provider          = "gcp"
+  depends_on               = [module.gke]
+  count                    = var.mailbox_id != "" ? 1 : 0
+  source                   = "../Modules/k2v_agent"
+  mailbox_id               = var.mailbox_id
+  mailbox_url              = var.mailbox_url
+  region                   = var.region
+  cloud_provider           = "GCP"
+  namespace                = var.k2view_agent_namespace
+  gcp_service_account_name = "${var.cluster_name}-deployer-sa"
+  project_id               = var.project_id
+  network_name             = module.vpc.network_name
 }
 
-# Deploy Grafana agent
-resource "helm_release" "grafana_agent" {
-  count = var.deploy_grafana_agent ? 1 : 0
-  name  = "grafana-agent"
-  chart = "../../helm/charts/grafana-agent/k8s-monitoring"
-
-  depends_on       = [module.gke]
-  namespace        = "grafana-agent"
-  create_namespace = true
-  values = [
-    "${file("grafana-agent-values.yaml")}"
-  ]
-
+### Grafana Agent ###
+module "grafana_agent" {
+  depends_on                                     = [module.gke]
+  count                                          = var.deploy_grafana_agent ? 1 : 0
+  source                                         = "../Modules/grafana-agent"
+  externalservices_prometheus_basicauth_password = var.grafana_token
+  externalservices_loki_basicauth_password       = var.grafana_token
+  externalservices_tempo_basicauth_password      = var.grafana_token
 }
 
 # Deploy storage classes

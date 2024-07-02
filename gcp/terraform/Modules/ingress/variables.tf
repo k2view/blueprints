@@ -51,3 +51,21 @@ variable "delay_command" {
   description = "The command for delay, the cammand depend on the env the terraform runed on."
   default     = "sleep 60" #"sleep 60" for linux, for windows is "powershell -Command Start-Sleep -Seconds 60"
 }
+
+variable "enable_private_lb" {
+  type        = bool
+  description = "Flag to enable or disable private load balancer IP"
+  default     = false
+}
+
+variable "whitelist_enabled" {
+  description = "Enable IP whitelisting"
+  type        = bool
+  default     = false
+}
+
+variable "whitelist_ips" {
+  description = "List of IP ranges to whitelist"
+  type        = list(string)
+  default     = [""]
+}

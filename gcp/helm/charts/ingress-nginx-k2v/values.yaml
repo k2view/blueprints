@@ -48,3 +48,5 @@ errorPage:
     limits:
       memory: 256Mi
       cpu: '0.4'
+
+private_lb: false

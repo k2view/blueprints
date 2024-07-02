@@ -2,12 +2,12 @@
 This Terraform template is designed to deploy the Nginx ingress controller to a Kubernetes cluster. It simplifies the process of setting up a robust and scalable ingress solution for your Kubernetes applications.
 
 ## Usage
-This submodule can be used to deploy an Nginx ingress controller into your Azure Kubernetes Service (AKS) cluster. Modify the following Terraform configuration to fit your specific requirements:
+This submodule can be used to deploy an Nginx ingress controller into your GKE cluster. Modify the following Terraform configuration to fit your specific requirements:
 ```hcl
-module "AKS-ingress" {
+module "GKE-ingress" {
   source         = "./modules/ingress"
   domain         = var.domain                       # Domain for ingress routing
-  cloud_provider = "azure"                          # Cloud provider name
+  cloud_provider = "gcp"                            # Cloud provider name
   delay_command  = var.delay_command                # "sleep 60" for linux, for windows is "powershell -Command Start-Sleep -Seconds 60"
   keyb64String   = base64encode(file(var.keyPath))  # TLS key
   certb64String  = base64encode(file(var.certPath)) # TLS cert

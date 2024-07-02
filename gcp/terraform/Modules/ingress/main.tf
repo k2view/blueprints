@@ -53,6 +53,24 @@ resource "helm_release" "ingress-nginx" {
     value = "${var.certb64String}"
   }
 
+  set {
+    name  = "private_lb"
+    value = "${var.enable_private_lb}"
+  }
+
+  set {
+    name  = "whitelist.enabled"
+    value = var.whitelist_enabled
+  }
+
+  values = [
+    yamlencode({
+      whitelist = {
+        ips = var.whitelist_ips
+      }
+    })
+  ]
+
   timeout           = 600
   force_update      = true
   recreate_pods     = true

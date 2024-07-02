@@ -45,6 +45,11 @@ resource "helm_release" "k2view_agent" {
     value = "${var.project}"
   }
 
+  set {
+    name  = "secrets.NETWORK_NAME"
+    value = "${var.network_name}"
+  }
+  
   # serviceAccount
   set {
     name  = "serviceAccount.provider"

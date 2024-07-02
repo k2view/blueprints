@@ -30,6 +30,12 @@ variable "region" {
   default     = ""
 }
 
+variable "network_name" {
+  type        = string
+  description = "The name of the VPC."
+  default     = ""
+}
+
 ## AWS secrets
 variable "space_iam_arn" {
   type        = string
