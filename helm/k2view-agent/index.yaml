@@ -3,7 +3,17 @@ entries:
   k2view-agent:
   - apiVersion: v2
     appVersion: 1.17.0
-    created: "2024-03-17T09:41:20.0384023+02:00"
+    created: "2024-05-06T16:26:36.709718+03:00"
+    description: A Helm chart for K2view cloud manager site agent
+    digest: b8f15044dab7b2056d0057c8d4f30f51074d272aaca9cbf66f2b0ad892f3d520
+    name: k2view-agent
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/k2view/blueprints/main/helm/k2view-agent/k2view-agent-1.1.2.tgz
+    version: 1.1.2
+  - apiVersion: v2
+    appVersion: 1.17.0
+    created: "2024-05-06T16:26:36.7077899+03:00"
     description: A Helm chart for K2view cloud manager site agent
     digest: 862ffefb1ffdb60f9d3a50104ee3f415fe980d895d4184cfac5980c1cfdc7bdf
     name: k2view-agent
@@ -13,7 +23,7 @@ entries:
     version: 1.1.1
   - apiVersion: v2
     appVersion: 1.17.0
-    created: "2024-03-17T09:41:20.0370475+02:00"
+    created: "2024-05-06T16:26:36.7070404+03:00"
     description: A Helm chart for K2view cloud manager site agent
     digest: d18717259af1cae61aac07510ac763f4a43d7be6e6a9038f37bb9ae3a8674f8b
     name: k2view-agent
@@ -21,4 +31,4 @@ entries:
     urls:
     - https://raw.githubusercontent.com/k2view/blueprints/main/helm/k2view-agent/k2view-agent-1.1.0.tgz
     version: 1.1.0
-generated: "2024-03-17T09:41:20.0358906+02:00"
+generated: "2024-05-06T16:26:36.7061854+03:00"

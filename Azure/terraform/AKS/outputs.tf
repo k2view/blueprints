@@ -1,6 +1,6 @@
 
 output "nginx_lb_ip" {
-  value = module.AKS_ingress.nginx_lb_ip
+  value = var.deploy_ingress && !var.private_cluster_enabled ? module.AKS_ingress[0].nginx_lb_ip : var.lb_ip
   description = "The IP address of the load balancer associated with the Nginx ingress controller."
 }
 

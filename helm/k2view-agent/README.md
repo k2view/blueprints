@@ -80,6 +80,7 @@ GCP_CONF_FILE         - GCP service account json (in case used service acount ac
 SPACE_SA_ARN          - AWS deployer IAM role ARN.
 
 ## Installation
+### Clone and install from local
 1. Clone this repository to your local machine:
 ```bash
 git clone https://github.com/k2view/blueprints.git
@@ -89,6 +90,17 @@ cd blueprints/helm/k2view-agent/
 2. Install
 ```bash
 helm install k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
+```
+
+### Install from helm repo
+1. Add repo
+```bash
+helm repo add k2view-agent https://nexus.share.cloud.k2view.com/repository/k2view-agent
+```
+
+2. Install
+```bash
+helm install k2view-agent/k2view-agent k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
 ```
 
 #### TLS Certifiacte

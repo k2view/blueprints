@@ -23,6 +23,24 @@ variable "create_network" {
   default     = true
 }
 
+variable "create_nat_gateway" {
+  type        = bool
+  description = "Create NAT gateway."
+  default     = true
+}
+
+variable "create_route_table" {
+  type        = bool
+  description = "Create route table as a gateway."
+  default     = false
+}
+
+variable "route_table_next_hop_ip" {
+  type        = string
+  description = "IP address of the next hop in the routing table."
+  default     = ""
+}
+
 variable "virtual_network_address_space" {
   type        = string
   description = "Virtual network address space CIDR"
@@ -50,13 +68,31 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version."
-  default     = "1.27.9"
+  default     = "1.28.5"
+}
+
+variable "outbound_type" {
+  type        = string
+  description = "Kubernetes version."
+  default     = "userAssignedNATGateway" # loadBalancer (default for AKS) or userAssignedNATGateway (if create_nat_gateway=true) or userDefinedRouting (The user should create the routing and add route_table_next_hop_ip)
 }
 
 variable "vm_sku" {
   type        = string
   description = "VM sku"
-  default     = "Standard_D8s_v3"
+  default     = "Standard_D8ds_v5"
+}
+
+variable "node_zones" {
+  type        = list
+  description = "VM az"
+  default     = [1]
+}
+
+variable "os_disk_size_gb" {
+  type        = string
+  description = "OS disk size GB"
+  default     = 300
 }
 
 variable "system_node_count" {
@@ -89,6 +125,7 @@ variable "private_cluster_enabled" {
   default     = false # If set to true modules that deploy helm to the cluster will fail (like AKS_ingress and AKS_k2v_agent) and will be needed be deployed manually
 }
 
+
 # ACR
 variable "create_acr" {
   type        = bool
@@ -102,7 +139,33 @@ variable "acr_name" {
   default     = ""
 }
 
+# Grafana agent
+variable "deploy_grafana_agent" {
+  type        = bool
+  description = "A boolean flag to control whether to install grafana agent"
+  default     = false
+}
+
+
 # Ingress
+variable "internal_lb" {
+  type        = bool
+  description = "Internal IP for the LB"
+  default     = false
+}
+
+variable "deploy_ingress" {
+  type        = bool
+  description = "Deploy nginx ingress in the cluster"
+  default     = true
+}
+
+variable "lb_ip" {
+  type        = string
+  description = "LB IP for the DNS to point to"
+  default     = ""
+}
+
 variable "keyPath" {
   type        = string
   description = "Path to the TLS key file."
@@ -138,6 +201,12 @@ variable "mailbox_url" {
   type        = string
   description = "k2view cloud mailbox URL."
   default     = "https://cloud.k2view.com/api/mailbox"
+}
+
+variable "ssl_cert_name" {
+  type        = string
+  description = "SSL certificate name used by TLS listener in Application Gateway Ingress Controller"
+  default     = ""
 }
 
 # Global

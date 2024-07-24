@@ -30,6 +30,13 @@ Deploy your AKS cluster using the following Terraform commands:
 terraform plan -var-file=terraform.tfvars -out tfplan
 terraform apply tfplan
 ```
+**IMPORTANT**
+To disable monitoring set "deploy_grafana_agent" to "false".
+If you want to enable the monitoring, first [configure Grafana Cloud](#configure-grafana-monitoring)
+
+### Configure grafana monitoring
+To configure grafana monitoring ask K2view representative to generate a token and supply grafana agent configuration file.
+Paste the configuration to [grafana-agent-values.yaml](./grafana-agent-values.yaml) and run ```terraform apply```
 
 ## Post-actions
 After deploying the AKS cluster, perform the following actions:
@@ -85,7 +92,7 @@ After deploying the AKS cluster, perform the following actions:
 | <a name="input_mailbox_url"></a> [mailbox\_url](#input\_mailbox\_url) | k2view cloud mailbox URL. | `string` | `"https://cloud.k2view.com/api/mailbox"` | no |
 | <a name="input_max_size"></a> [max\_size](#input\_max\_size) | Maximum cluster size | `number` | `3` | no |
 | <a name="input_min_size"></a> [min\_size](#input\_min\_size) | Minimum cluster size | `number` | `1` | no |
-| <a name="input_private_cluster_enabled"></a> [private\_cluster\_enabled](#input\_private\_cluster\_enabled) | hould this Kubernetes Cluster have its API server only exposed on internal IP addresses? | `bool` | `false` | no |
+| <a name="input_private_cluster_enabled"></a> [private\_cluster\_enabled](#input\_private\_cluster\_enabled) | Private AKS | `bool` | `false` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | RG name in Azure | `string` | n/a | yes |
 | <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes) | Virtual network subnet address prefixes CIDR | `string` | `"10.240.0.0/16"` | no |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | Virtual network subnet ID for existing Vnet | `string` | `""` | no |
@@ -93,6 +100,7 @@ After deploying the AKS cluster, perform the following actions:
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags value | `map` | n/a | yes |
 | <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space) | Virtual network address space CIDR | `string` | `"10.0.0.0/8"` | no |
 | <a name="input_vm_sku"></a> [vm\_sku](#input\_vm\_sku) | VM sku | `string` | `"Standard_D8s_v3"` | no |
+| <a name="input_deploy_grafana_agent"></a> [deploy\_grafana\_agent](#input\_deploy\_grafana\_agent) | A boolean flag to control whether to install grafana agent | `boolean` | `"false"` | no |
 
 ## Outputs
 | Name | Description |

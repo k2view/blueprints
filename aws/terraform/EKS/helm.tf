@@ -9,7 +9,7 @@ resource "helm_release" "external_secrets" {
 
 resource "helm_release" "k2view" {
   name    = "k2view"
-  chart   = "./Helm/k2-defaults"
+  chart   = "../../helm/k2-defaults"
   timeout = 100
 
   # Global values
@@ -26,7 +26,7 @@ resource "helm_release" "k2view" {
 
 resource "helm_release" "nginx-ingress" {
   name    = "ingress"
-  chart   = "./Helm/charts/nginx-ingress"
+  chart   = "../../helm/charts/nginx-ingress"
   timeout = 100
 
   set {
@@ -49,7 +49,7 @@ resource "helm_release" "nginx-ingress" {
 
 resource "helm_release" "sc-fabric" {
   name    = "sc-fabric"
-  chart   = "./Helm/charts/sc-efs"
+  chart   = "../../helm/charts/sc-efs"
   timeout = 100
 
   set {
@@ -80,7 +80,7 @@ resource "helm_release" "sc-fabric" {
 
 resource "helm_release" "sc-cassandra" {
   name    = "sc-cassandra"
-  chart   = "./Helm/charts/sc-efs"
+  chart   = "../../helm/charts/sc-efs"
   timeout = 100
 
   set {
@@ -111,7 +111,7 @@ resource "helm_release" "sc-cassandra" {
 
 resource "helm_release" "sc-pg" {
   name    = "sc-pg"
-  chart   = "./Helm/charts/sc-efs"
+  chart   = "../../helm/charts/sc-efs"
   timeout = 100
 
   set {

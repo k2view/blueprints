@@ -1,6 +1,6 @@
 apiVersion: v2
 name: fabric
-description: A Fabric Helm chart for Kubernetes
+description: Fabric Helm Chart for Kubernetes
 type: application
-version: 1.1.8
+version: 1.1.3
 appVersion: "7.2"

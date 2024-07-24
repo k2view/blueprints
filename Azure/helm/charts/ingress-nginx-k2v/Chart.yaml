@@ -1,6 +1,6 @@
 apiVersion: v2
-name: ingress-nginx-controller
-description: A Helm chart of Nginx ingress controller for Kubernetes for K2view site
+name: nginx-ingress-controller
+description: This Helm chart deploys the Nginx ingress controller in a Kubernetes environment, tailored for the K2view site. The Nginx ingress controller provides a robust, flexible gateway for managing inbound HTTP/S traffic to your Kubernetes services.
 type: application
-version: 1.1.0
-appVersion: "1.9.6"
+version: 1.3.1
+appVersion: "1.10.0"
