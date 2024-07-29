@@ -9,7 +9,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "5.10"
+      version = "5.31.1"
     }
     kubectl = {
       source  = "gavinbunney/kubectl"
@@ -17,11 +17,11 @@ terraform {
     }
     helm = {
       source  = "Hashicorp/helm"
-      version = "2.12.1"
+      version = "2.13.2"
     }
     kubernetes = {
       source  = "Hashicorp/kubernetes"
-      version = "2.25.2"
+      version = "2.30.0"
     }
     null = {
     }
@@ -30,4 +30,20 @@ terraform {
 
 provider "google" {
   project = var.project_id
+}
+
+data "google_client_config" "default" {}
+
+provider "kubernetes" {
+  host                   = "https://${module.gke.endpoint}"
+  token                  = data.google_client_config.default.access_token
+  cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = "https://${module.gke.endpoint}"
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(module.gke.ca_certificate)
+  }
 }

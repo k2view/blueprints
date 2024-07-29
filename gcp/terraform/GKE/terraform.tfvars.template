@@ -1,6 +1,29 @@
-project_id = ""
-cluster_name = ""
-machine_type = ""
-domain = ""
+# General
+project_id           = ""
+cluster_name         = ""
+region               = ""
+domain               = ""
 deploy_grafana_agent = false
+grafana_token        = ""
+
+# Firewall
+whitelist_enabled = true
+whitelist_ips = [
+  "CIDR_1",
+  "CIDR_2"
+]
+
+# Ingress Controller
+enable_private_lb = false
+keyPath  = "local/key.pem"
+certPath = "local/cert.pem"
+
+# K2view Agent
 k2view_agent_namespace = "k2view-agent"
+mailbox_id             = ""
+mailbox_url            = "https://cloud.k2view.com/api/mailbox"
+
+# NAT instance
+create_nat_instnace = false
+nat_dest_range      = ""
+nat_dest_ports      = [""]

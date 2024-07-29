@@ -1,0 +1,52 @@
+# Nginx ingress
+namespace:
+  name: "ingress-nginx"
+
+domain: "site.cloud.k2view.com" # for ingressTest and errorPage
+provider: "gcp"
+aws:
+  awsDomainCert: "arn"
+  vpcCIDR: ""
+
+nginx:
+  httpPort:
+    enabled: false
+  version: 1.10.0
+  ingress_nginx_controller_image: registry.k8s.io/ingress-nginx/controller:v1.10.0@sha256:42b3f0e5d0846876b1791cd3afeb5f1cbbe4259d6f35651dcc1b5c980925379c
+  kube_webhook_certgen_image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.4.0@sha256:44d1d0e9f19c63f58b380c5fddaca7cf22c7cee564adeff365225a5df5ef3334
+
+# If the domain has a A lets Encrypt Certificate supply it here
+tlsSecret:
+  enabled: false
+  default_ssl_certificate: false
+  keyPath: ""
+  certPath: ""
+  key: ""
+  cert: ""
+  key_b64: ""
+  cert_b64: ""
+
+# Deploy tes page
+#   Will return SUCCESS on https://ingress-test.{{ .Values.domainName }}
+ingressTest:
+  enabled: true
+
+# Custome error page
+# Following is a flip switch to enable Custom Error pages in the Ingress Nginx Controller
+errorPage:
+  enabled: true
+  image: "registry.k8s.io/ingress-nginx/nginx-errors:v20230505@sha256:3600dcd1bbd0d05959bb01af4b272714e94d22d24a64e91838e7183c80e53f7f"
+ 
+  # The redirect to link to be set in the custom error
+  secrets:
+    K2_MANAGER_URL: "https://cloud.k2view.com"
+
+  resource_allocation:
+    requests:
+      memory: 128Mi
+      cpu: '0.1'
+    limits:
+      memory: 256Mi
+      cpu: '0.4'
+
+private_lb: false

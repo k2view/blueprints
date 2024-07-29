@@ -17,6 +17,8 @@ Chart.lock
 # Ignore local values 
 Azure/terraform/AKS/local
 Azure/terraform/AKS/backend.tf
+gcp/terraform/GKE/local
+gcp/helm/charts/ingress-nginx-k2v/local
 
 # Ignore results of baremetal/single_node.sh
 single_node.sh.??????????????.log
