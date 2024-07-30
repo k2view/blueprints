@@ -6,9 +6,9 @@
 vpc_cidr: "10.0.0.0/16"
 
 # ARN - to be associated with ingress-controller Route53 domain certificate
-aws_domain_cert: "arn:aws:acm:eu-central-1:329508970117:certificate/b8b5e249-9c9a-4cff-a370-7a3f46449bcb"
+aws_domain_cert: ""
 
 # Top domain the would accomidate sub domains example - google.com 
-domain_name: "vlad-test.cloud-dev.k2view.com"
+domain_name: ""
 
 private_lb: false
