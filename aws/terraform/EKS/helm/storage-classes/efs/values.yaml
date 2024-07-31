@@ -1,0 +1,6 @@
+efs_id: "" # EFS ID
+sc_name: "sc-fabric" # Storage class name
+permissions: "700" # Directory permissions
+gidRangeStart: "1000" # gid range start value
+gidRangeEnd: "2000" # gid range end value
+uid: "1000" # UID value

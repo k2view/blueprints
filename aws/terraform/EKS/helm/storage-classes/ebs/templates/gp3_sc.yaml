@@ -1,0 +1,18 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp3
+  annotations:
+    {{ if .Values.gp3_default_class }}
+    storageclass.kubernetes.io/is-default-class: "true"
+    {{ end }}
+provisioner: ebs.csi.aws.com
+parameters:
+  {{- if .Values.encrypted }}
+  encrypted: 'true'
+  {{- end }}
+  fsType: ext4
+  type: gp3
+reclaimPolicy: Delete
+volumeBindingMode: {{ .Values.volume_binding_mode }}
+allowVolumeExpansion: true

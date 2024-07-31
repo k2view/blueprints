@@ -1,0 +1,3 @@
+encrypted: true # Flag to enable or disable encrypted storage class
+gp3_default_class: true # Flag to enable or disabel gp3 as a default storage class
+volume_binding_mode: "Immediate" # Volume binding mode

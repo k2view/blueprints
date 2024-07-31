@@ -1,0 +1,6 @@
+apiVersion: v2
+name: storage-classes
+description: A Helm chart of EBS storage class for EKS K2view site
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
