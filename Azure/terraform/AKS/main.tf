@@ -53,6 +53,10 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
   }
 
   tags = var.tags
+
+  // required for cert manager component 
+  oidc_issuer_enabled       = true
+  workload_identity_enabled = true
 }
 
 resource "azurerm_role_assignment" "network_contributor" {
