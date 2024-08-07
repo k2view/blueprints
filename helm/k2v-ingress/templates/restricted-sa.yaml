@@ -1,0 +1,28 @@
+{{- if or .Values.ingressTest.enabled .Values.errorPage.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: restricted-sa
+  namespace: {{ .Release.Namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: no-permissions
+  namespace: {{ .Release.Namespace }}
+rules: []  # No permissions granted
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: bind-no-permissions
+  namespace: {{ .Release.Namespace }}
+subjects:
+- kind: ServiceAccount
+  name: restricted-sa
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: no-permissions
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
