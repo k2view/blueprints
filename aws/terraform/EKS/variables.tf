@@ -1,44 +1,126 @@
-variable "aws_region" {
-  type        = string
-  default     = "eu-central-1"
-  description = "The AWS region to run on"
-}
-
-variable "cluster_name" {
-  type        = string
-  description = "EKS cluster name"
-}
-
-variable "cluster_version" {
-  type        = string
-  default     = "1.27"
-  description = "EKS cluster version"
-}
-
-variable "instance_type" {
-  type        = string
-  default     = "m5.2xlarge"
-  description = "EKS cluster instance type"
-}
-
 variable "domain" {
   type        = string
-  description = "Subdomain for rout53 (Example SUBDOMAIN.DOMAIN.COM)"
+  description = "The domain will be used for ingress"
 }
 
-### Default tags ###
-
-variable "owner" {
+variable "region" {
   type        = string
-  description = "Owner Tag value"
+  description = "The region of the cluster"
 }
 
-variable "project" {
+variable "network_name" {
   type        = string
-  description = "Project Tag value"
+  description = "The name of the network"
+  default     = ""
 }
 
-variable "env" {
+variable "vpc_cidr" {
   type        = string
-  description = "Environment Tag value (Dev/QA/Prod)"
+  description = "CIDR range of the network"
+  default     = "10.0.0.0/16"
+}
+
+variable "zones" {
+  description = "List of availability zones"
+  type        = list(string)
+  default     = ["a", "b"]
+}
+
+variable "private_subnets" {
+  description = "List of private subnet CIDRs"
+  type        = list(string)
+  default     = ["10.0.1.0/24", "10.0.2.0/24"]
+}
+
+variable "public_subnets" {
+  description = "List of public subnet CIDRs"
+  type        = list(string)
+  default     = ["10.0.101.0/24", "10.0.102.0/24"]
+}
+
+# EKS
+variable "cluster_name" {
+  type        = string
+  description = "The name of the cluster"
+}
+
+variable "kubernetes_version" {
+  type        = string
+  description = "Kubernetes version of the GKE cluster"
+  default     = "1.29"
+}
+
+variable "instance_types" {
+  description = "Set of instance types associated with the EKS Node Group"
+  type        = list(string)
+  default     = ["m5.2xlarge"]
+}
+
+variable "efs_enabled" {
+  description = "Flag to enable or disable EFS module"
+  type        = bool
+  default     = false
+}
+
+variable "min_node" {
+  type        = number
+  description = "The minimum workers up"
+  default     = 1
+}
+
+variable "max_node" {
+  type        = number
+  description = "The maximum workers up"
+  default     = 3
+}
+
+variable "desired_size" {
+  type        = number
+  description = "The desired number of workers"
+  default     = 1
+}
+
+# Grafana agent
+variable "deploy_grafana_agent" {
+  type        = bool
+  description = "A boolean flag to control whether to install grafana agent"
+  default     = false
+}
+
+variable "grafana_token" {
+  type        = string
+  description = "An Access Policy token is required for Grafana Alloy to send metrics and logs to Grafana Cloud"
+  default     = ""
+}
+
+# K2view agent
+variable "mailbox_id" {
+  type        = string
+  description = "k2view cloud mailbox ID."
+  default     = ""
+}
+
+variable "mailbox_url" {
+  type        = string
+  description = "k2view cloud mailbox URL."
+  default     = "https://cloud.k2view.com/api/mailbox"
+}
+
+variable "k2view_agent_namespace" {
+  type        = string
+  description = "The name of K2view agent namespace"
+  default     = "k2view-agent"
+}
+
+# Tags
+variable "tags" {
+  description = "A map of tags to assign to the resources"
+  type        = map(string)
+  default = {
+    terraform    = "true"
+    env          = "dev"
+    project      = "dev"
+    owner        = "k2v-devops"
+    customer     = "k2view"
+  }
 }
