@@ -140,5 +140,5 @@ initSecretsList:
 affinity:
   type: none  # Options: affinity, anti-affinity, none
   label: 
-    name: failure-domain.beta.kubernetes.io/zone
+    name: topology.kubernetes.io/zone
     value: region-a
