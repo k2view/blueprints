@@ -1,22 +1,18 @@
-<!-- BEGIN_TF_DOCS -->
-## Requirements
+# Cert guard identity
 
+This module handles the creation of Azure and assigns specified IAM roles.
+
+## Requirements
 | Name | Version |
 |------|---------|
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.0 |
 
 ## Providers
-
 | Name | Version |
 |------|---------|
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.0 |
 
-## Modules
-
-No modules.
-
 ## Resources
-
 | Name | Type |
 |------|------|
 | [azurerm_federated_identity_credential.cert_guardian_identity_credentials](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/federated_identity_credential) | resource |
@@ -25,7 +21,6 @@ No modules.
 | [azurerm_dns_zone.azure_dns_managed](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/dns_zone) | data source |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_dns_zone_name"></a> [dns\_zone\_name](#input\_dns\_zone\_name) | Azure DNS zone name, required | `string` | `""` | no |
@@ -38,8 +33,6 @@ No modules.
 | <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | Subscription id in Azure | `string` | `""` | no |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
 | <a name="output_managed_user_client_id"></a> [managed\_user\_client\_id](#output\_managed\_user\_client\_id) | The Client ID of the Cert Guardian identity, required for the helm charts deployment. |
-<!-- END_TF_DOCS -->

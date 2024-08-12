@@ -87,7 +87,7 @@ variable "regional" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version of the GKE cluster"
-  default     = "1.28"
+  default     = "1.29"
 }
 
 variable "machine_type" {

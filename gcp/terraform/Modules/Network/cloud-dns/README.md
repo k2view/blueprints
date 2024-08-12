@@ -22,28 +22,23 @@ module "vpc" {
 }
 ```
 
-<!-- BEGIN_TF_DOCS -->
 ## Requirements
-
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
 
 ## Providers
-
 | Name | Version |
 |------|---------|
 | <a name="provider_google"></a> [google](#provider\_google) | n/a |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [google_dns_managed_zone.cluster_dns](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/dns_managed_zone) | resource |
 | [google_dns_record_set.cluster_dns_record](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/dns_record_set) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | GKE cluster name for resources name. | `string` | n/a | yes |
@@ -56,9 +51,7 @@ module "vpc" {
 | <a name="input_region"></a> [region](#input\_region) | GCP Region. | `string` | `"europe-west3"` | no |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
 | <a name="output_cluster_dns"></a> [cluster\_dns](#output\_cluster\_dns) | The cloud DNS for the cluster created |
 | <a name="output_cluster_dns_name_servers"></a> [cluster\_dns\_name\_servers](#output\_cluster\_dns\_name\_servers) | The cloud DNS name servers |
-<!-- END_TF_DOCS -->

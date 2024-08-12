@@ -1,5 +1,4 @@
-### VPC ###
-
+### VPC
 locals {
   azs = [for zone in var.zones : "${var.region}${zone}"]
 }
@@ -25,8 +24,7 @@ module "vpc" {
   tags = var.tags
 }
 
-### EKS ###
-
+### EKS
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.13.1"
@@ -66,7 +64,7 @@ module "eks" {
   tags = var.tags
 }
 
-### DNS + Ingress ###
+### DNS + Ingress
 module "dns-hosted-zone" {
   source       = "./modules/dns/dns-hosted-zone"
   count        = var.domain != "" ? 1 : 0
@@ -110,17 +108,18 @@ module "dns-a-record" {
   ]
 }
 
-### Grafana Agent ###
+### Grafana Agent
 module "grafana_agent" {
   depends_on                                     = [module.eks]
   count                                          = var.deploy_grafana_agent ? 1 : 0
   source                                         = "./modules/grafana-agent"
+  cluster_name                                   = var.cluster_name
   externalservices_prometheus_basicauth_password = var.grafana_token
   externalservices_loki_basicauth_password       = var.grafana_token
   externalservices_tempo_basicauth_password      = var.grafana_token
 }
 
-### K2V Agent ###
+### K2V Agent
 module "k2v_agent" {
   depends_on       = [module.eks]
   count            = var.mailbox_id != "" ? 1 : 0
@@ -135,7 +134,7 @@ module "k2v_agent" {
   subnets          = replace(join(",", module.vpc.private_subnets), ",", "\\,")
 }
 
-### Storage Classes ###
+### Storage Classes
 module "ebs" {
   depends_on          = [module.eks]
   source              = "./modules/storage-classes/ebs"
@@ -143,7 +142,7 @@ module "ebs" {
   node_group_iam_role = module.eks.eks_managed_node_groups["initial"].iam_role_name
 }
 
-### EFS ###
+#### EFS
 module "efs" {
   count                = var.efs_enabled ? 1 : 0
   source               = "./modules/storage-classes/efs"
@@ -163,7 +162,7 @@ module "efs" {
   ]
 }
 
-### IRSA ###
+### IRSA (deployer and space role)
 module "irsa" {
   source       = "./modules/irsa"
   aws_region   = var.region
@@ -179,7 +178,7 @@ module "irsa" {
   ]
 }
 
-### Metrics Server ###
+### Metrics server
 resource "helm_release" "metrics_server" {
   name       = "metrics-server"
   repository = "https://kubernetes-sigs.github.io/metrics-server/"

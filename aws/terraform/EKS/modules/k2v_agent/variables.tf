@@ -44,7 +44,7 @@ variable "project" {
   default     = ""
 }
 
-# serviceAccount
+# Service account
 variable "cloud_provider" {
   type        = string
   description = "The name of the cloud provider."

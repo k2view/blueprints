@@ -1,27 +1,27 @@
 locals {
-  s3_space_permissions = var.include_s3_space_permissions ? [{
-    Effect   = "Allow",
-    Action   = [
-      "s3:PutObject",
-      "s3:GetObject",
-      "s3:DeleteObject",
-      "s3:ListBucket",
-    ],
-    Resource = [
-      "arn:aws:s3:::*/*",
-      "arn:aws:s3:::*",
-    ],
-  }] : []
+	s3_space_permissions = var.include_s3_space_permissions ? [{
+		Effect   = "Allow",
+		Action   = [
+			"s3:PutObject",
+			"s3:GetObject",
+			"s3:DeleteObject",
+			"s3:ListBucket"
+		],
+		Resource = [
+		"arn:aws:s3:::*/*",
+		"arn:aws:s3:::*"
+		],
+	}] : []
 
   cassandra_space_permissions = var.include_cassandra_space_permissions ? [{
     Effect   = "Allow",
     Action   = [
-      "cassandra:Create",
-      "cassandra:CreateMultiRegionResource",
-      "cassandra:Drop",
-      "cassandra:Alter",
-      "cassandra:Select",
-      "cassandra:Modify",
+			"cassandra:Create",
+			"cassandra:CreateMultiRegionResource",
+			"cassandra:Drop",
+			"cassandra:Alter",
+			"cassandra:Select",
+			"cassandra:Modify"
     ],
     Resource = "*",
   }] : []
@@ -37,10 +37,10 @@ locals {
     {
       Effect = "Allow",
       Action = [
-        "rds-data:BatchExecuteStatement",
-        "rds-data:BeginTransaction",
-        "rds-data:CommitTransaction",
-        "rds-data:RollbackTransaction",
+				"rds-data:BatchExecuteStatement",
+				"rds-data:BeginTransaction",
+				"rds-data:CommitTransaction",
+				"rds-data:RollbackTransaction"
       ],
       Resource = "*",
     }
@@ -50,36 +50,36 @@ locals {
     {
       Effect = "Allow",
       Action = [
-        "kafka-cluster:Connect",
-        "kafka-cluster:CreateTopic",
-        "kafka-cluster:DescribeTopic",
-        "kafka-cluster:AlterTopic",
-        "kafka-cluster:DeleteTopic",
-        "kafka-cluster:DescribeTopicDynamicConfiguration",
-        "kafka-cluster:AlterTopicDynamicConfiguration",
-        "kafka-cluster:ReadData",
-        "kafka-cluster:WriteData",
-        "kafka-cluster:DescribeGroup",
-        "kafka-cluster:AlterGroup",
-        "kafka-cluster:DeleteGroup",
-        "kafka-cluster:DescribeTransactionalId",
-        "kafka-cluster:AlterTransactionalId",
+				"kafka-cluster:Connect",
+				"kafka-cluster:CreateTopic",
+				"kafka-cluster:DescribeTopic",
+				"kafka-cluster:AlterTopic",
+				"kafka-cluster:DeleteTopic",
+				"kafka-cluster:DescribeTopicDynamicConfiguration",
+				"kafka-cluster:AlterTopicDynamicConfiguration",
+				"kafka-cluster:ReadData",
+				"kafka-cluster:WriteData",
+				"kafka-cluster:DescribeGroup",
+				"kafka-cluster:AlterGroup",
+				"kafka-cluster:DeleteGroup",
+				"kafka-cluster:DescribeTransactionalId",
+				"kafka-cluster:AlterTransactionalId"
       ],
       Resource = "*",
     }
   ] : []
 
-### DEPLOYER ###
+### DEPLOYER
   common_deployer_permissions = var.include_common_deployer_permissions ? [
     {
       Effect = "Allow",
       Action = [
-        "ec2:DescribeSubnets",
-        "ec2:DescribeVpcs",
-        "ec2:CreateSecurityGroup",
-        "ec2:DeleteSecurityGroup",
-        "ec2:DescribeSecurityGroups",
-        "ec2:AuthorizeSecurityGroupIngress"
+				"ec2:DescribeSubnets",
+				"ec2:DescribeVpcs",
+				"ec2:CreateSecurityGroup",
+				"ec2:DeleteSecurityGroup",
+				"ec2:DescribeSecurityGroups",
+				"ec2:AuthorizeSecurityGroupIngress"
       ],
       Resource = "*"
     }
@@ -89,16 +89,16 @@ locals {
     {
       Effect = "Allow",
       Action = [
-        "s3:CreateBucket",
-        "s3:DeleteBucket",
-        "s3:PutObject",
+				"s3:CreateBucket",
+				"s3:DeleteBucket",
+				"s3:PutObject",
 				"s3:GetObject",
 				"s3:DeleteObject",
 				"s3:ListBucket"
       ],
       Resource = [
-        "arn:aws:s3:::*/*",
-        "arn:aws:s3:::*",
+				"arn:aws:s3:::*/*",
+				"arn:aws:s3:::*"
       ],
     }
   ] : []
@@ -111,7 +111,7 @@ locals {
 				"cassandra:Create",
 				"cassandra:Drop",
 				"cassandra:TagResource",
-				"cassandra:UntagResource"        
+				"cassandra:UntagResource"
       ],
       Resource = "*"
     }
@@ -121,7 +121,7 @@ locals {
     {
       Effect = "Allow"
       Action = [
-        "rds-db:connect"
+				"rds-db:connect"
       ],
       Resource = "*"
     },
@@ -134,17 +134,17 @@ locals {
 				"rds:DeleteDBInstance",
 				"rds:ModifyDBCluster",
 				"rds:ModifyDBInstance",
-        "rds:StartDBCluster",
+				"rds:StartDBCluster",
 				"rds:StartDBInstance",
 				"rds:StopDBCluster",
 				"rds:StopDBInstance",
 				"rds:AddTagsToResource",
 				"rds:RemoveTagsFromResource",
-        "rds:DescribeDBInstances",
-        "rds:CreateDBSubnetGroup",
-        "rds:DeleteDBSubnetGroup",
-        "rds:DescribeDBSubnetGroups",
-        "rds:DescribeDBClusters"
+				"rds:DescribeDBInstances",
+				"rds:CreateDBSubnetGroup",
+				"rds:DeleteDBSubnetGroup",
+				"rds:DescribeDBSubnetGroups",
+				"rds:DescribeDBClusters"
       ],
       Resource = "*"
     }
@@ -154,12 +154,12 @@ locals {
     {
       Effect = "Allow"
       Action = [
-        "kafka-cluster:Connect",
-        "kafka-cluster:DescribeCluster",
-        "kafka-cluster:AlterCluster",
-        "kafka-cluster:DescribeClusterDynamicConfiguration",
-        "kafka-cluster:AlterClusterDynamicConfiguration",
-        "kafka-cluster:WriteDataIdempotently"
+				"kafka-cluster:Connect",
+				"kafka-cluster:DescribeCluster",
+				"kafka-cluster:AlterCluster",
+				"kafka-cluster:DescribeClusterDynamicConfiguration",
+				"kafka-cluster:AlterClusterDynamicConfiguration",
+				"kafka-cluster:WriteDataIdempotently"
       ],
       Resource = "*"
     }
@@ -273,11 +273,11 @@ resource "aws_iam_role" "iam_deployer_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "iam_fabric_space_role_policy_attachment" {
-    role       = aws_iam_role.iam_fabric_space_role.name
-    policy_arn = aws_iam_policy.iam_fabric_space_policy.arn
+	role       = aws_iam_role.iam_fabric_space_role.name
+	policy_arn = aws_iam_policy.iam_fabric_space_policy.arn
 }
 
 resource "aws_iam_role_policy_attachment" "iam_deployer_role_policy_attachment" {
-    role       = aws_iam_role.iam_deployer_role.name
-    policy_arn = aws_iam_policy.iam_deployer_policy.arn
+	role       = aws_iam_role.iam_deployer_role.name
+	policy_arn = aws_iam_policy.iam_deployer_policy.arn
 }

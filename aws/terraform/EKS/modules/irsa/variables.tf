@@ -1,11 +1,11 @@
 variable "aws_region" {
-    type        = string
-    description = "The AWS region to run on."
+  type        = string
+  description = "The AWS region to run on."
 }
 
 variable "cluster_name" {
-    type        = string
-    description = "EKS Cluster Name"
+  type        = string
+  description = "EKS Cluster Name"
 }
 
 variable "include_s3_space_permissions" {
@@ -68,10 +68,8 @@ variable "common_tags" {
   type        = map(string)
   default = {
     terraform    = "true"
-    map-migrated = "mig42452"
     env          = "dev"
     project      = "dev"
-    owner        = "k2v-devops"
-    customer     = "k2view"
+    owner        = "owner"
   }
 }

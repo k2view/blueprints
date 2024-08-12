@@ -5,7 +5,6 @@ variable "namespace" {
 
 variable "cluster_name" {
   type    = string
-  default = "k2v-rnd-aws"
 }
 
 variable "externalservices_prometheus_host" {

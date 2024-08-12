@@ -228,6 +228,7 @@ module "grafana_agent" {
   depends_on                                     = [module.gke]
   count                                          = var.deploy_grafana_agent ? 1 : 0
   source                                         = "../Modules/grafana-agent"
+  cluster_name                                   = var.cluster_name
   externalservices_prometheus_basicauth_password = var.grafana_token
   externalservices_loki_basicauth_password       = var.grafana_token
   externalservices_tempo_basicauth_password      = var.grafana_token

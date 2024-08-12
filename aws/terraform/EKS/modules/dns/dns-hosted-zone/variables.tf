@@ -15,10 +15,8 @@ variable "common_tags" {
   type        = map(string)
   default = {
     terraform    = "true"
-    map-migrated = "mig42452"
     env          = "dev"
     project      = "dev"
-    owner        = "k2v-devops"
-    customer     = "k2view"
+    owner        = "owner"
   }
 }
