@@ -38,5 +38,21 @@ This Helm chart deploys Cassandra on Kubernetes.
 | networkPolicy.enabled | bool | `true` | Determines if a network policy should be applied to the Cassandra deployment. |
 | storage.alocated_amount | string | `"10Gi"` | Specifies the amount of storage allocated for Cassandra data, set to 10 gigabytes. |
 | storage.class | string | `"gp2"` | Defines the storage class to be used for Cassandra data storage. |
+| affinity.type | string | `"none"` | Specifies the type of affinity rule to apply. Options: `affinity`, `anti-affinity`, `none`. |
+| affinity.label | object | `{}` | Label configuration for affinity rules. |
+| affinity.label.name | string | `""` | The key of the label to be used for affinity rules. For example: `topology.kubernetes.io/zone`. |
+| affinity.label.value | string | `""` | The value of the label to be used for affinity rules. For example: `region-a`. |
 
 >NOTE: for mo information about Cassandra configs in the image [Cassandra docker hub](https://hub.docker.com/_/cassandra) in Configuring Cassandra section.
+
+## Installation
+### Install from helm repo
+1. Add repo
+```bash
+helm repo add cassandra https://nexus.share.cloud.k2view.com/repository/cassandra
+```
+
+2. Install
+```bash
+helm install cassandra/cassandra cassandra
+```
