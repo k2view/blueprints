@@ -1,6 +1,6 @@
 # fabric
 
-![Version: 1.1.3](https://img.shields.io/badge/Version-1.1.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.2](https://img.shields.io/badge/AppVersion-7.2-informational?style=flat-square)
+![Version: 1.1.9](https://img.shields.io/badge/Version-1.1.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 7.2](https://img.shields.io/badge/AppVersion-7.2-informational?style=flat-square)
 
 Fabric Helm Chart for Kubernetes
 
@@ -121,3 +121,4 @@ The convention of config string is: 'section|key|value\n'
 ## For more information, read below:
 
 [ Horizontal pod autoscale ](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+[ SAML configuration for Fabric ](https://support.k2view.com/Academy/articles/26_fabric_security/13_user_IAM_configiration.html)
