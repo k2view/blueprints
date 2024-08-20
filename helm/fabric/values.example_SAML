@@ -1,4 +1,3 @@
-# Source: fabric/templates/namespace.yaml
 namespace:
   name: "space-tenant"
   create: true
@@ -13,7 +12,6 @@ deploy:
   type: Deployment 
   # type = StatefulSet|Deployment
 
-# Source: fabric/templates/serviceaccount.yaml
 serviceAccount:
   create: true   # For new sa, creation of sa only in k8s side
   name: ""       # For existing sa, if create is true, name should be an empty string
@@ -23,7 +21,6 @@ serviceAccount:
   project_id: "" # For GCP SA
   cluster_name: ""
 
-# Source: fabric/templates/deployment.yaml or fabric/templates/statefulsets.yaml
 container:
   replicas: 1
   annotationsList:
@@ -52,11 +49,10 @@ container:
             username: ""
             password: ""
 
-# Source: fabric/templates/service.yaml
+
 # Fabrics Advertising Bound Port (Where it accessable)
 listening_port: 3213
 
-# Source: fabric/templates/pvc.yaml
 storage:
   pvc:
     enabled: true
@@ -77,7 +73,6 @@ scaling:
 networkPolicy:
   enabled: false
 
-# Source: fabric/templates/ingress.yaml
 ingress:
   enabled: true
   class_name: "nginx"
@@ -102,7 +97,6 @@ ingress:
       - key: nginx.ingress.kubernetes.io/ssl-redirect
         value: "false"
 
-# Source: fabric/templates/mount_secret.yaml
 mountSecret:
     name: config-secrets
     enabled: false # true for mount the secret on fabric pod, false for mount only on init container
@@ -121,27 +115,40 @@ mountSecret:
         fabric|OVERRIDE_API_PORT|443|ADD
         system_db|SYSTEM_DB_TYPE|SQLITE
         system_db|SYSTEM_DB_HOST|/opt/apps/fabric/workspace/internal_db
-        fabric|SERVER_AUTHENTICATOR|fabric
-      cp_files: ''
+        fabric|WEB_AUTHENTICATION_PROTOCOL|SAML
+        fabric|SERVER_AUTHENTICATOR|block_all
+        saml|SP_ENTITYID|https://space-tenant.cloud.k2view.com/SAML
+        saml|IDP_ENTITYID|https://app-id.my.idaptive.app/my-id
+        saml|IDP_SINGLE_SIGN_ON_SERVICE_URL|https://app-id.my.idaptive.app/applogin/appKey/my-id/customerId/app-id
+        saml|IDP_LOGOUT|true
+        saml|IDP_SINGLE_LOGOUT_SERVICE_URL|https://app-id.my.idaptive.app/applogin/appKey/my-id/customerId/app-id
+        saml|SP_CERT_ALIAS|sp_cert
+        saml|IDP_CERT_ALIAS|idp_cert
+      cp_files: "/opt/apps/fabric/config-secrets/localkey /opt/apps/fabric/workspace/config/.local\n/opt/apps/fabric/config-secrets/IDP_CERT /opt/apps/fabric/workspace/idp.cert\n/opt/apps/fabric/config-secrets/SP_CERT /opt/apps/fabric/workspace/.keystore"
+      IDP_CERT: "-----BEGIN CERTIFICATE-----\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n-----END CERTIFICATE-----"
+      SP_CERT: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 secretsList:
   - name: common-env-secrets
     data:
       CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
-      COPY_FILES: ''
-      INIT_CONF: ''
+      COPY_FILES: /opt/apps/fabric/config-secrets/cp_files
       PROJECT_ID: ''
       PROJECT_NAME: ''
-      SPACE_NAME: ''
+      SPACE_NAME: 'space-tenant'
+      MAX_HEAP: 6G
 
 initSecretsList:
   - name: config-init-secrets
     data:
+      IDP_CERT_PATH: /opt/apps/fabric/config-secrets/IDP_CERT
+      IDP_ROLE: k2view_k2v_user
       GIT_BRANCH: ''
       GIT_PATH_IN_REPO: ''
       GIT_REPO: ''
       GIT_TOKEN: ''
-      START_FABRIC: 'false' 
+      START_FABRIC: 'false'
+    
 
 affinity:
   type: none  # Options: affinity, anti-affinity, none
