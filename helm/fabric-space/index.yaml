@@ -2,27 +2,8 @@ apiVersion: v1
 entries:
   fabric-space:
   - apiVersion: v2
-    appVersion: "7.2"
-    created: "2024-02-12T13:12:23.3356182+02:00"
-    dependencies:
-    - condition: cassandra.enabled
-      name: cassandra
-      repository: file://./charts/cassandra
-      version: ~1.1.0-0
-    - condition: fabric.enabled
-      name: fabric
-      repository: file://./charts/fabric
-      version: ~1.1.5-0
-    description: The following Helm Chart Deploys Fabric and Cassandra
-    digest: 2c948fda8661aadf7746c6e89fbc88e384d329aa7d70f35856fc0171e7275a0b
-    name: fabric-space
-    type: application
-    urls:
-    - https://raw.githubusercontent.com/k2view/blueprints/fabric_cassandra/helm/fabric-space/fabric-space-1.0.1.tgz
-    version: 1.0.1
-  - apiVersion: v2
     appVersion: 1.2.5
-    created: "2024-02-12T13:12:23.3337453+02:00"
+    created: "2024-02-01T18:17:51.9978791+02:00"
     dependencies:
     - condition: cassandra.enabled
       name: cassandra
@@ -39,4 +20,4 @@ entries:
     urls:
     - https://raw.githubusercontent.com/k2view/blueprints/fabric_cassandra/helm/fabric-space/fabric-space-0.1.0.tgz
     version: 0.1.0
-generated: "2024-02-12T13:12:23.3314797+02:00"
+generated: "2024-02-01T18:17:51.995786+02:00"
