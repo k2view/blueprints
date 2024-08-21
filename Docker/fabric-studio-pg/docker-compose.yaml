@@ -37,6 +37,9 @@ services:
       - NEO4JLABS_PLUGINS=["graph-data-science"]
       - NEO4J_AUTH=neo4j/changeit
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+    volumes:
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
   fabric:
     image: "${STUDIO_IMAGE}"
     user: fabric
@@ -63,6 +66,12 @@ services:
       - ./studio_pg.config:/opt/apps/fabric/studio.config
       - ./workspace/:/opt/apps/fabric/workspace/
     command: ["bash", "-l", "-c", "./docker-entrypoint.sh && tail -f /dev/null"]
+    healthcheck:
+      test: ["CMD", "/bin/bash", "/opt/apps/fabric/isAlive.sh"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
 networks:
   fab-pg-net:
     driver: bridge

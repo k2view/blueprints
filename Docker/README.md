@@ -11,7 +11,7 @@ This file defines and configures all the services needed for this use case. It s
 ### environment
 This parameters can be added to services.fabric.environment .
 #### Git
-GIT_TOKEN  - Token for clone fron github repo. \
+GIT_TOKEN  - Token for clone from github repo. \
 GIT_REPO   - Github repo url (without https) to clone project from. \
 GIT_BRANCH - The git branch to clone, default master. 
 

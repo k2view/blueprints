@@ -19,3 +19,13 @@ Azure/terraform/AKS/local
 Azure/terraform/AKS/backend.tf
 gcp/terraform/GKE/local
 gcp/helm/charts/ingress-nginx-k2v/local
+
+# Docker
+Docker/fabric-studio/neo4j
+Docker/fabric-studio/workspace
+Docker/fabric-studio-pg/neo4j
+Docker/fabric-studio-pg/workspace
+Docker/fabric-studio-pg/postgres
+Docker/fabric-studio-cass/neo4j
+Docker/fabric-studio-cass/cassandra
+Docker/fabric-studio-cass/workspace
