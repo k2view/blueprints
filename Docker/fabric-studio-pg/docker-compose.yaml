@@ -40,6 +40,12 @@ services:
     volumes:
       - ./neo4j/data:/data
       - ./neo4j/logs:/logs
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:7474"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
   fabric:
     image: "${STUDIO_IMAGE}"
     user: fabric
