@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app_name }}-deployment
+  namespace: {{ .Values.namespace.name }}
+  labels: &id001
+    app: {{ .Values.app_name }}
+    {{- range $label := .Values.labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.app_name }}
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      {{- if .Values.container.image.repoSecret.enabled }}
+      imagePullSecrets:
+        - name: {{ .Values.container.image.repoSecret.name }}
+      {{- end }}
+      {{- if or (eq .Values.affinity.type "affinity") (eq .Values.affinity.type "anti-affinity") }}
+      affinity:
+        {{- if eq .Values.affinity.type "affinity" }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: {{ .Values.affinity.label.name }}
+                operator: In
+                values:
+                - {{ .Values.affinity.label.value }}
+        {{- else if eq .Values.affinity.type "anti-affinity" }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: {{ .Values.affinity.label.name }}
+                operator: NotIn
+                values:
+                - {{ .Values.affinity.label.value }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: {{ .Values.app_name }}
+        image: {{ .Values.container.image.url }}
+        imagePullPolicy: "IfNotPresent"
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        resources:
+          limits:
+            memory: {{ .Values.container.resource_allocation.limits.memory }}
+            cpu: {{ .Values.container.resource_allocation.limits.cpu }}
+          requests:
+            memory: {{ .Values.container.resource_allocation.requests.memory }}
+            cpu: {{ .Values.container.resource_allocation.requests.cpu }}
+        env:
+        {{- range .Values.secrets }}
+        - name: {{ .key }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Values.app_name }}-secrets
+              key: {{ .key }}
+        {{- end }}
+        volumeMounts:
+          - name: {{ .Values.app_name }}-storage
+            mountPath: {{ .Values.container.storage_path }}
+      volumes:
+      - name: {{ .Values.app_name }}-storage
+        persistentVolumeClaim:
+          claimName: {{ .Values.app_name }}-claim

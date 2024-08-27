@@ -1,0 +1,24 @@
+{{ if .Values.networkPolicy.enabled }}
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: ingress-{{ .Values.app_name }}-np
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: {{ .Values.app_name }}
+    {{- range $label := .Values.labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.app_name }}
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          subdomain: {{ .Values.namespace.name }}
+      podSelector:
+        matchLabels:
+          app: fabric
+{{ end }}
