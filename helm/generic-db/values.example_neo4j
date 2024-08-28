@@ -1,0 +1,64 @@
+# global
+namespace:
+  name: "space-tenant"
+
+labels:
+  - name: tenant
+    value: my-tenant
+  - name: space
+    value: my-space
+
+# app_name will be app lable and prefix for resources
+app_name: "neo4j"
+
+# deployment.yaml
+container:
+  replicas: 1
+  image:
+    url: neo4j:5.18-enterprise
+
+    repoSecret:
+      name: "registry-secret"
+      enabled: false
+      dockerRegistry:
+        auths:
+          "docker.share.cloud.k2view.com":
+            username: ""
+            password: ""
+  storage_path: "/var/lib/neo4j/data"
+
+  resource_allocation:
+    limits:
+      memory: 4Gi
+      cpu: '1'
+    requests:
+      memory: 1Gi
+      cpu: '0.4'
+
+affinity:
+  type: none  # Options: affinity, anti-affinity, none
+  label: 
+    name: topology.kubernetes.io/zone
+    value: region-a
+
+# secrets.yaml
+secrets:
+- key: NEO4JLABS_PLUGINS
+  value: '["graph-data-science"]'
+- name: NEO4J_ACCEPT_LICENSE_AGREEMENT
+  value: "yes"
+- name: NEO4J_AUTH
+  value: "neo4j/changeit"
+
+# ingress_np.yaml
+networkPolicy:
+  enabled: true
+
+# service.yaml
+service:
+  port: 9042
+
+# pvc.yaml
+storage:
+  class: regional-pd
+  alocated_amount: 10Gi
