@@ -4,6 +4,7 @@ This repository contains Docker Compose configurations for different Fabric Stud
 ## Pre-requisites
 1. Docker - [Docker install guide](https://docs.docker.com/engine/install/)
 2. Docker compose - [docker-compose install guide](https://docs.docker.com/compose/install/)
+3. K2view Fabric or Studio images.
 
 ## docker-compose.yaml
 This file defines and configures all the services needed for this use case. It specifies how these services are built, how they interact, and any volumes or networks they use.
@@ -50,9 +51,17 @@ docker-compose --project-name space_name up -d
 ```
 
 ## Fabric studio pg
-Docker compose for simple fabric studio with Neo4j for data discovery and PG for system DB and TDM
+Docker compose for simple fabric studio with Neo4j for data discovery and Postgres for system DB and TDM
 ### Start space
 ```bash
 cd fabric-studio-pg
+docker-compose --project-name space_name up -d
+```
+
+## Fabric studio cass
+Docker compose for simple fabric studio with Neo4j for data discovery and Cassandra for system DB and TDM
+### Start space
+```bash
+cd fabric-studio-cass
 docker-compose --project-name space_name up -d
 ```
