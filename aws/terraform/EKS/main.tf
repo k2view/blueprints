@@ -21,6 +21,18 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
+  public_subnet_tags = {
+    "kubernetes.io/role/elb" = 1 # Tag for external LoadBalancer
+    # Tags subnets for Karpenter auto-discovery
+    "karpenter.sh/discovery" = var.cluster_name
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = 1 # tag for internal LoadBalancer
+    # Tags subnets for Karpenter auto-discovery
+    "karpenter.sh/discovery" = var.cluster_name
+  }
+
   tags = var.tags
 }
 
@@ -57,11 +69,40 @@ module "eks" {
     }
   }
 
+  node_security_group_tags = merge(var.tags, {
+  "karpenter.sh/discovery" = var.cluster_name
+  })
+
   # Cluster access entry
   # To add the current caller identity as an administrator
   enable_cluster_creator_admin_permissions = true
 
   tags = var.tags
+}
+
+### Karpenter
+
+module "karpenter" {
+  source = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "20.24.0" 
+
+  cluster_name = module.eks.cluster_name
+
+  enable_pod_identity             = true
+  create_pod_identity_association = true
+
+  # Used to attach additional IAM policies to the Karpenter node IAM role
+  node_iam_role_additional_policies = {
+    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  }
+
+  tags = var.tags
+}
+
+module "karpenter_disabled" {
+  source = "terraform-aws-modules/eks/aws//modules/karpenter"
+
+  create = false
 }
 
 ### DNS + Ingress
