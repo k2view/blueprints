@@ -4,6 +4,9 @@ resource "google_dns_managed_zone" "cluster_dns" {
   dns_name    = "${var.domain}."
   description = "DNS for ${var.cluster_name} cluster"
   visibility  = "public"
+  dnssec_config {
+    state = "on"
+  }
 }
 
 ## Create record Cloud DNS to LB
