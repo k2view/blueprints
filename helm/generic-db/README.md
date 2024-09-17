@@ -51,3 +51,25 @@ To customize the deployment, you can override the default values by providing yo
 ```bash
 helm install my-release ./generic-db -f my-values.yaml
 ```
+
+
+## Values Examples
+The `generic-db` Helm chart can be customized to deploy different databases by adjusting the values in the provided examples. Each database has a corresponding values file:
+- **Cassandra**: `values.example_cassandra`
+- **Kafka**: `values.example_kafka`
+- **Neo4j**: `values.example_neo4j`
+- **Postgres**: `values.yaml` (default configuration)
+
+These high-level configurations illustrate how you can tailor the generic-db Helm chart to suit different database systems by modifying key parameters in the values files.
+
+### Cassandra
+To deploy **Cassandra**, use `values.example_cassandra`. This configuration sets `app_name` to `cassandra`, specifies the Cassandra Docker image, adjusts resource allocations suitable for a Cassandra deployment, and includes necessary secrets for authentication.
+
+### Kafka
+For **Kafka**, apply `values.example_kafka`. This file sets `app_name` to `kafka`, points to a Kafka Docker image, configures the appropriate number of replicas, and includes required secrets and resource settings.
+
+### Neo4j
+Deploy **Neo4j** by using `values.example_neo4j`. This setup changes `app_name` to `neo4j`, selects the Neo4j Docker image, adjusts resource allocations, and sets up secrets for database authentication.
+
+### Postgres
+The default `values.yaml` is configured for **PostgreSQL** deployment. It sets `app_name` to `postgres`, uses the PostgreSQL Docker image, and includes default resource allocations and secrets.
