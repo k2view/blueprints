@@ -1,3 +1,8 @@
+### Data Sources
+data "aws_ecrpublic_authorization_token" "token" {
+  provider = aws.virginia # The ECR roken only works for virginia
+}
+
 ### VPC
 locals {
   azs = [for zone in var.zones : "${var.region}${zone}"]
@@ -23,8 +28,6 @@ module "vpc" {
 
   public_subnet_tags = {
     "kubernetes.io/role/elb" = 1 # Tag for external LoadBalancer
-    # Tags subnets for Karpenter auto-discovery
-    "karpenter.sh/discovery" = var.cluster_name
   }
 
   private_subnet_tags = {
@@ -59,14 +62,24 @@ module "eks" {
   subnet_ids = module.vpc.private_subnets
 
   eks_managed_node_groups = {
-    initial = {
+    karpenter = {
       min_size     = var.min_node
       max_size     = var.max_node
       desired_size = var.desired_size
 
       instance_types = var.instance_types
       capacity_type  = "ON_DEMAND"
+
+      taints = {
+        # This Taint aims to keep just EKS Addons and Karpenter running on this MNG
+        # The pods that do not tolerate this taint should run on nodes created by Karpenter
+        addons = {
+          key    = "CriticalAddonsOnly"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        },
     }
+  }
   }
 
   node_security_group_tags = merge(var.tags, {
@@ -82,12 +95,14 @@ module "eks" {
 
 ### Karpenter
 
+# create the IAM roles for karpenter
 module "karpenter" {
   source = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "20.24.0" 
 
   cluster_name = module.eks.cluster_name
 
+  enable_v1_permissions           = true
   enable_pod_identity             = true
   create_pod_identity_association = true
 
@@ -99,10 +114,99 @@ module "karpenter" {
   tags = var.tags
 }
 
-module "karpenter_disabled" {
-  source = "terraform-aws-modules/eks/aws//modules/karpenter"
+resource "helm_release" "karpenter" {
+  namespace           = "kube-system"
+  name                = "karpenter"
+  repository          = "oci://public.ecr.aws/karpenter"
+  repository_username = data.aws_ecrpublic_authorization_token.token.user_name
+  repository_password = data.aws_ecrpublic_authorization_token.token.password
+  chart               = "karpenter"
+  version             = "1.0.0"
+  wait                = false
 
-  create = false
+  values = [
+    <<-EOT
+    serviceAccount:
+      name: ${module.karpenter.service_account}
+    settings:
+      clusterName: ${module.eks.cluster_name}
+      interruptionQueue: ${module.karpenter.queue_name}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: karpenter.sh/nodepool
+              operator: DoesNotExist
+            - key: eks.amazonaws.com/nodegroup
+              operator: In
+              values:
+              - karpenter-2024092410254393760000001f
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution: []
+    EOT
+  ]
+  # TODO - change the karpenter-2024092410254393760000001f to the actual MNG value
+
+}
+
+
+resource "kubectl_manifest" "karpenter_node_class" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.k8s.aws/v1beta1
+    kind: EC2NodeClass
+    metadata:
+      name: default
+    spec:
+      amiFamily: AL2023
+      role: ${module.karpenter.node_iam_role_name}
+      subnetSelectorTerms:
+        - tags:
+            karpenter.sh/discovery: ${module.eks.cluster_name}
+      securityGroupSelectorTerms:
+        - tags:
+            karpenter.sh/discovery: ${module.eks.cluster_name}
+      tags:
+        karpenter.sh/discovery: ${module.eks.cluster_name}
+  YAML
+
+  depends_on = [
+    helm_release.karpenter
+  ]
+
+}
+
+resource "kubectl_manifest" "karpenter_node_pool" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.sh/v1beta1
+    kind: NodePool
+    metadata:
+      name: default
+    spec:
+      template:
+        spec:
+          nodeClassRef:
+            name: default
+          requirements:
+            - key: node.kubernetes.io/instance-type
+              operator: In
+              values:
+              - ${join("\n - ", var.instance_types)}
+            - key: karpenter.sh/capacity-type
+              operator: In
+              values:
+              - on-demand
+      limits:
+        cpu: 1000
+      disruption:
+        consolidationPolicy: WhenEmpty
+        consolidateAfter: 30s
+  YAML
+
+  depends_on = [
+    kubectl_manifest.karpenter_node_class
+  ]
+
 }
 
 ### DNS + Ingress
@@ -180,7 +284,7 @@ module "ebs" {
   depends_on          = [module.eks]
   source              = "./modules/storage-classes/ebs"
   encrypted           = true
-  node_group_iam_role = module.eks.eks_managed_node_groups["initial"].iam_role_name
+  node_group_iam_role = module.eks.eks_managed_node_groups["karpenter"].iam_role_name
 }
 
 #### EFS
