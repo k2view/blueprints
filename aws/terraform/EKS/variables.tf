@@ -47,7 +47,7 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version of the GKE cluster"
-  default     = "1.29"
+  default     = "1.30"
 }
 
 variable "instance_types" {

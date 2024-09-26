@@ -1,11 +1,4 @@
 terraform {
-  # backend "s3" {
-  #   bucket         = ""
-  #   key            = "tfstate/terraform.tfstate"
-  #   region         = ""
-  #   dynamodb_table = "terraform-locks"
-  #   encrypt        = true
-  # }
     required_providers {
     kubectl={
       source = "gavinbunney/kubectl"

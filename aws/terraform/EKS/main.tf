@@ -42,7 +42,7 @@ module "vpc" {
 ### EKS
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.13.1"
+  version = "20.24.2"
 
   cluster_name    = var.cluster_name
   cluster_version = var.kubernetes_version
@@ -76,7 +76,7 @@ module "eks" {
         addons = {
           key    = "CriticalAddonsOnly"
           value  = "true"
-          effect = "NO_SCHEDULE"
+          effect = "PREFER_NO_SCHEDULE"
         },
     }
   }
@@ -91,6 +91,13 @@ module "eks" {
   enable_cluster_creator_admin_permissions = true
 
   tags = var.tags
+}
+
+
+resource "aws_eks_addon" "eks-pod-identity-agent" {
+  cluster_name                = module.eks.cluster_name
+  addon_name                  = "eks-pod-identity-agent"
+  addon_version               = "v1.3.2-eksbuild.2"
 }
 
 ### Karpenter
@@ -131,22 +138,8 @@ resource "helm_release" "karpenter" {
     settings:
       clusterName: ${module.eks.cluster_name}
       interruptionQueue: ${module.karpenter.queue_name}
-    affinity:
-      nodeAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution:
-          nodeSelectorTerms:
-          - matchExpressions:
-            - key: karpenter.sh/nodepool
-              operator: DoesNotExist
-            - key: eks.amazonaws.com/nodegroup
-              operator: In
-              values:
-              - karpenter-2024092410254393760000001f
-      podAntiAffinity:
-        requiredDuringSchedulingIgnoredDuringExecution: []
     EOT
   ]
-  # TODO - change the karpenter-2024092410254393760000001f to the actual MNG value
 
 }
 
@@ -196,11 +189,9 @@ resource "kubectl_manifest" "karpenter_node_pool" {
               operator: In
               values:
               - on-demand
-      limits:
-        cpu: 1000
       disruption:
         consolidationPolicy: WhenEmpty
-        consolidateAfter: 30s
+        consolidateAfter: 60s
   YAML
 
   depends_on = [
@@ -262,6 +253,7 @@ module "grafana_agent" {
   externalservices_prometheus_basicauth_password = var.grafana_token
   externalservices_loki_basicauth_password       = var.grafana_token
   externalservices_tempo_basicauth_password      = var.grafana_token
+
 }
 
 ### K2V Agent
@@ -277,6 +269,7 @@ module "k2v_agent" {
   deployer_iam_arn = module.irsa.iam_deployer_role_arn
   network_name     = module.vpc.vpc_id
   subnets          = replace(join(",", module.vpc.private_subnets), ",", "\\,")
+
 }
 
 ### Storage Classes
@@ -302,9 +295,6 @@ module "efs" {
     aws = aws
   }
 
-  depends_on = [
-    module.eks, module.vpc
-  ]
 }
 
 ### IRSA (deployer and space role)
@@ -340,4 +330,5 @@ resource "helm_release" "metrics_server" {
 
   # Wait for the release to be deployed
   wait = true
+
 }
