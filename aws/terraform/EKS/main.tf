@@ -254,7 +254,6 @@ module "grafana_agent" {
   externalservices_prometheus_basicauth_password = var.grafana_token
   externalservices_loki_basicauth_password       = var.grafana_token
   externalservices_tempo_basicauth_password      = var.grafana_token
-
 }
 
 ### K2V Agent
@@ -270,7 +269,6 @@ module "k2v_agent" {
   deployer_iam_arn = module.irsa.iam_deployer_role_arn
   network_name     = module.vpc.vpc_id
   subnets          = replace(join(",", module.vpc.private_subnets), ",", "\\,")
-
 }
 
 ### Storage Classes
@@ -296,6 +294,9 @@ module "efs" {
     aws = aws
   }
 
+  depends_on = [
+    module.eks, module.vpc
+  ]
 }
 
 ### IRSA (deployer and space role)
@@ -331,5 +332,4 @@ resource "helm_release" "metrics_server" {
 
   # Wait for the release to be deployed
   wait = true
-
 }

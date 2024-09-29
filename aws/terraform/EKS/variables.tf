@@ -120,7 +120,7 @@ variable "tags" {
     terraform    = "true"
     env          = "dev"
     project      = "dev"
-    owner        = "may"
+    owner        = "k2v-devops"
     customer     = "k2view"
   }
 }
