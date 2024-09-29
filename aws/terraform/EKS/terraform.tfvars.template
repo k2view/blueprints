@@ -1,0 +1,19 @@
+cluster_name = ""
+domain       = ""
+region       = ""
+
+# Ingress Controller
+vpc_cidr = "10.0.0.0/16"
+
+# K2view agent
+k2view_agent_namespace = "k2view-agent"
+mailbox_id             = ""
+mailbox_url            = "https://cloud.k2view.com/api/mailbox"
+
+# Storage
+efs_enabled = false
+
+# Tags
+owner   = ""
+project = ""
+env     = ""

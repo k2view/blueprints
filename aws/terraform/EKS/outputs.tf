@@ -4,5 +4,5 @@ output "cluster_iam_role_name" {
 }
 
 output "node_group_role_name" {
-  value = module.eks.eks_managed_node_groups["karpenter"].iam_role_name
+  value = module.eks.eks_managed_node_groups["initial"].iam_role_name
 }

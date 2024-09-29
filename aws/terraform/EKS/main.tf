@@ -1,6 +1,6 @@
 ### Data Sources
 data "aws_ecrpublic_authorization_token" "token" {
-  provider = aws.virginia # The ECR roken only works for virginia
+  provider = aws.virginia # The ECR token only works for virginia
 }
 
 ### VPC
@@ -62,7 +62,7 @@ module "eks" {
   subnet_ids = module.vpc.private_subnets
 
   eks_managed_node_groups = {
-    karpenter = {
+    initial = {
       min_size     = var.min_node
       max_size     = var.max_node
       desired_size = var.desired_size
@@ -71,8 +71,9 @@ module "eks" {
       capacity_type  = "ON_DEMAND"
 
       taints = {
-        # This Taint aims to keep just EKS Addons and Karpenter running on this MNG
-        # The pods that do not tolerate this taint should run on nodes created by Karpenter
+        # This taint suggests that only EKS Addons and Karpenter-managed pods will be scheduled on this managed node group.
+        # It prefers not to schedule other pods unless no other nodes are available.
+        # Pods that do not tolerate this taint should run on nodes created by Karpenter.
         addons = {
           key    = "CriticalAddonsOnly"
           value  = "true"
@@ -191,7 +192,7 @@ resource "kubectl_manifest" "karpenter_node_pool" {
               - on-demand
       disruption:
         consolidationPolicy: WhenEmpty
-        consolidateAfter: 60s
+        consolidateAfter: 120s
   YAML
 
   depends_on = [
@@ -277,7 +278,7 @@ module "ebs" {
   depends_on          = [module.eks]
   source              = "./modules/storage-classes/ebs"
   encrypted           = true
-  node_group_iam_role = module.eks.eks_managed_node_groups["karpenter"].iam_role_name
+  node_group_iam_role = module.eks.eks_managed_node_groups["initial"].iam_role_name
 }
 
 #### EFS
