@@ -1,3 +1,8 @@
+### Data Sources
+data "aws_ecrpublic_authorization_token" "token" {
+  provider = aws.virginia # The ECR token only works for virginia
+}
+
 ### VPC
 locals {
   azs = [for zone in var.zones : "${var.region}${zone}"]
@@ -21,13 +26,23 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
+  public_subnet_tags = {
+    "kubernetes.io/role/elb" = 1 # Tag for external LoadBalancer
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/role/internal-elb" = 1 # tag for internal LoadBalancer
+    # Tags subnets for Karpenter auto-discovery
+    "karpenter.sh/discovery" = var.cluster_name
+  }
+
   tags = var.tags
 }
 
 ### EKS
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.13.1"
+  version = "20.24.2"
 
   cluster_name    = var.cluster_name
   cluster_version = var.kubernetes_version
@@ -54,14 +69,136 @@ module "eks" {
 
       instance_types = var.instance_types
       capacity_type  = "ON_DEMAND"
+
+      taints = {
+        # This taint suggests that only EKS Addons and Karpenter-managed pods will be scheduled on this managed node group.
+        # It prefers not to schedule other pods unless no other nodes are available.
+        # Pods that do not tolerate this taint should run on nodes created by Karpenter.
+        addons = {
+          key    = "CriticalAddonsOnly"
+          value  = "true"
+          effect = "PREFER_NO_SCHEDULE"
+        },
     }
   }
+  }
+
+  node_security_group_tags = merge(var.tags, {
+  "karpenter.sh/discovery" = var.cluster_name
+  })
 
   # Cluster access entry
   # To add the current caller identity as an administrator
   enable_cluster_creator_admin_permissions = true
 
   tags = var.tags
+}
+
+
+resource "aws_eks_addon" "eks-pod-identity-agent" {
+  cluster_name                = module.eks.cluster_name
+  addon_name                  = "eks-pod-identity-agent"
+  addon_version               = "v1.3.2-eksbuild.2"
+}
+
+### Karpenter
+
+# create the IAM roles for karpenter
+module "karpenter" {
+  source = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "20.24.0" 
+
+  cluster_name = module.eks.cluster_name
+
+  enable_v1_permissions           = true
+  enable_pod_identity             = true
+  create_pod_identity_association = true
+
+  # Used to attach additional IAM policies to the Karpenter node IAM role
+  node_iam_role_additional_policies = {
+    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  }
+
+  tags = var.tags
+}
+
+resource "helm_release" "karpenter" {
+  namespace           = "kube-system"
+  name                = "karpenter"
+  repository          = "oci://public.ecr.aws/karpenter"
+  repository_username = data.aws_ecrpublic_authorization_token.token.user_name
+  repository_password = data.aws_ecrpublic_authorization_token.token.password
+  chart               = "karpenter"
+  version             = "1.0.0"
+  wait                = false
+
+  values = [
+    <<-EOT
+    serviceAccount:
+      name: ${module.karpenter.service_account}
+    settings:
+      clusterName: ${module.eks.cluster_name}
+      interruptionQueue: ${module.karpenter.queue_name}
+    EOT
+  ]
+
+}
+
+
+resource "kubectl_manifest" "karpenter_node_class" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.k8s.aws/v1beta1
+    kind: EC2NodeClass
+    metadata:
+      name: default
+    spec:
+      amiFamily: AL2023
+      role: ${module.karpenter.node_iam_role_name}
+      subnetSelectorTerms:
+        - tags:
+            karpenter.sh/discovery: ${module.eks.cluster_name}
+      securityGroupSelectorTerms:
+        - tags:
+            karpenter.sh/discovery: ${module.eks.cluster_name}
+      tags:
+        karpenter.sh/discovery: ${module.eks.cluster_name}
+  YAML
+
+  depends_on = [
+    helm_release.karpenter
+  ]
+
+}
+
+resource "kubectl_manifest" "karpenter_node_pool" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.sh/v1beta1
+    kind: NodePool
+    metadata:
+      name: default
+    spec:
+      template:
+        spec:
+          nodeClassRef:
+            name: default
+          requirements:
+            - key: node.kubernetes.io/instance-type
+              operator: In
+              values:
+              - ${join("\n - ", var.instance_types)}
+            - key: karpenter.sh/capacity-type
+              operator: In
+              values:
+              - on-demand
+      disruption:
+        consolidationPolicy: WhenEmpty
+        consolidateAfter: 120s
+  YAML
+
+  depends_on = [
+    kubectl_manifest.karpenter_node_class
+  ]
+
 }
 
 ### DNS + Ingress
