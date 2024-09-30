@@ -61,7 +61,7 @@ services:
       CONFIG_UPDATE_FILE: /opt/apps/fabric/studio.config
     volumes:
       - ./studio_cass.config:/opt/apps/fabric/studio.config
-      - ./workspace/:/opt/apps/fabric/workspace/
+      - ./fabric/workspace/:/opt/apps/fabric/workspace/
     command: ["bash", "-l", "-c", "./docker-entrypoint.sh && tail -f /dev/null"]
     healthcheck:
       test: ["CMD", "/bin/bash", "/opt/apps/fabric/isAlive.sh"]

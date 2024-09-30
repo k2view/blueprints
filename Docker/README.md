@@ -37,13 +37,31 @@ ADD_CERTS_FILE         - List of certs to add, Format: addkey/addtrust|ALIAS|PAT
 ## .env
 This is a dotenv file used to configure environment variables for the services defined in `docker-compose.yaml`.
 
+## Initialization
+Prepare directories for persistent volumes for the containers, setting the appropriate permissions for the application users.
+
+```bash
+# Create Hyperledger Fabric persistent directory and set permissions
+mkdir -p ./fabric/workspace/ && chown 1000:1000 ./fabric/workspace/
+
+# Create Neo4j persistent directory and set permissions
+mkdir ./neo4j/ && chown 7474:7474 ./neo4j/
+
+# Create PostgreSQL persistent directory and set permissions
+mkdir ./postgres/ && chown root:root ./postgres/
+
+# Create Cassandra persistent directory and set permissions
+mkdir ./cassandra/ && chown root:root ./cassandra/
+```
+
 ## studio.config
 This configuration file is used for custom settings specific to this use case. \
 Each line format "[section]|[key]|[value]|<{ADD|}>" to update config.ini
 
 
 ## Fabric studio
-Docker compose for simple fabric studio with Neo4j for data discovery and SQLITE for system DB
+Docker compose for simple fabric studio with Neo4j for data discovery and SQLITE for system DB.
+
 ### Start space
 ```bash
 cd fabric-studio
@@ -51,7 +69,8 @@ docker-compose --project-name space_name up -d
 ```
 
 ## Fabric studio pg
-Docker compose for simple fabric studio with Neo4j for data discovery and Postgres for system DB and TDM
+Docker compose for simple fabric studio with Neo4j for data discovery and Postgres for system DB and TDM.
+
 ### Start space
 ```bash
 cd fabric-studio-pg
@@ -59,7 +78,8 @@ docker-compose --project-name space_name up -d
 ```
 
 ## Fabric studio cass
-Docker compose for simple fabric studio with Neo4j for data discovery and Cassandra for system DB and TDM
+Docker compose for simple fabric studio with Neo4j for data discovery and Cassandra for system DB and TDM.
+
 ### Start space
 ```bash
 cd fabric-studio-cass
