@@ -1,0 +1,120 @@
+name: k2view-webstudio
+services:
+  cassandra:
+    container_name: ${COMPOSE_PROJECT_NAME}-cassandra
+    image: ${CASS_IMAGE}
+    profiles: ["studio_cass","studio_pg_cass"]
+    networks:
+      - fab-net
+    environment:
+      HEAP_NEWSIZE: 128M
+      MAX_HEAP_SIZE: 2G
+      CASSANDRA_DC: DC1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    volumes:
+      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/cassandra:/var/log/cassandra/
+    healthcheck:
+      test: ["CMD-SHELL", "nodetool status | grep $$(hostname -i) | grep ^UN || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+  postgres:
+    container_name: ${COMPOSE_PROJECT_NAME}-postgres
+    image: "${PG_IMAGE}"
+    profiles: ["studio_pg","studio_pg_cass"]
+    networks:
+      - fab-net
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB "]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+
+  init-fabric:
+    container_name: ${COMPOSE_PROJECT_NAME}-fabric-init
+    image: "${FABRIC_IMAGE}:${FABRIC_VERSION}"
+    user: root
+    volumes:
+      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/workspace/:/opt/apps/fabric/workspace/
+    entrypoint:
+      - /bin/bash
+      - -c
+      - chown 1000:1000 /opt/apps/fabric/workspace/
+  fabric:
+    container_name: ${COMPOSE_PROJECT_NAME}-fabric
+    hostname: ${COMPOSE_PROJECT_NAME}-fabric
+    image: "${FABRIC_IMAGE}:${FABRIC_VERSION}"
+    user: fabric
+    depends_on:
+      init-fabric:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+        required: false
+      cassandra:
+        condition: service_healthy
+        required: false
+    networks:
+      fab-net:
+    ports:
+      - 3213
+    environment:
+      COMPOSE_PROJECT_NAME:
+      SPACE_NAME:
+      PROJECT_NAME: "${COMPOSE_PROJECT_NAME}"
+      PROJECT_DIR:
+      GIT_REPO:
+      GIT_BRANCH:
+      GIT_TOKEN:
+      MAX_HEAP:
+      INI_CONFIG_UPDATE_FILE:
+      CLOUD_LINK: "https://cloud.k2view.com"
+    volumes:
+      - ./common.config:/opt/apps/fabric/common.config:ro
+      - ./${PROFILE}.config:/opt/apps/fabric/profile.config:ro
+      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/workspace/:/opt/apps/fabric/workspace/
+    entrypoint:
+      - /bin/bash
+      - -l
+      - -c
+      - |
+        cat /opt/apps/fabric/common.config /opt/apps/fabric/profile.config > ${INI_CONFIG_UPDATE_FILE}
+        sed -i "s/__COMPOSE_PROJECT_NAME__/${COMPOSE_PROJECT_NAME}/g" ${INI_CONFIG_UPDATE_FILE}
+        ./docker-entrypoint.sh
+        tail -f /dev/null
+    labels:
+      - "k2viewspace"
+      - "space-profile=${PROFILE}"
+      - "traefik.enable=true"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3213"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.entrypoints=web"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.rule=PathPrefix(`/${COMPOSE_PROJECT_NAME}`) && HostRegexp(`((^.*[.])*localhost|127[.]0[.]0[.]1)`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.priority=99999"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=web,websecure"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=PathPrefix(`/${COMPOSE_PROJECT_NAME}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=web-to-websecure@file"
+    healthcheck:
+      test: ["CMD", "/bin/bash", "/opt/apps/fabric/isAlive.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
+
+networks:
+  fab-net:
+    name: fab-net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "${DOCKER_SUBNET}"
