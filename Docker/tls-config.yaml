@@ -1,0 +1,14 @@
+http:
+  middlewares:
+    web-to-websecure:
+      redirectScheme:
+        scheme: https
+        port: "443"
+        permanent: true
+
+tls:
+  stores:
+    default:
+      defaultCertificate:
+        #certFile: /etc/certs/cert.cer
+        #keyFile: /etc/certs/cert.key
