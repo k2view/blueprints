@@ -1,12 +1,28 @@
 version: '3.9'
 services:
+  cassandra:
+    image: ${CASS_IMAGE}
+    ports:
+      - "9042:9042"
+    networks:
+      fab-pg-net:
+        ipv4_address: "${CASS_IP}"
+    environment:
+      USERNAME: cassandra
+      PASSWORD: cassandra
+      HEAP_NEWSIZE: 128M
+      MAX_HEAP_SIZE: 2G
+      CASSANDRA_DC: DC1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    volumes:
+      - ./cassandra:/var/lib/cassandra
   neo4j:
     image: ${NEO4J_IMAGE}
     ports:
       - "7474:7474"
       - "7687:7687"
     networks:
-      fab-net:
+      fab-pg-net:
         ipv4_address: "${NEO4J_IP}"
     environment:
       - NEO4JLABS_PLUGINS=["graph-data-science"]
@@ -26,11 +42,12 @@ services:
     user: fabric
     depends_on:
       - neo4j
+      - cassandra
     ports:
       - "5124:5124"
       - "3213:3213"
     networks:
-      fab-net:
+      fab-pg-net:
         ipv4_address: "${FABRIC_IP}"
     environment:
       SPACE_NAME: "${SPACE_NAME}"
@@ -40,9 +57,10 @@ services:
       GIT_REPO: "${GIT_REPO}"
       GIT_BRANCH: "${GIT_BRANCH}"
       GIT_TOKEN: "${GIT_TOKEN}"
+      MAX_HEAP: "${MAX_HEAP}"
       CONFIG_UPDATE_FILE: /opt/apps/fabric/studio.config
     volumes:
-      - ./studio.config:/opt/apps/fabric/studio.config
+      - ./studio_cass.config:/opt/apps/fabric/studio.config
       - ./fabric/workspace/:/opt/apps/fabric/workspace/
     command: ["bash", "-l", "-c", "./docker-entrypoint.sh && tail -f /dev/null"]
     healthcheck:
@@ -52,7 +70,7 @@ services:
       retries: 3
       start_period: 120s
 networks:
-  fab-net:
+  fab-pg-net:
     driver: bridge
     ipam:
       config:

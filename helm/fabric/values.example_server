@@ -115,7 +115,7 @@ mountSecret:
         system_db|SYSTEM_DB_DATABASE|postgres
         default_pubsub|TYPE|KAFKA
         default_pubsub|BOOTSTRAP_SERVERS|kafka-service:9093
-        common_area_pubsub|TYPE|KAFKAl
+        common_area_pubsub|TYPE|KAFKA
       cp_files: ''
 
 secretsList:
