@@ -64,7 +64,17 @@ This is a dotenv file used to configure environment variables for the services d
 
 ## .config files
 These configuration files contain required or custom settings used by Fabric \
-Each line format "[section]|[key]|[value]|<{ADD|}>" to update config.ini
+Configure the parameters as if you were editing any standard INI file to update config.ini
+
+```ini
+[section1]
+key1=value1
+key2=value2
+
+[section2]
+key1=value1
+key2=value2
+```
 
 ### common.config
 Contains settings that will be applied that are common to all use cases
