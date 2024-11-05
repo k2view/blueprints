@@ -1,6 +1,6 @@
-# Cert guard identity
+# Cert Guard Identity
 
-This module handles the creation of Azure and assigns specified IAM roles.
+This module handles the creation of Azure resources and assigns specified IAM roles.
 
 ## Requirements
 | Name | Version |

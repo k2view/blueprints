@@ -1,6 +1,6 @@
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Resource Group name in Azure"
 }
 
 variable "location" {
@@ -22,12 +22,12 @@ variable "acr_admin_enabled" {
 
 variable "tags" {
   type        = map
-  description = "Tags value"
+  description = "Tags values"
   default     = {}
-  #tags={ Env = “Dev”, Owner = “k2view”, Project = "k2vDev" }
+  #tags={ Env = "Dev", Owner = "k2view", Project = "k2vDev" }
 }
 
 variable "principal_id" {
   type        = string
-  description = "The kubelet identity id"
+  description = "The kubelet identity ID"
 }

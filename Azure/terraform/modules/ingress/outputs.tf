@@ -5,5 +5,5 @@ output "ingress_test_url" {
 
 output "nginx_lb_ip" {
   value = data.kubernetes_service.nginx_controller_svc.status.0.load_balancer.0.ingress.0.ip
-  description = "The IP address of the load balancer for the Nginx ingress controller."
+  description = "The IP address of the load balancer for the Nginx Ingress Controller."
 }

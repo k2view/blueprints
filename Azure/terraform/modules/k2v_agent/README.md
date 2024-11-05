@@ -2,7 +2,7 @@
 This Terraform module facilitates the deployment of the K2View Agent in a cloud environment.
 
 ## Usage
-This submodule can be used to deploy an K2view ajent into your Kubernetes cluster. Modify the following Terraform configuration to fit your specific requirements:
+This submodule can be used to deploy an K2View agent into your Kubernetes cluster. Modify the following Terraform configuration to fit your specific requirements:
 ```hcl
 module "AKS_k2v_agent" {
   depends_on              = [ azurerm_kubernetes_cluster.aks_cluster ]
