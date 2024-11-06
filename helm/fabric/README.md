@@ -121,4 +121,4 @@ The convention of config string is: 'section|key|value\n'
 ## For more information, read below:
 
 [ Horizontal pod autoscale ](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
-[ SAML configuration for Fabric ](https://support.k2view.com/Academy/articles/26_fabric_security/13_user_IAM_configiration.html)
+[ SAML configuration for Fabric ](https://support.k2view.com/Academy/articles/26_fabric_security/13_user_IAM_configuration.html)
