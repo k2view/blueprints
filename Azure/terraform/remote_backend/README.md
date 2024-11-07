@@ -13,7 +13,7 @@ module "remote_backend" {
 }
 ```
 
-This configuration sets up storage account with a unique name and initializing a container to store the terraform.tfstate file.
+This configuration sets up a storage account with a unique name and initializes a container to store the terraform.tfstate file.
 
 ## Providers
 
@@ -50,7 +50,7 @@ This configuration sets up storage account with a unique name and initializing a
 
 ### Step 1: Enable Storage Account Creation
 
-Set the `create_storage_account` variable to `true` in AKS folder - variables.tf file. This action enables the creation of an Azure Storage Account necessary for storing the state file remotely.
+Set the `create_storage_account` variable to `true` in the AKS folder - variables.tf file. This action enables the creation of an Azure Storage Account necessary for storing the state file remotely.
 
 ```hcl
 create_storage_account = true
@@ -58,13 +58,13 @@ create_storage_account = true
 
 ### Step 2: Initial Deployment
 
-Perform the first deployment by following the steps in create cluster example section.
+Perform the first deployment by following the steps in the create cluster example section.
 
 ### Step 3: 
 
 Configure the Remote Backend
 
-1. Navigate to the file named backend.tf.template in AKS folder.
+1. Navigate to the file named backend.tf.template in the AKS folder.
 2. Rename the file to backend.tf.
 3. Open backend.tf and fill in the relevant variables (e.g., resource_group_name, storage_account_name).
 

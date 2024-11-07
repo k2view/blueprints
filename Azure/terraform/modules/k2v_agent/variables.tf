@@ -8,11 +8,11 @@ variable "namespace" {
 # K2view agent 
 variable "image" {
   type        = string
-  description = "k2view agent image url."
+  description = "k2view agent image URL."
   default     = "docker.share.cloud.k2view.com/k2view/k2v-agent:latest"
 }
 
-# Secrets used to config the agent
+# Secrets used to configure the agent
 variable "mailbox_id" {
   type        = string
   description = "k2view cloud mailbox ID."
@@ -40,7 +40,7 @@ variable "ssl_cert_name" {
 ## AWS secrets
 variable "space_iam_arn" {
   type        = string
-  description = "IAM of AWS role for spaces."
+  description = "IAM ARN of AWS role for spaces."
   default     = ""
 }
 
@@ -60,7 +60,7 @@ variable "cloud_provider" {
 
 variable "deployer_iam_arn" {
   type        = string
-  description = "IAM of AWS role for deployer."
+  description = "IAM ARN of AWS role for deployer."
   default     = ""
 }
 

@@ -1,14 +1,14 @@
 # Deploy Nginx Ingress Controller with Terraform
-This Terraform template is designed to deploy the Nginx ingress controller to a Kubernetes cluster. It simplifies the process of setting up a robust and scalable ingress solution for your Kubernetes applications.
+This Terraform template is designed to deploy the Nginx Ingress Controller to a Kubernetes cluster. It simplifies the process of setting up a robust and scalable ingress solution for your Kubernetes applications.
 
 ## Usage
-This submodule can be used to deploy an Nginx ingress controller into your Azure Kubernetes Service (AKS) cluster. Modify the following Terraform configuration to fit your specific requirements:
+This submodule can be used to deploy an Nginx Ingress Controller into your Azure Kubernetes Service (AKS) cluster. Modify the following Terraform configuration to fit your specific requirements:
 ```hcl
 module "AKS-ingress" {
   source         = "./modules/ingress"
   domain         = var.domain                       # Domain for ingress routing
   cloud_provider = "azure"                          # Cloud provider name
-  delay_command  = var.delay_command                # "sleep 60" for linux, for windows is "powershell -Command Start-Sleep -Seconds 60"
+  delay_command  = var.delay_command                # "sleep 60" for Linux, for Windows is "powershell -Command Start-Sleep -Seconds 60"
   keyb64String   = base64encode(file(var.keyPath))  # TLS key
   certb64String  = base64encode(file(var.certPath)) # TLS cert
 }
@@ -35,9 +35,9 @@ module "AKS-ingress" {
 | <a name="input_certString"></a> [certString](#input\_certString) | The TLS cert as a string. | `string` | `""` | no |
 | <a name="input_certb64String"></a> [certb64String](#input\_certb64String) | The TLS cert string in base 64. | `string` | `""` | no |
 | <a name="input_cloud_provider"></a> [cloud\_provider](#input\_cloud\_provider) | The name of the cloud provider. | `string` | `""` | no |
-| <a name="input_delay_command"></a> [delay\_command](#input\_delay\_command) | The command for delay, the cammand depend on the env the terraform runed on. | `string` | `"sleep 60"` | no |
-| <a name="input_domain"></a> [domain](#input\_domain) | the domain will be used for ingress | `string` | n/a | yes |
-| <a name="input_internal_lb"></a> [internal\_lb](#input\_internal\_lb) | Internal IP for the LB | `bool` | `false` | no |
+| <a name="input_delay_command"></a> [delay\_command](#input\_delay\_command) | The command for delay, the command depends on the environment the Terraform is run on. | `string` | `"sleep 60"` | no |
+| <a name="input_domain"></a> [domain](#input\_domain) | The domain that will be used for ingress. | `string` | n/a | yes |
+| <a name="input_internal_lb"></a> [internal\_lb](#input\_internal\_lb) | Internal IP for the LB. | `bool` | `false` | no |
 | <a name="input_keyPath"></a> [keyPath](#input\_keyPath) | Path to the TLS key file. | `string` | `""` | no |
 | <a name="input_keyString"></a> [keyString](#input\_keyString) | The TLS key as a string. | `string` | `""` | no |
 | <a name="input_keyb64String"></a> [keyb64String](#input\_keyb64String) | The TLS key string in base 64. | `string` | `""` | no |
@@ -46,4 +46,4 @@ module "AKS-ingress" {
 | Name | Description |
 |------|-------------|
 | <a name="output_ingress_test_url"></a> [ingress\_test\_url](#output\_ingress\_test\_url) | The URL of the test ingress to validate successful deployment. |
-| <a name="output_nginx_lb_ip"></a> [nginx\_lb\_ip](#output\_nginx\_lb\_ip) | The IP address of the load balancer for the Nginx ingress controller. |
+| <a name="output_nginx_lb_ip"></a> [nginx\_lb\_ip](#output\_nginx\_lb\_ip) | The IP address of the load balancer for the Nginx Ingress Controller. |
