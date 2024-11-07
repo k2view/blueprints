@@ -65,7 +65,7 @@ serviceAccount:
   project_id: "" # For GCP SA
 
   # Role for SA
-# Consolidated Role for SA
+  # Consolidated Role for SA
   role:
     rules:
       - apiGroups: [""]
