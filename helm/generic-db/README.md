@@ -2,7 +2,7 @@
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
-This Helm chart deploys generic db like postgres on Kubernetes.
+This Helm chart deploys a generic database like PostgreSQL on Kubernetes.
 
 ## Description
 The generic-db Helm chart is designed to deploy a database like PostgreSQL on Kubernetes clusters. It supports configuring resource requests and limits, storage options, affinity rules, and secrets management, making it flexible for different environments and use cases.
