@@ -53,7 +53,7 @@ container:
             password: ""
 
 # Source: fabric/templates/service.yaml
-# Fabrics Advertising Bound Port (Where it accessable)
+# Fabric's Advertising Bound Port (Where it is accessible)
 listening_port: 3213
 
 # Source: fabric/templates/pvc.yaml
@@ -64,7 +64,7 @@ storage:
   class: regional-pd
   alocated_amount: 10Gi
 
-# Wether if Fabric will scale up or not
+# Whether if Fabric will scale up or not
 scaling:
   enabled: false
   targetKind: StatefulSet
@@ -73,7 +73,7 @@ scaling:
   maxReplicas: 1
   targetCPU: 90
 
-# Deploy network policy that allow to fabric egress only to cassandra pod
+# Deploy network policy that allows fabric egress only to cassandra pod
 networkPolicy:
   enabled: false
 

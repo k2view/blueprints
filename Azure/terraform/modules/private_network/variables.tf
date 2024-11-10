@@ -1,6 +1,6 @@
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Resource Group name in Azure"
 }
 
 variable "location" {
@@ -34,7 +34,7 @@ variable "subnet_address_prefixes" {
 
 variable "public_ip" {
   type        = bool
-  description = "Create public IP for the NAT or no."
+  description = "Create public IP for the NAT or not."
   default     = true
 }
 
@@ -64,7 +64,7 @@ variable "route_table_next_hop_ip" {
 
 variable "tags" {
   type        = map
-  description = "Tags value"
+  description = "Tags values"
   default     = {}
   #tags={ Env = “Dev”, Owner = “k2view”, Project = "k2vDev" }
 }

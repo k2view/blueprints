@@ -1,6 +1,6 @@
 variable "create_resource_group" {
   type        = bool
-  description = "Create RG name in Azure"
+  description = "Create a resource group name in Azure"
   default     = true
 }
 
@@ -11,13 +11,13 @@ variable "resource_group_name" {
 
 variable "location" {
   type        = string
-  description = "Resources location in Azure"
+  description = "The location of resources in Azure"
   default     = "West Europe"
 }
 
 variable "storage_account_name" {
   type        = string
-  description = "The name of storage account (only lowercase letters)"
+  description = "The name of the storage account (only lowercase letters)"
   default     = ""
 }
 
@@ -41,6 +41,6 @@ variable "account_replication_type" {
 
 variable "tags" {
   type        = map(string)
-  description = "Tags value"
+  description = "Tags values"
   default     = { Env = "Dev", Owner = "k2view", Project = "k2vDev" }
 }

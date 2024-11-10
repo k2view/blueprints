@@ -18,7 +18,7 @@ image:
           username: ""
           password: ""
 
-# Secrets used to config the agent
+# Secrets used to configure the agent
 secrets:
   K2_MAILBOX_ID: ""
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
@@ -53,7 +53,7 @@ resources:
     cpu: '0.4'
 
 serviceAccount:
-  # will create service account with cluster role and secret with tocken of this SA
+  # will create service account with cluster role and secret with token of this SA
   create: true
   # Attach SA to agent pod
   attach: false
@@ -65,7 +65,7 @@ serviceAccount:
   project_id: "" # For GCP SA
 
   # Role for SA
-  # Consolidated Role for SA
+# Consolidated Role for SA
   role:
     rules:
       - apiGroups: [""]
