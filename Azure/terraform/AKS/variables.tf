@@ -68,7 +68,7 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version."
-  default     = "1.28.5"
+  default     = "1.30.4"
 }
 
 variable "outbound_type" {
