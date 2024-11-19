@@ -63,6 +63,8 @@ serviceAccount:
   arn: ""        # For AWS role
   gcp_service_account_name: "" # For GCP sa
   project_id: "" # For GCP SA
+  # Azure
+  azure_workload_identity_client_id: ""
 
   # Role for SA
 # Consolidated Role for SA
