@@ -44,7 +44,7 @@ affinity:
 # secrets.yaml
 secrets:
 - key: NEO4JLABS_PLUGINS
-  value: '["graph-data-science"]'
+  value: '["graph-data-science", "apoc"]'
 - name: NEO4J_ACCEPT_LICENSE_AGREEMENT
   value: "yes"
 - name: NEO4J_AUTH
