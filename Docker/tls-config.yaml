@@ -10,5 +10,5 @@ tls:
   stores:
     default:
       defaultCertificate:
-        #certFile: /etc/certs/cert.cer
-        #keyFile: /etc/certs/cert.key
+        certFile: /etc/certs/cert.cer
+        keyFile: /etc/certs/cert.key
