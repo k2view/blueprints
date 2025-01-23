@@ -85,6 +85,12 @@ serviceAccount:
           - "get"
           - "list"
           - "patch"
+      - apiGroups: [ "" ]
+        resources:
+          - "nodes"
+        verbs:
+          - "get"
+          - "list"
       - apiGroups: ["apps"]
         resources: 
           - "deployments"
@@ -128,3 +134,9 @@ serviceAccount:
           - "get"
           - "list"
           - "patch"
+      - apiGroups: [ "storage.k8s.io" ]
+        resources:
+          - "storageclasses"
+        verbs:
+          - "get"
+          - "list"
