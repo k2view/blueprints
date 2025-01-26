@@ -264,7 +264,7 @@ spec:
 EOF
 
 # configure ingress controller default values
-[[ -z "$INGRESS_REPO" ]] && INGRESS_REPO="https://raw.githubusercontent.com/k2view/blueprints/main/helm/k2v-ingress"
+[[ -z "$INGRESS_REPO" ]] && INGRESS_REPO="https://nexus.share.cloud.k2view.com/repository/k2v-ingress"
 [[ -z "$INGRESS_CHART" ]] && INGRESS_CHART="k2v-ingress/k2v-ingress"
 [[ -z "$INGRESS_DOMAIN" ]] && domain_placeholder="no default, press Enter to skip - ie: k8scluster.example.com" || domain_placeholder="press Enter to use '$INGRESS_DOMAIN'"
 [[ -z "$INGRESS_CERT" ]] && cert_placeholder="no default, press Enter to skip - ie: /path/to/file" || cert_placeholder="press Enter to use '$INGRESS_CERT'"
