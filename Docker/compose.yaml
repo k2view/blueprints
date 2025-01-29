@@ -95,10 +95,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3213"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.entrypoints=web"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.rule=PathPrefix(`/${COMPOSE_PROJECT_NAME}`) && HostRegexp(`((^.*[.])*localhost|127[.]0[.]0[.]1)`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.rule=Path(`/${COMPOSE_PROJECT_NAME}`) || PathPrefix(`/${COMPOSE_PROJECT_NAME}/`) && HostRegexp(`((^.*[.])*localhost|127[.]0[.]0[.]1)`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.priority=99999"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=web,websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=PathPrefix(`/${COMPOSE_PROJECT_NAME}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Path(`/${COMPOSE_PROJECT_NAME}`) || PathPrefix(`/${COMPOSE_PROJECT_NAME}/`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=web-to-websecure@file"
     healthcheck:
       test: ["CMD", "/bin/bash", "/opt/apps/fabric/isAlive.sh"]
