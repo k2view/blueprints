@@ -9,8 +9,10 @@ Commands:
   destroy SPACENAME           Delete the Space "SPACENAME". (Related persistent files are kept and will have to be manually deleted)
 
 Options:
-  --profile=PROFILENAME  Select the desired Space Profile
-  --compose=FILENAME     Allows user to use a custom Docker compose.yaml file
+  --compose=FILENAME        Allows user to use a custom Docker compose.yaml file
+  --heap=SIZE               Set Fabric heap size
+  --profile=PROFILENAME     Use the desired Space Profile
+  --fabric-version=VERSION  Set the 'tag' of fabric-studio image
 "
 
 function k2spaceList() {
