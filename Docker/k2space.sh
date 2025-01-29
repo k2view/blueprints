@@ -13,7 +13,16 @@ Options:
   --compose=FILENAME     Allows user to use a custom Docker compose.yaml file
 "
 
-function startTraefik() {
+function k2spaceList() {
+  [[ -z "$HOSTNAME" ]] && HOSTNAME="localhost"
+  if command -v column >/dev/null; then
+    (echo -e "SPACE\tPROFILE\tSTATE\tURL\tPORTS" && docker ps --all --filter label=k2viewspace --format "{{.Label \"com.docker.compose.project\"}}\t{{.Label \"space-profile\"}}\t{{.State}}\thttp://$HOSTNAME/{{.Label \"com.docker.compose.project\"}}/\t{{.Ports}}") | column -t -s $'\t'
+  else
+    docker ps --all --filter label=k2viewspace --format "table {{.Label \"com.docker.compose.project\"}}\t{{.Label \"space-profile\"}}\t{{.State}}\thttp://$HOSTNAME/{{.Label \"com.docker.compose.project\"}}/\t{{.Ports}}"
+  fi
+}
+
+function k2spaceIngress() {
   local state=$(docker ps --all --filter label=k2v-ingress --format "{{.State}}")
   if ! [[ "$state" == "running" ]]; then
     echo "Starting Traefik"
@@ -22,7 +31,7 @@ function startTraefik() {
   fi
 }
 
-function startSpace() {
+function k2spaceStart() {
   local arg
   for arg in "$@"; do
     shift
@@ -63,14 +72,14 @@ function startSpace() {
   [[ -n "$FABRIC_VERSION" ]] && export FABRIC_VERSION
 
   docker compose -p "$COMPOSE_PROJECT_NAME" -f "$compose" $profile up -d
-  startTraefik
+  k2spaceIngress
 }
 
 command="$1"
 shift
 case "$command" in
   create | start | up)
-    startSpace "$@"
+    k2spaceStart "$@"
     ;;
   stop)
     docker compose -p "$1" stop
@@ -79,12 +88,7 @@ case "$command" in
     docker compose -p "$1" down
     ;;
   list)
-    [[ -z "$HOSTNAME" ]] && HOSTNAME="localhost"
-    if command -v column >/dev/null; then
-      (echo -e "SPACE\tPROFILE\tSTATE\tURL\tPORTS" && docker ps --all --filter label=k2viewspace --format "{{.Label \"com.docker.compose.project\"}}\t{{.Label \"space-profile\"}}\t{{.State}}\thttp://$HOSTNAME/{{.Label \"com.docker.compose.project\"}}/\t{{.Ports}}") | column -t -s $'\t'
-    else
-      docker ps --all --filter label=k2viewspace --format "table {{.Label \"com.docker.compose.project\"}}\t{{.Label \"space-profile\"}}\t{{.State}}\thttp://$HOSTNAME/{{.Label \"com.docker.compose.project\"}}/\t{{.Ports}}"
-    fi
+    k2spaceList
     ;;
   *)
     echo "$usage"
