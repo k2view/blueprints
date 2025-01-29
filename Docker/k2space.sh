@@ -17,6 +17,7 @@ function startTraefik() {
   local state=$(docker ps --all --filter label=k2v-ingress --format "{{.State}}")
   if ! [[ "$state" == "running" ]]; then
     echo "Starting Traefik"
+    unset COMPOSE_PROJECT_NAME
     docker compose -f k2vingress-compose.yaml up -d
   fi
 }
@@ -32,11 +33,26 @@ function startSpace() {
     set -- "$@" "$arg"
   done
 
-  local name="$1"
   [[ -z "$compose" ]] && compose="$self_path/compose.yaml"
   [[ ! -f "$compose" ]] && { echo "compose file not found"; exit 1; }
 
+  local name="$1"
+  if [[ -z "$COMPOSE_PROJECT_NAME" ]]; then
+    if [[ -n "$name" ]]; then
+      COMPOSE_PROJECT_NAME="$name"
+    else
+      COMPOSE_PROJECT_NAME="$(sed -nE 's/^name:( )*//p' $compose)"
+    fi
+    export COMPOSE_PROJECT_NAME
+  fi
+
   [[ -n "$MAX_HEAP" ]] && export MAX_HEAP
+
+  local space_info=$(docker ps --all --filter label=k2viewspace --filter label=com.docker.compose.project=$COMPOSE_PROJECT_NAME --format "{{.Label \"space-profile\"}}")
+  if [[ -n "$space_info" ]]; then
+    PROFILE="$space_info"
+    echo "Starting Space '$COMPOSE_PROJECT_NAME' with Space Profile '$PROFILE'"
+  fi
 
   if [[ -n "$PROFILE" ]]; then
     [[ ! -f "$self_path/$PROFILE.config" ]] && { echo "profile not found"; exit 1; }
@@ -46,7 +62,7 @@ function startSpace() {
 
   [[ -n "$FABRIC_VERSION" ]] && export FABRIC_VERSION
 
-  docker compose -p "$name" -f "$compose" $profile up -d
+  docker compose -p "$COMPOSE_PROJECT_NAME" -f "$compose" $profile up -d
   startTraefik
 }
 
@@ -55,6 +71,9 @@ shift
 case "$command" in
   create | start | up)
     startSpace "$@"
+    ;;
+  stop)
+    docker compose -p "$1" stop
     ;;
   destroy | rm | down)
     docker compose -p "$1" down
