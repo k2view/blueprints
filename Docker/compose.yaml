@@ -40,6 +40,8 @@ services:
   init-fabric:
     container_name: ${COMPOSE_PROJECT_NAME}-fabric-init
     image: "${FABRIC_IMAGE}:${FABRIC_VERSION}"
+    networks:
+      fab-net:
     user: root
     volumes:
       - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/workspace/:/opt/apps/fabric/workspace/
