@@ -73,8 +73,11 @@ function k2spaceStart() {
 
   [[ -n "$FABRIC_VERSION" ]] && export FABRIC_VERSION
 
-  docker compose -p "$COMPOSE_PROJECT_NAME" -f "$compose" $profile up -d
-  k2spaceIngress
+  if docker compose -p "$COMPOSE_PROJECT_NAME" -f "$compose" $profile up -d; then
+    k2spaceIngress
+  else
+    echo "An error occurred during the Space creation"
+  fi
 }
 
 command="$1"
