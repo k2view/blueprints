@@ -309,6 +309,27 @@ sudo docker login -u [YourAccount] https://docker.share.cloud.k2view.com
 
 You will be asked to enter your password.
 
+## Docker Image Offline Package Download
+ 
+The Docker login command and the `k2space.sh` bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com.
+ 
+Should you not have Internet connectivity, you can use this Docker Image Offline Package Download procedure to download the file on a separate machine and copy it to the local installation directory. The file, a Docker Image, is about 1.9GB in size. The version of the image depends on what is configured in the `.env` file. You will need to download the same version.
+ 
+Following this procedure, when the `k2space.sh` script runs, the expected file will have already been loaded on the local machine and will not need to be downloaded from the Internet.
+ 
+Here is the flow:
+1. Save / compress the desired Image tag:
+ 
+`docker save docker.share.cloud.k2view.com/k2view/fabric-studio:8.1.7_22 | gzip > k2view_fabric-studio_8.1.7_22.tar.gz`
+ 
+2. Copy the `k2view_fabric-studio_8.1.7_22.tar.gz` file to the target machine.
+ 
+3. On the target machine, load the image locally:
+ 
+`docker load -i k2view_fabric-studio_8.1.7_22.tar.gz`
+ 
+Doing this before you run the first `k2space.sh` command ensures the file will be present on your system to create your first space and avoids downloading the file from the Internet.
+
 **Note**: The Docker login command and the k2space.sh bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com. 
 
 
@@ -420,7 +441,7 @@ Use:
 ./k2space.sh create [--profile=profile-name] spacename
 ```
 
-After creating your first Space, you must restart Traefik after creating an additional space. To restart Traefik (e.g., after configuring your TSL certificates), run the command below:
+After creating your first Space, you will need to wait for Fabric to come up. Unless it up you may get a 404 error if Traefik hasn't yet processed its new ingress rules which may take a few seconds. Otherwise, you might get a 502 error if Traefik is ready but Fabric is not yet ready. Give it some time.
 
 ```bash
 docker compose -f k2vingress-compose.yaml restart
@@ -432,12 +453,6 @@ To start a Fabric space use:
 
 ```bash
 ./k2space.sh start spacename
-```
-
-After starting a Space, you will need to restart Traefik. To restart Traefik (e.g., after configuring your TSL certificates), run the command below:
-
-```bash
-docker compose -f k2vingress-compose.yaml restart
 ```
 
 **Stopping a Space**
