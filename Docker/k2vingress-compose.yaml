@@ -3,6 +3,7 @@ services:
   socat:
     container_name: socat
     image: alpine/socat
+    restart: always
     networks:
       - fab-infra
     volumes:
@@ -20,6 +21,7 @@ services:
     depends_on:
       socat:
         condition: service_healthy
+    restart: always
     networks:
       - fab-net
       - fab-infra
