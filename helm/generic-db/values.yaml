@@ -15,18 +15,10 @@ app_name: "postgres"
 container:
   replicas: 1
   image:
-    url: postgres:15.7
-
+    url: postgres:15.8
     repoSecret:
-      name: "registry-secret"
       enabled: false
-      dockerRegistry:
-        auths:
-          "docker.share.cloud.k2view.com":
-            username: ""
-            password: ""
   storage_path: "/opt/apps/pgsql/data/data/"
-
   resource_allocation:
     limits:
       memory: 4Gi
@@ -58,5 +50,4 @@ service:
 
 # pvc.yaml
 storage:
-  class: regional-pd
   alocated_amount: 10Gi

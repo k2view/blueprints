@@ -1,8 +1,10 @@
+{{ $namespace := default dict .Values.namespace }}
+{{- $storage := default dict .Values.storage -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: {{ .Values.app_name }}-claim
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: {{ .Values.app_name }}
     {{- range $label := .Values.labels }}
@@ -11,7 +13,9 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: {{ .Values.storage.class }}
+  {{- if $storage.class }}
+  storageClassName: {{ $storage.class }}
+  {{- end }}
   resources:
     requests:
-      storage: {{ .Values.storage.alocated_amount }}
+      storage: {{ default "10Gi" $storage.alocated_amount }}
