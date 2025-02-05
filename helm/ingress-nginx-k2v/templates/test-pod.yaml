@@ -1,0 +1,58 @@
+{{- if .Values.ingressTest.enabled }}
+kind: Pod
+apiVersion: v1
+metadata:
+  name: ingress-test-app
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    app: ingress-test
+spec:
+  serviceAccountName: restricted-sa
+  containers:
+    - name: ingress-test-app
+      securityContext:
+        allowPrivilegeEscalation: false
+      resources:
+        limits:
+          memory: 128Mi
+          cpu: '0.2'
+      image: hashicorp/http-echo
+      args:
+        - "-text=SUCCESS"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ingress-test-service
+  namespace: {{ .Values.namespace.name }}
+spec:
+  selector:
+    app: ingress-test
+  ports:
+    - port: 5678
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-test
+  namespace: {{ .Values.namespace.name }}
+  annotations:
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+spec:
+  ingressClassName: "nginx"
+  tls:
+  - hosts:
+    - ingress-test.{{ .Values.domain }}
+  rules:
+  - host: ingress-test.{{ .Values.domain }}
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ingress-test-service
+              port:
+                number: 5678
+{{- end }}
