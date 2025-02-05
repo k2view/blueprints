@@ -1,7 +1,5 @@
-# global
 namespace:
   name: "space-tenant"
-
 labels:
   - name: tenant
     value: my-tenant
@@ -16,7 +14,6 @@ container:
   replicas: 1
   image:
     url: cassandra:4.1.5
-
     repoSecret:
       name: "registry-secret"
       enabled: false
@@ -26,7 +23,6 @@ container:
             username: ""
             password: ""
   storage_path: "/var/lib/cassandra"
-
   resource_allocation:
     limits:
       memory: 4Gi
