@@ -1,8 +1,9 @@
+{{ $namespace := default dict .Values.namespace }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .Values.app_name }}-service
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: {{ .Values.app_name }}
     {{- range $label := .Values.labels }}

@@ -1,8 +1,15 @@
+{{ $namespace := default dict .Values.namespace }}
+{{ $affinity := default dict .Values.affinity -}}
+{{ $repoSecret := default dict .Values.container.image.repoSecret -}}
+{{ $resource_allocation := default dict .Values.container.resource_allocation}}
+{{ $limits := default dict $resource_allocation.limits}}
+{{ $requests := default dict $resource_allocation.requests}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.app_name }}-deployment
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels: &id001
     app: {{ .Values.app_name }}
     {{- range $label := .Values.labels }}
@@ -17,30 +24,30 @@ spec:
     metadata:
       labels: *id001
     spec:
-      {{- if .Values.container.image.repoSecret.enabled }}
+      {{- if $repoSecret.enabled }}
       imagePullSecrets:
-        - name: {{ .Values.container.image.repoSecret.name }}
+        - name: {{ $repoSecret.name }}
       {{- end }}
-      {{- if or (eq .Values.affinity.type "affinity") (eq .Values.affinity.type "anti-affinity") }}
+      {{- if or (eq $affinity.type "affinity") (eq $affinity.type "anti-affinity") }}
       affinity:
-        {{- if eq .Values.affinity.type "affinity" }}
+        {{- if eq $affinity.type "affinity" }}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: {{ .Values.affinity.label.name }}
+              - key: {{ $affinity.label.name }}
                 operator: In
                 values:
-                - {{ .Values.affinity.label.value }}
-        {{- else if eq .Values.affinity.type "anti-affinity" }}
+                - {{ $affinity.label.value }}
+        {{- else if eq $affinity.type "anti-affinity" }}
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
             nodeSelectorTerms:
             - matchExpressions:
-              - key: {{ .Values.affinity.label.name }}
+              - key: {{ $affinity.label.name }}
                 operator: NotIn
                 values:
-                - {{ .Values.affinity.label.value }}
+                - {{ $affinity.label.value }}
         {{- end }}
       {{- end }}
       containers:
@@ -51,11 +58,11 @@ spec:
         - containerPort: {{ .Values.service.port }}
         resources:
           limits:
-            memory: {{ .Values.container.resource_allocation.limits.memory }}
-            cpu: {{ .Values.container.resource_allocation.limits.cpu }}
+            memory: {{ default "4Gi" $limits.memory }}
+            cpu: {{ default "1" $limits.cpu }}
           requests:
-            memory: {{ .Values.container.resource_allocation.requests.memory }}
-            cpu: {{ .Values.container.resource_allocation.requests.cpu }}
+            memory: {{ default "4Gi" $requests.memory }}
+            cpu: {{ default "0.5" $requests.cpu }}
         env:
         {{- range .Values.secrets }}
         - name: {{ .key }}
