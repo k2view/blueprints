@@ -257,11 +257,14 @@ To do this, you must provide a token, a path to your Git repository, and the app
 
 To configure Git, open the .env file and specify the following in the Git Integration section:
 
-  - GIT_REPO - the Github repository URI to clone and store your project data. 
+  - **GIT_REPO** - the Github repository URI to clone and store your project data. 
     - **Important Note: Please do not prepend "HTTPS://" before the repository's URI**.
 
-  - GIT_BRANCH - the Git branch to use; the default is 'master'.
-  - GIT_TOKEN - the token used to authenticate to your GitHub repository.  
+  - **GIT_BRANCH** - the Git branch to use; the default is 'master'.
+  - **GIT_TOKEN** - the token used to authenticate to your GitHub repository.  
+  - **GIT_USERNAME** - the user name used to authenticate to your GitHub repository.
+  - **GIT_SSL_VERIFY** - values: [true/false] wither to validate the ssl certificate or not of your GitHub repository, **in case self signed cert used choose false**.
+      - *default value true*
 
 Fabric Web Studio will use these parameters to run an initial clone and Git operations. The initial clone performed will be: 
 
