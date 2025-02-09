@@ -1,5 +1,8 @@
 ingress-nginx:
   enabled: true
+  controller:
+    config:
+      annotations-risk-level: Critical
 
 domain: ""
 
