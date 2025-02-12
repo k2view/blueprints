@@ -76,7 +76,6 @@ services:
       GIT_BRANCH:
       GIT_USERNAME:
       GIT_TOKEN:
-      GIT_SSL_VERIFY:
       MAX_HEAP:
       INI_CONFIG_UPDATE_FILE:
       CLOUD_LINK: "https://cloud.k2view.com"

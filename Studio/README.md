@@ -62,7 +62,7 @@ The latest documentation is located at this location https://support.k2view.com/
 2. K2space.sh - A Bash shell script used to create, list, and destroy spaces defined by Web Studio profiles. This script is used to start Fabric and the embedded Traefik reverse proxy. It can allocate additional heap space if required and override the default Fabric version specified in the .env file.
 3. .env file - define various Fabric and Git parameters
 4. common.config file - define various Fabric and runtime configurations
-5. Studio_*.config files - four Fabric Profiles to choose from
+5. Studio_*.config files - the Fabric Profiles to choose from
 6. YAML files are used to configure the Fabric and Traefik services. You can use the tls-config.yaml file to configure the TLS certificate and private key. 
 
 
@@ -98,6 +98,7 @@ There are five steps to get Fabric Web Studio up and running within the Fabric D
 * Step 6: Log in to K2view's Nexus Container Registry
 * Step 7: Create and Launch a Fabric Space
 * Step 8: Access Web Studio
+* Docker Image Offline Package Download
 
 **Before you proceed, confirm that you have a K2view Nexus Container Registry Account**
 
@@ -202,7 +203,6 @@ Then, change the directory to the K2view directory. Copy `Studio-latest.zip` to 
 cd K2view
 # copy Studio-latest.zip to this directory
 # unzip Studio-latest.zip to this directory
-# rename the Studio-latest directory as Studio
 ```
 
 The Studio directory contains the configuration, YAML, and the K2Space.sh script files to configure and create your Fabric Web Studio spaces. Please refer to the <a href="/articles/98_maintenance_and_operational/Installations/dcr_web_studio/version2/Installation.html#whats-in-this-package">What's in this Package</a> topic above for details about these files. 
@@ -257,14 +257,12 @@ To do this, you must provide a token, a path to your Git repository, and the app
 
 To configure Git, open the .env file and specify the following in the Git Integration section:
 
-  - **GIT_REPO** - the Github repository URI to clone and store your project data. 
+  - **GIT_REPO** - the Git repository URI to clone and store your project data. 
     - **Important Note: Please do not prepend "HTTPS://" before the repository's URI**.
 
   - **GIT_BRANCH** - the Git branch to use; the default is 'master'.
-  - **GIT_TOKEN** - the token used to authenticate to your GitHub repository.  
-  - **GIT_USERNAME** - the user name used to authenticate to your GitHub repository.
-  - **GIT_SSL_VERIFY** - values: [true/false] wither to validate the ssl certificate or not of your GitHub repository, **in case self signed cert used choose false**.
-      - *default value true*
+  - **GIT_TOKEN** - the token used to authenticate to your Git repository.  
+  - **GIT_USERNAME** - the user name used to authenticate to your Git repository.
 
 Fabric Web Studio will use these parameters to run an initial clone and Git operations. The initial clone performed will be: 
 
@@ -298,43 +296,36 @@ Using the default profile, 'studio', you will not need to provide the profile on
 
 Docker and its Compose extension must be running on the server to perform this step. 
 
-Using the K2view Nexus Container Registry account provided to you, run the following command from the same directory that you have performed the git clone command - please note that you need to use sudo on Linux to ensure the login is inherited by sudo sessions: 
+Using the K2view Nexus Container Registry account provided to you, run the following command from the same directory that you have performed the git clone command \- please note that you need to use sudo on some Linux systems depending on your permissions:
 
 ```bash
 docker login -u [YourAccount] https://docker.share.cloud.k2view.com
 ```
 
-On Linux, prefix the command with `sudo`.
-
-```bash
-sudo docker login -u [YourAccount] https://docker.share.cloud.k2view.com
-```
-
 You will be asked to enter your password.
 
 ## Docker Image Offline Package Download
- 
+
 The Docker login command and the `k2space.sh` bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com.
- 
+
 Should you not have Internet connectivity, you can use this Docker Image Offline Package Download procedure to download the file on a separate machine and copy it to the local installation directory. The file, a Docker Image, is about 1.9GB in size. The version of the image depends on what is configured in the `.env` file. You will need to download the same version.
- 
+
 Following this procedure, when the `k2space.sh` script runs, the expected file will have already been loaded on the local machine and will not need to be downloaded from the Internet.
- 
+
 Here is the flow:
 1. Save / compress the desired Image tag:
- 
+
 `docker save docker.share.cloud.k2view.com/k2view/fabric-studio:8.1.7_22 | gzip > k2view_fabric-studio_8.1.7_22.tar.gz`
- 
+
 2. Copy the `k2view_fabric-studio_8.1.7_22.tar.gz` file to the target machine.
- 
+
 3. On the target machine, load the image locally:
- 
+
 `docker load -i k2view_fabric-studio_8.1.7_22.tar.gz`
- 
+
 Doing this before you run the first `k2space.sh` command ensures the file will be present on your system to create your first space and avoids downloading the file from the Internet.
 
 **Note**: The Docker login command and the k2space.sh bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com. 
-
 
 ### **Step 7**: Create and Launch a Fabric Space
 
@@ -350,42 +341,59 @@ If you have Git integration enabled within Windows Explorer, you can start `Git 
 
 #### Create Spaces on Your Server
 
-First, change directory to your Installation directory, e.g., `Studio`
+First, change the directory to your Installation directory, e.g., `Studio`
 
 ```bash
 cd Studio
 ```
 
-You can create multiple Fabric spaces on your server. To do so, use the `k2space.sh` script as shown here. On Linux, prefix the command with `sudo`.
+**Ensuring you have Read-Other Permission on all .config files on Linux**
+You may need to have Read-Other permissions on the .config files on a Linux system. To do so use the `chmod 644 [file]` command using:
 
 ```bash
-sudo ./k2space.sh create [--profile=profile-name] spacename
+ chmod 644 *.config
 ```
 
-You can omit passing in a `-- profile` parameter to use the default profile, 'studio'. On Linux, prefix the command with `sudo`.
+**Ensuring you have Execute Permission on Linux**
+You may need to make k2space.sh executable on a Linux system to do so use the `chmod` command using:
 
 ```bash
-sudo ./k2space.sh create spacename
+ chmod 700 k2space.sh
+```
+
+**Running the k2space.sh Script**
+You can create multiple Fabric spaces on your server. To do so, use the `k2space.sh` script as shown here. 
+
+ > On some Linux systems, you may need to prefix the command with `sudo`.
+
+```bash
+ ./k2space.sh create [--profile=profile-name] spacename
+```
+
+You can omit passing in a `-- profile` parameter to use the default profile, 'studio'. 
+
+```bash
+ ./k2space.sh create spacename
 ```
 
 Otherwise, please use the following --profile commands:
 
-1. **studio_pg**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM. On Linux, prefix the command with `sudo`.
+1. **studio_pg**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM. 
    
 ```bash
-sudo ./k2space.sh create --profile=studio_pg spacename
+ ./k2space.sh create --profile=studio_pg spacename
 ```
 
-2. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM. On Linux, prefix the command with `sudo`.
+2. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM. 
    
 ```bash
-sudo ./k2space.sh create --profile=studio_cass spacename
+ ./k2space.sh create --profile=studio_cass spacename
 ```
 
-3. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System. On Linux, prefix the command with `sudo`. 
+3. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System. 
 
 ```bash
-sudo ./k2space.sh create --profile=studio_pg_cass spacename
+ ./k2space.sh create --profile=studio_pg_cass spacename
 ```
 
 #### The Initial Installation
