@@ -1,0 +1,3 @@
+region:
+  required: true
+type: "pd-balanced" #pd-balanced,pd-ssd
