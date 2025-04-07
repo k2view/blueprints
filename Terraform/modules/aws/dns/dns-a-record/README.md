@@ -28,7 +28,7 @@ To use the `dns-a-record` module within a parent module, include the following c
 ```hcl
 module "dns-a-record" {
   depends_on   = [data.aws_lb.nginx-nlb]
-  source       = "../../../modules/aws/dns/dns-a-record"
+  source       = "../modules/aws/dns/dns-a-record"
   count        = var.domain != "" ? 1 : 0
   domain       = var.domain
   zone_id      = module.dns-hosted-zone[0].hz_zone_id

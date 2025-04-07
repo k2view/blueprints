@@ -1,5 +1,5 @@
 module "resource-group" {
-  source              = "../../../modules/azure/resource-group"
+  source              = "../modules/azure/resource-group"
   count               = var.create_resource_group ? 1 : 0
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -7,14 +7,14 @@ module "resource-group" {
 }
 
 module "private-network" {
-  source = "../../../modules/azure/network/private-network"
+  source = "../modules/azure/network/private-network"
   location = var.location
   prefix_name = var.prefix_name
   resource_group_name = module.resource-group[0].resource-group-name
 }
 
 module "acr" {
-  source              = "../../../modules/azure/acr"
+  source              = "../modules/azure/acr"
   acr_name            = "${var.prefix_name}SharedAcr"
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -23,7 +23,7 @@ module "acr" {
 
 module "aks" {
   depends_on              = [module.private-network]
-  source                  = "../../../modules/azure/aks"
+  source                  = "../modules/azure/aks"
   cluster_name            = var.cluster_name
   location                = var.location
   resource_group_name     = module.resource-group[0].resource-group-name
@@ -39,7 +39,7 @@ module "aks" {
 }
 
 module "iam" {
-  source = "../../../modules/azure/iam"
+  source = "../modules/azure/iam"
   cluster_name               = var.cluster_name
   resource_group_name        = var.resource_group_name
   location                   = var.location
@@ -51,7 +51,7 @@ module "iam" {
 # Ingress Controller
 module "ingress-controller" {
   depends_on        = [module.aks]
-  source            = "../../../modules/shared/ingress-controller"
+  source            = "../modules/shared/ingress-controller"
   domain            = var.domain
   cloud_provider    = "azure"
   delay_command     = var.delay_command
@@ -62,7 +62,7 @@ module "ingress-controller" {
 
 # DNS
 module "dns" {
-  source                  = "../../../modules/azure/network/dns"
+  source                  = "../modules/azure/network/dns"
   resource_group_name     = var.resource_group_name
   domain                  = var.domain
   record_ip               = module.ingress-controller.nginx_lb_ip
@@ -72,7 +72,7 @@ module "dns" {
 # K2view Agent
 module "k2view-agent" {
   depends_on                        = [module.aks]
-  source                            = "../../../modules/shared/k2view-agent"
+  source                            = "../modules/shared/k2view-agent"
   mailbox_id                        = var.mailbox_id
   mailbox_url                       = var.mailbox_url
   region                            = var.location
@@ -89,7 +89,7 @@ module "k2view-agent" {
 }
 
 module "storage-account" {
-  source      = "../../../modules/azure/storage-account"
+  source      = "../modules/azure/storage-account"
   resource_group_name = var.resource_group_name
   location            = var.location
   cluster_name        = var.cluster_name

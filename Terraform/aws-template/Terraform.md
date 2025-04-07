@@ -15,16 +15,16 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cluster-autoscaler"></a> [cluster-autoscaler](#module\_cluster-autoscaler) | [../../../modules/aws/k8s/autoscaler](../modules/aws/k8s/autoscaler) | n/a |
-| <a name="module_dns-a-record"></a> [dns-a-record](#module\_dns-a-record) | [../../../modules/aws/dns/dns-a-record](../modules/aws/dns/dns-a-record) | n/a |
-| <a name="module_dns-hosted-zone"></a> [dns-hosted-zone](#module\_dns-hosted-zone) | [../../../modules/aws/dns/dns-hosted-zone](../modules/aws/dns/dns-hosted-zone) | n/a |
-| <a name="module_ebs"></a> [ebs](#module\_ebs) | [../../../modules/aws/k8s/storage-classes/ebs](../modules/aws/k8s/storage-classes/ebs) | n/a |
-| <a name="module_efs"></a> [efs](#module\_efs) | [../../../modules/aws/k8s/storage-classes/efs](../modules/aws/k8s/storage-classes/efs) | n/a |
-| <a name="module_eks"></a> [eks](#module\_eks) | [../../../modules/aws/k8s/eks](../modules/aws/k8s/eks) | n/a |
-| <a name="module_ingress-controller"></a> [ingress-controller](#module\_ingress-controller) | [../../../modules/shared/ingress-controller](../modules/shared/ingress-controller) | n/a |
-| <a name="module_irsa"></a> [irsa](#module\_irsa) | [../../../modules/aws/irsa](../modules/aws/irsa) | n/a |
-| <a name="module_k2view-agent"></a> [k2view-agent](#module\_k2view-agent) | [../../../modules/shared/k2view-agent](../modules/shared/k2view-agent) | n/a |
-| <a name="module_vpc_cluster"></a> [vpc\_cluster](#module\_vpc\_cluster) | [../../../modules/aws/network/](../modules/aws/network/) | n/a |
+| <a name="module_cluster-autoscaler"></a> [cluster-autoscaler](#module\_cluster-autoscaler) | [../modules/aws/k8s/autoscaler](../modules/aws/k8s/autoscaler) | n/a |
+| <a name="module_dns-a-record"></a> [dns-a-record](#module\_dns-a-record) | [../modules/aws/dns/dns-a-record](../modules/aws/dns/dns-a-record) | n/a |
+| <a name="module_dns-hosted-zone"></a> [dns-hosted-zone](#module\_dns-hosted-zone) | [../modules/aws/dns/dns-hosted-zone](../modules/aws/dns/dns-hosted-zone) | n/a |
+| <a name="module_ebs"></a> [ebs](#module\_ebs) | [../modules/aws/k8s/storage-classes/ebs](../modules/aws/k8s/storage-classes/ebs) | n/a |
+| <a name="module_efs"></a> [efs](#module\_efs) | [../modules/aws/k8s/storage-classes/efs](../modules/aws/k8s/storage-classes/efs) | n/a |
+| <a name="module_eks"></a> [eks](#module\_eks) | [../modules/aws/k8s/eks](../modules/aws/k8s/eks) | n/a |
+| <a name="module_ingress-controller"></a> [ingress-controller](#module\_ingress-controller) | [../modules/shared/ingress-controller](../modules/shared/ingress-controller) | n/a |
+| <a name="module_irsa"></a> [irsa](#module\_irsa) | [../modules/aws/irsa](../modules/aws/irsa) | n/a |
+| <a name="module_k2view-agent"></a> [k2view-agent](#module\_k2view-agent) | [../modules/shared/k2view-agent](../modules/shared/k2view-agent) | n/a |
+| <a name="module_vpc_cluster"></a> [vpc\_cluster](#module\_vpc\_cluster) | [../modules/aws/network/](../modules/aws/network/) | n/a |
 
 ## Resources
 
