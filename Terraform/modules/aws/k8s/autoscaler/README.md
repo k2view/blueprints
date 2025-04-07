@@ -35,7 +35,7 @@ To use the `cluster-autoscaler` module within a parent module, include the follo
 module "cluster-autoscaler" {
   depends_on                    = [module.eks]
   count                         = var.deploy_autoscaler ? 1 : 0 
-  source                        = "../../../modules/aws/k8s/autoscaler"
+  source                        = "../modules/aws/k8s/autoscaler"
   cluster_name                  = var.cluster_name
   region                        = var.region
   role                          = module.eks.eks_managed_node_groups["main"].iam_role_name
