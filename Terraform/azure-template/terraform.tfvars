@@ -8,5 +8,6 @@ max_size             = 3
 # Agent
 mailbox_id          = "aaa-bbb-ccc-ddd-eee"
 mailbox_url         = "https://cloud.k2view.com/api/mailbox"
+subscription_id     = ""
 
 tags = { Env = "Dev", Project = "k2v_cloud", Owner = "owner_name" }

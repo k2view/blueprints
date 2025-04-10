@@ -39,6 +39,7 @@ module "aks" {
 }
 
 module "iam" {
+  depends_on              = [module.resource-group]
   source = "../modules/azure/iam"
   cluster_name               = var.cluster_name
   resource_group_name        = var.resource_group_name
