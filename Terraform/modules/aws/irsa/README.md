@@ -47,6 +47,7 @@ Terraform module which creates Cloud Deployer and Fabric Space IRSA (IAM Roles f
 | <a name="input_include_rds_space_permissions"></a> [include\_rds\_space\_permissions](#input\_include\_rds\_space\_permissions) | Whether to include RDS permissions in the space policy | `bool` | `true` | no |
 | <a name="input_include_s3_deployer_permissions"></a> [include\_s3\_deployer\_permissions](#input\_include\_s3\_deployer\_permissions) | Whether to include S3 permissions in the deployer policy | `bool` | `true` | no |
 | <a name="input_include_s3_space_permissions"></a> [include\_s3\_space\_permissions](#input\_include\_s3\_space\_permissions) | Whether to include S3 permissions in the space policy | `bool` | `true` | no |
+| <a name="input_include_secret_manager_space_permissions"></a> [include\_secret\_manager\_space\_permissions](#input\_include\_secret\_manager\_space\_permissions) | Whether to include secret manager space permissions in the space policy | `bool` | `true` | no |
 
 ## Outputs
 
@@ -84,6 +85,9 @@ This role has permissions for the following actions:
   - `rds-data:CommitTransaction`
   - `rds-data:RollbackTransaction`
     - Resources: All RDS resources in the specified tenant.
+
+- **Amazon Secret Manager**
+  - `secretsmanager:GetSecretValue`
 
 ### IAM Deployer Role Permissions
 
