@@ -12,7 +12,7 @@ nginx:
   httpPort:
     enabled: true
   internal_lb: false
-  version: 1.12.0
+  version: 1.12.1
   ingress_nginx_controller_image: registry.k8s.io/ingress-nginx/controller:v1.12.1@sha256:d2fbc4ec70d8aa2050dd91a91506e998765e86c96f32cffb56c503c9c34eed5b
   kube_webhook_certgen_image: registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.2@sha256:e8825994b7a2c7497375a9b945f386506ca6a3eda80b89b74ef2db743f66a5ea
 
