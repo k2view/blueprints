@@ -1,5 +1,5 @@
 # nginx-ingress-controller
-![Version: 1.3.2](https://img.shields.io/badge/Version-1.3.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.10.0](https://img.shields.io/badge/AppVersion-1.10.0-informational?style=flat-square)
+![Version: 1.3.2](https://img.shields.io/badge/Version-1.3.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.12.1](https://img.shields.io/badge/AppVersion-1.12.1-informational?style=flat-square)
 
 This Helm chart is designed to deploy an Nginx ingress controller in a Kubernetes environment. This controller manages the routing of HTTP and HTTPS traffic to the appropriate services within the cluster. It is particularly configured for the K2view site, ensuring optimized performance and security.
 
@@ -10,7 +10,7 @@ This Helm chart is designed to deploy an Nginx ingress controller in a Kubernete
 | aws.vpcCIDR | string | `""` | AWS VPC CIDR |
 | domain | string | `"site.cloud.k2view.com"` | Domain for the site, this parameter used for test page |
 | errorPage.enabled | bool | `true` | Enable custom error pages |
-| errorPage.image | string | `"registry.k8s.io/ingress-nginx/nginx-errors:v20230505@sha256:3600dcd1bbd0d05959bb01af4b272714e94d22d24a64e91838e7183c80e53f7f"` | Docker image for custom error pages |
+| errorPage.image | string | `"registry.k8s.io/ingress-nginx/nginx-errors:v20230505"` | Docker image for custom error pages |
 | errorPage.resource_allocation.limits.cpu | string | `"0.4"` | CPU limits for error page resources |
 | errorPage.resource_allocation.limits.memory | string | `"256Mi"` | Memory limits for error page resources |
 | errorPage.resource_allocation.requests.cpu | string | `"0.1"` | CPU requests for error page resources |
@@ -19,10 +19,10 @@ This Helm chart is designed to deploy an Nginx ingress controller in a Kubernete
 | ingressTest.enabled | bool | `true` | Enable ingress test |
 | namespace.name | string | `"ingress-nginx"` | Namespace for the ingress controller |
 | nginx.httpPort.enabled | bool | `true` | Enable HTTP port |
-| nginx.ingress_nginx_controller_image | string | `"registry.k8s.io/ingress-nginx/controller:v1.10.0@sha256:42b3f0e5d0846876b1791cd3afeb5f1cbbe4259d6f35651dcc1b5c980925379c"` | Docker image for the Nginx ingress controller |
+| nginx.ingress_nginx_controller_image | string | `"registry.k8s.io/ingress-nginx/controller:v1.12.1"` | Docker image for the Nginx ingress controller |
 | nginx.internal_lb | bool | `false` | Use internal load balancer |
-| nginx.kube_webhook_certgen_image | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.4.0@sha256:44d1d0e9f19c63f58b380c5fddaca7cf22c7cee564adeff365225a5df5ef3334"` | Docker image for webhook certificate generation |
-| nginx.version | string | `"1.10.0"` | Version of the Nginx ingress controller |
+| nginx.kube_webhook_certgen_image | string | `"registry.k8s.io/ingress-nginx/kube-webhook-certgen:v1.5.2"` | Docker image for webhook certificate generation |
+| nginx.version | string | `"1.12.1"` | Version of the Nginx ingress controller |
 | provider | string | `"gcp"` | Cloud provider (e.g., GCP, AWS) |
 | tlsSecret.cert | string | `""` | TLS certificate |
 | tlsSecret.certPath | string | `""` | Path to the TLS certificate |

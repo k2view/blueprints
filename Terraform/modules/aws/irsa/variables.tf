@@ -38,6 +38,12 @@ variable "include_opensearch_space_permissions" {
   default     = true  
 }
 
+variable "include_secret_manager_space_permissions" {
+  description = "Whether to include secret manager permissions in the space policy"
+  type        = bool
+  default     = true
+}
+
 variable "include_common_deployer_permissions" {
   description = "Whether to include common permissions in the deployer policy"
   type        = bool

@@ -89,6 +89,16 @@ locals {
     }
   ] : []
 
+  secret_manager_space_permissions = var.include_secret_manager_space_permissions ? [
+    {
+      Effect  = "Allow",
+      Action  = [
+        "secretsmanager:GetSecretValue"
+      ],
+      Resource  = "*"
+    }
+  ] : []
+
 ### DEPLOYER ###
   common_deployer_permissions = var.include_common_deployer_permissions ? [
     {
@@ -191,7 +201,7 @@ resource "aws_iam_policy" "iam_fabric_space_policy" {
   description = "Fabric space policy"
   policy      = jsonencode({
     Version   = "2012-10-17",
-    Statement = concat(local.s3_space_permissions, local.cassandra_space_permissions, local.rds_space_permissions, local.msk_space_permissions, local.opensearch_space_permissions),
+    Statement = concat(local.s3_space_permissions, local.cassandra_space_permissions, local.rds_space_permissions, local.msk_space_permissions, local.opensearch_space_permissions, local.secret_manager_space_permissions),
   })
 
   tags = merge(
