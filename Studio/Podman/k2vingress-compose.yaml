@@ -5,15 +5,17 @@ services:
     image: alpine/socat
     restart: always
     networks:
-      - fab-infra
+      - fab-net
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command: tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+      - ${SOCKET}:${SOCKET}:ro
+    command: tcp-listen:2375,fork,reuseaddr unix-connect:${SOCKET}
     healthcheck:
       test: ["CMD-SHELL", "socat /dev/null TCP4:localhost:2375 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 8
+    security_opt:
+      - "label=type:container_runtime_t"
 
   traefik:
     container_name: traefik
@@ -24,14 +26,13 @@ services:
     restart: always
     networks:
       - fab-net
-      - fab-infra
     ports:
       - ${API_PORT}:8080
       - ${INGRESS_HTTP_PORT}:80
       - ${INGRESS_HTTPS_PORT}:443
     volumes:
-      - ./ssl-certs/:/etc/certs/
-      - ./tls-config.yaml:/etc/traefik/dynamic/tls-config.yaml
+      - ./ssl-certs/:/etc/certs/:Z
+      - ./tls-config.yaml:/etc/traefik/dynamic/tls-config.yaml:Z
     command:
       - "--api.insecure=true"
       - "--providers.file.filename=/etc/traefik/dynamic/tls-config.yaml"
@@ -45,11 +46,6 @@ services:
       - "k2v-ingress"
 
 networks:
-  fab-infra:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: "${INFRA_SUBNET}"
   fab-net:
     name: fab-net
     external: true
