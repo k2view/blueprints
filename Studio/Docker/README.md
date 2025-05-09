@@ -1,22 +1,47 @@
-# Docker Compose Runtime for K2view Fabric Web Studio, Version 2.0
+# K2view Fabric Web Studio for Docker Compose, Version 2.1
 This **README** describes the Docker Compose Runtime used to host K2view Fabric Web Studio. It covers setup, components, installation options, and features. 
 
 **About K2view Fabric Web Studio**
 
 K2view Fabric Web Studio provides developers with a unified platform for designing, building, and managing data-driven solutions. The Docker Compose Runtime's multi-space capability enables the creation of data management applications supporting multiple developers.  Developers benefit from robust data management and orchestration tools for real-time integration, seamless testing, and debugging features that accelerate project completion and deliver collaborative functionality that supports multiple users. 
 
-Docker Compose Runtime for K2view Fabric Web Studio, Version 2.0, supports multiple space creation and provides a simplified URL for accessing Fabric Spaces using a URL context rather than a subdomain-based URL. 
+K2view Fabric Web Studio for Docker Compose, Version 2.1, supports multiple space creation and provides a simplified URL for accessing Fabric Spaces using a URL context rather than a subdomain-based URL. 
+
+**What's New**
+
+Version 2.1 incorporates a few updates:
+
+* Added support for Podman in addition to Docker Compose
+* Upgrades the Fabric version to 8.2.1_46.
+* The Heap size was increased to 4GB.
+* We now use PROJECT_NAME to define the project name; previously, this field used the same value as the SPACE_NAME parameter.
+* When creating a Space, we automatically load a custom .env, compose.yaml, and a .config based on the Space's name. Refer to the Configuring Runtime File Per Space section for details.
+* Fabric port 5124 is now exposed for JDBC access to the host's database (using a host's random port, similar to 3213).
+* Ability to define a Linux socket file via .env.
+* We improved the healthcheck.
+
+New Release Location
+
+* The Docker Compose runtime release download was renamed as `Studio-Docker-latest.zip`.
+* For Podman, the distribution is named `Studio-Podman-latest.zip`.
+
+k2space.sh changes include
+
+* New flag: --project can be used to specify the Project name overriding the value of PROJECT_NAME defined in the .env file.
+* New flag: --env allows the use of a custom .env file. Note: when specifying the --env flag the .env / .env-spacename will not be used.
+* Prevents a Space from being recreated if one exists. It will start instead.
+* Minor improvements and bug fixes.
 
 ## The Components
 
-1. **Docker Compose Runtime**: Fabric Web Studio can be installed within a Docker Compose Runtime environment. Docker and its Compose plugin provide the ability to run Web Studio for which three profiles can be selected, an embedded Fabric engine, and a Traefic reverse proxy, that combined provide the means to create multiple Fabric Spaces within the Docker Compose Runtime. 
-2. **Fabric Image**: The Docker Compose Runtime is certified to run specific Fabric releases you can download from K2view's Nexus Container Registry.
-3. **K2view Fabric Web Studio**: Available with four profiles that each embeds Fabric.
+1. **Docker Compose Runtime**: Fabric Web Studio can be installed within a Docker Compose Runtime environment. Docker and its Compose plugin provide the ability to run Web Studio, for which three profiles can be selected, an embedded Fabric engine, and a Traefik reverse proxy, which combined provide the means to create multiple Fabric Spaces within the Docker Compose Runtime. 
+1. **Fabric Image**: The Docker Compose Runtime is certified to run specific Fabric releases you can download from K2view's Nexus Container Registry.
+1. **K2view Fabric Web Studio**: Available with four profiles that each embeds Fabric.
    1. **studio.config**. The default Web Studio profile embeds SQLite for its System DB.
-   2. **studio_pg.config**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
-   3. **studio_cass.config**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM.
-   4. **studio_pg_cass.config**. A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
-4. **Traefik Reverse Proxy** allows you to route requests to your various Fabric Spaces running within your Docker Compose Runtime at http(s)://[host]/[spacename]/. 
+   1. **studio_pg.config**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
+   1. **studio_cass.config**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM.
+   1. **studio_pg_cass.config**. A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
+1. **Traefik Reverse Proxy** allows you to route requests to your various Fabric Spaces running within your Docker Compose Runtime at http(s)://[host]/[spacename]/. 
 
 ## Prerequisites
 
@@ -26,58 +51,61 @@ The Docker Compose Runtime for Fabric Services has specific prerequisites.
 
 The supported processor architecture is AMD64.  Fabric does not support ARM-based processors.
 
-The amount of RAM you need will depend on your use case. 32GB of memory should suffice to run your Docker Compose Runtime for Fabric Web Studio and the necessary integration. A 2GB Heap is allocated by default, which can be overridden. 
+The amount of RAM you need will depend on your use case. 32GB of memory should suffice to run your Fabric Web Studio for Docker Compose and the necessary integration. A 4GB Heap is allocated by default, which can be overridden. 
 
 **3rd Party Software**
 
 1. You need to install a Git client on the computer by downloading and installing it. You can download it from https://git-scm.com/downloads and follow the instructions provided at https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 
-2. You need to install and run Docker, which you can download from https://docs.docker.com/engine/install/.
-3. To install Docker and Docker Compose, which will host Docker Compose Runtime for Fabric Services, you need to have administrative rights on the machine:
+1. You need to install and run Docker, which you can download from https://docs.docker.com/engine/install/.
+1. To install Docker and Docker Compose, which will host Docker Compose Runtime for Fabric Services, you need to have administrative rights on the machine:
    1. Linux: root or sudo access granting you administrative rights
-   2. Windows: you need administrator rights on your machine
+   1. Windows: you need administrator rights on your machine
 
-4. The Docker Compose Runtime for Fabric Services requires Linux. You can also use Microsoft Windows if you use the Windows Subsystem for Linux (WSL) in conjunction with a Linux distribution. Instructions are provided in the document’s Windows section. 
-5. You need to install the Docker Compose Plugin. Please note that if you install Docker Desktop, Docker Compose is bundled. See https://docs.docker.com/compose/install/. Please use the native Docker Compose plugin and not the Python-based docker-compose utility. 
+1. The Docker Compose Runtime for Fabric Services requires Linux. You can also use Microsoft Windows if you use the Windows Subsystem for Linux (WSL) in conjunction with a Linux distribution. Instructions are provided in the document’s Windows section. 
+1. You need to install the Docker Compose Plugin. Please note that if you install Docker Desktop, Docker Compose is bundled. See https://docs.docker.com/compose/install/. Please use the native Docker Compose plugin and not the Python-based docker-compose utility. 
 
 **K2view Software**
 
 1. The installation presumes you have Internet access, so you can obtain Fabric images from the K2view Nexus Container Registry and perform a Git clone on your machine. 
-2. To obtain a Fabric Studio docker image, you need a K2view Nexus account. Your K2view representative can arrange this for you. 
+1. To obtain a Fabric Studio docker image, you need a K2view Nexus account. Your K2view representative can arrange this for you. 
 
 **Internet Access is Required**
 
 Internet access is required to perform this installation. You will need access to:
 
-1. Github.com to clone K2view’s blueprints at https://github.com/k2view/blueprints.git
-2. K2view’s Nexus Docker Image repository at https://docker.share.cloud.k2view.com
-3. If you plan to install TDM, you need access to K2view’s Exchange.
+1. (Optional) Github.com to clone K2view’s blueprints at https://github.com/k2view/blueprints.git
+1. K2view’s Nexus Docker Image repository at https://docker.share.cloud.k2view.com
+1. If you plan to install TDM, you need access to K2view’s Exchange.
 
 ## Documentation
-The latest documentation is located at this location https://support.k2view.com/Academy/articles/98_maintenance_and_operational/Installations/dcr_web_studio/version2/About.html. 
+The latest documentation is located at this location `https://support.k2view.com/knowledge-base.html`. 
+
+
 
 ## What's in this Package
 
 1. README.md - This document
-2. K2space.sh - A Bash shell script used to create, list, and destroy spaces defined by Web Studio profiles. This script is used to start Fabric and the embedded Traefik reverse proxy. It can allocate additional heap space if required and override the default Fabric version specified in the .env file.
-3. .env file - define various Fabric and Git parameters
-4. common.config file - define various Fabric and runtime configurations
-5. Studio_*.config files - the Fabric Profiles to choose from
-6. YAML files are used to configure the Fabric and Traefik services. You can use the tls-config.yaml file to configure the TLS certificate and private key. 
+1. K2space.sh - A Bash shell script used to create, list, and destroy spaces defined by Web Studio profiles. This script is used to start Fabric and the embedded Traefik reverse proxy. It can allocate additional heap space if required and override the default Fabric version specified in the .env file.
+1. .env file - define various Fabric and Git parameters
+1. .env-tdmspace - a sample file with a set of parameters that will override the default configuration defined in the .env file that will apply to a Space named "tdmspace"
+1. common.config file - define various Fabric and runtime configurations
+1. Studio_*.config files - the Fabric Profiles to choose from
+1. YAML files are used to configure the Fabric and Traefik services. You can use the tls-config.yaml file to configure the TLS certificate and private key. 
 
 
 ## Things to Configure
 1. Git Configuration - This is described in Step 5 - Configuring Git and TLS
-2. TLS Certificate and Private Key Configuration - Optional because Traefik uses its own self-signed TLS certificate for HTTPS connections by default.  One is created for you by default for the machine.  To provide your own, please refer to Step 5. 
+1. TLS Certificate and Private Key Configuration - Optional because Traefik uses its own self-signed TLS certificate for HTTPS connections by default.  One is created for you by default for the machine.  To provide your own, please refer to Step 5. 
 
 
 ## Things to Know
 1. Default administrator credentials are
 
    1. Username: admin
-   2. Password: admin
+   1. Password: admin
 
-2. Ports: Traefik employs the following ports:
+1. Ports: Traefik employs the following ports:
 
    | Protocol | Port | Description       |
    | -------- | ---- | ----------------- |
@@ -88,9 +116,9 @@ The latest documentation is located at this location https://support.k2view.com/
 
 ## Installation
 
-There are five steps to get Fabric Web Studio up and running within the Fabric Docker Compose Runtime environment.
+Follow these steps to get Fabric Web Studio up and running within the Fabric Docker Compose Runtime environment.
 
-* Step 1: Install and Validate Docker and Docker Compose Runtime
+* Step 1: Install and Validate Docker and Docker Compose 
 * Step 2: Download the K2view Blueprints
 * Step 3: Download
 * Step 4: Configure Git and TLS
@@ -104,17 +132,17 @@ There are five steps to get Fabric Web Studio up and running within the Fabric D
 
 You need to obtain credentials to access the K2view Nexus. Your K2view account representative can arrange this for you. If you do not have access, please contact your K2view representative, who can provide steps to help you through this process.
 
-### **Step 1**: Install and Validate Docker and Docker Compose Runtime
+### **Step 1**: Install and Validate Docker and Docker Compose 
 
-If Docker has not already been installed on your machine, please refer to the <a href="/articles/98_maintenance_and_operational/Installations/dcr_web_studio/version2/6-Docker-Compose.html">Docker and Docker Compose Installation</a> topic. 
+If Docker has not already been installed on your machine, please refer to the Docker and Docker Compose Installation topic at https://support.k2view.com/knowledge-base.html. 
 
-The easiest and recommended way to get Docker Compose is to install Docker Desktop. Docker Desktop includes Docker Compose, Docker Engine, and Docker CLI, and all prerequisites for Compose. Please also refer to the <a href="/articles/98_maintenance_and_operational/Installations/dcr_web_studio/version2/6-Docker-Compose.html">Docker and Docker Compose Installation</a> topic.
+The easiest and recommended way to get Docker Compose is to install Docker Desktop. Docker Desktop includes Docker Compose, Docker Engine, and Docker CLI, and all prerequisites for Compose. Please also  refer to the Docker and Docker Compose Installation topic at https://support.k2view.com/knowledge-base.html.
 
-### **Step 2**: Download the K2view Blueprints
+### **Step 2**: Setup
 
-After installing a Git client on your machine, you must “clone” the K2view Blueprints to "download" them. These blueprints incorporate the Fabric Docker Compose Runtime installation files. The K2view Blueprints are hosted on GitHub.com (Internet access is required). 
+You can download the distribution (recommended) or using a Git, “clone” the K2view Blueprints to "download" them. These blueprints incorporate the Fabric Docker Compose Runtime installation files. The K2view Blueprints are hosted on GitHub.com (Internet access is required). 
 
-Where you clone the files depends on the operating system you use. There are different instructions depending if you are using Linux or MacOS, than those for Microsoft Windows.
+Where you download or clone the files depends on the operating system you use. There are different instructions depending on whether you are using Linux or MacOS, than those for Microsoft Windows.
 
 Please note that persistent files created by Fabric Web Studio and the database instance you install will host their data in your installation directory's "persistent-data" folder (e.g., K2view/Studio/persistent-data). Your Fabric Space's data is stored in the persistent-data/spacename directory. The respective space's directory will contain data if you create multiple spaces. The location of the persistent data directory is configured in the `.env` file and set by default to be in the Fabric Web Studio installation directory. This is a per-space configuration. 
 
@@ -122,7 +150,7 @@ Please note that persistent files created by Fabric Web Studio and the database 
 
 *Select a Base Directory for your Download and Installation Directory Locations*
 
-First, please select a location to download the K2view Blueprint content. This *base* directory can also hold the Fabric Web Studio installation directory from where it will run. 
+First, please select a location to download the distribution or clone the K2view Blueprint content. This *base* directory can also hold the Fabric Web Studio installation directory from which it will run. 
 
 Use the *change directory* command on your shell to switch to the designated base directory:
 
@@ -132,7 +160,7 @@ cd [base directory]
 
 *Create your Download and Installation Directory Location*
 
-Using a shell, create a "K2view" directory to download K2view's Blueprints. You can also use the K2view directory to hold the K2view Fabric Web Studio Installation directory. We recommend the use of K2view for this directory.
+Using a shell, create a "K2view" directory. You can also use the K2view directory to hold the K2view Fabric Web Studio Installation directory. We recommend the use of K2view for this directory.
 
 ```bash
 mkdir K2view
@@ -187,29 +215,29 @@ mkdir K2view
 
 ### **Step 3**: Download
 
-There are two options to obtain the Docker Compose Runtime for Fabric Web Studio. You can download a zip file or clone the content from K2view's Blueprints.
+There are two options to obtain Fabric Web Studio. You can download a zip file or clone the content from K2view's Blueprints.
 
-#### Option: Download The Latest Version of Docker Compose Runtime for Fabric Web Studio
+#### Option 1: Download The Latest Version of Fabric Web Studio for Docker Compose
 
-You can download the latest version of Docker Compose Runtime for Fabric Web Studio from this location: 
+You can download the latest version of Fabric Web Studio for Docker Compose from this location: 
 
 ```bash
-https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Studio-latest.zip
+https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Studio-Docker-latest.zip
 ```
 
-Then, change the directory to the K2view directory. Copy `Studio-latest.zip` to this directory, and unzip `Studio-latest.zip` to this directory. Then rename the `Studio-latest.zip` directory as `Studio`.
+Then, change the directory to the K2view directory. Copy `Studio-Docker-latest.zip` to this directory, and unzip `Studio-Docker-latest.zip` to this directory. Then, rename the `Studio-Docker-latest.zip` directory as `Studio`.
 
 ```bash
 cd K2view
-# copy Studio-latest.zip to this directory
-# unzip Studio-latest.zip to this directory
+# copy Studio-Docker-latest.zip to this directory
+# unzip Studio-Docker-latest.zip to this directory
 ```
 
-The Studio directory contains the configuration, YAML, and the K2Space.sh script files to configure and create your Fabric Web Studio spaces. Please refer to the <a href="/articles/98_maintenance_and_operational/Installations/dcr_web_studio/version2/Installation.html#whats-in-this-package">What's in this Package</a> topic above for details about these files. 
+The Studio directory contains the configuration, YAML, and the K2Space.sh script files to configure and create your Fabric Web Studio spaces. Please refer to the What's in this Package topic above for details about these files. 
 
 You can now skip to Step 4.
 
-#### Option: Clone the K2view Blueprints 
+#### Option 2: Clone the K2view Blueprints 
 
 Using a shell, change your directory to your K2view directory and run the following command to clone K2view Blueprints (this requires a prior installation of a Git client):
 
@@ -249,7 +277,7 @@ The Studio directory contains the configuration, YAML, and the K2Space.sh script
 
 You should consider a few things, including configuring a Git repository for your project. Though not mandatory, it is a best practice to store your project files in Git (or in a Git-compliant code repository). 
 
-You can configure it before the creation of Fabric Space via the .env file. You can do so after starting Fabric Web Studio using its built-in Git client. Performing this step within Fabric Web Studio.
+You can configure it before the creation of Fabric Space via the .env file. You can do so after starting Fabric Web Studio using its built-in Git client. Perform this step within Fabric Web Studio.
 
 **Configuring Git before Creating your Fabric Space**
 
@@ -257,8 +285,8 @@ To do this, you must provide a token, a path to your Git repository, and the app
 
 To configure Git, open the .env file and specify the following in the Git Integration section:
 
-  - **GIT_REPO** - the Git repository URI to clone and store your project data. 
-    - **Important Note: Please do not prepend "HTTPS://" before the repository's URI**.
+  - **GIT_REPO** - the Git repository URL to clone and store your project data. 
+    - **Important Note: Please do not prepend "https://" before the repository's URL**.
 
   - **GIT_BRANCH** - the Git branch to use; the default is 'master'.
   - **GIT_TOKEN** - the token used to authenticate to your Git repository.  
@@ -283,9 +311,9 @@ If you perform this step after the initial installation, you must restart Fabric
 There are four profiles, each of which embeds Fabric. The default is 'studio'.  
 
 1. **studio**. The default Web Studio profile embeds SQLite for its System DB.
-2. **studio_pg**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
-3. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM.
-4. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
+1. **studio_pg**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
+1. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM.
+1. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
 
 Using the default profile, 'studio', you will not need to provide the profile on the `k2space.sh` command line. Otherwise, you will need to enter one of the other profiles. 
 
@@ -306,30 +334,30 @@ You will be asked to enter your password.
 
 ## Docker Image Offline Package Download
 
-The Docker login command and the `k2space.sh` bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com.
+The Docker login command and the `k2space.sh` bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com.
 
-Should you not have Internet connectivity, you can use this Docker Image Offline Package Download procedure to download the file on a separate machine and copy it to the local installation directory. The file, a Docker Image, is about 1.9GB in size. The version of the image depends on what is configured in the `.env` file. You will need to download the same version.
+If your target machine **does not have Internet connectivity**, you can follow this **offline download procedure** to transfer the required image from another system. The Fabric image is approximately **1.9GB**, and its version must match the value specified in your local `.env` file.
 
-Following this procedure, when the `k2space.sh` script runs, the expected file will have already been loaded on the local machine and will not need to be downloaded from the Internet.
+By preloading the image locally, the `k2space.sh` script can create a Fabric Space without downloading the image from the registry.
 
 Here is the flow:
 1. Save / compress the desired Image tag:
 
-`docker save docker.share.cloud.k2view.com/k2view/fabric-studio:8.1.7_22 | gzip > k2view_fabric-studio_8.1.7_22.tar.gz`
+`docker save docker.share.cloud.k2view.com/k2view/fabric-studio:X.Y.Z_0 | gzip > k2view_fabric-studio_X.Y.Z_0.tar.gz`
 
-2. Copy the `k2view_fabric-studio_8.1.7_22.tar.gz` file to the target machine.
+1. Copy the `k2view_fabric-studio_X.Y.Z_0.tar.gz` file to the target machine.
 
-3. On the target machine, load the image locally:
+1. On the target machine, load the image locally:
 
-`docker load -i k2view_fabric-studio_8.1.7_22.tar.gz`
+`docker load -i k2view_fabric-studio_X.Y.Z_0.tar.gz`
 
 Doing this before you run the first `k2space.sh` command ensures the file will be present on your system to create your first space and avoids downloading the file from the Internet.
 
-**Note**: The Docker login command and the k2space.sh bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com. 
+**Note**: The Docker login command and the k2space.sh bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com. 
 
 ### **Step 7**: Create and Launch a Fabric Space
 
-#### **Space Naming**
+#### **Space Name**
 
 When creating a space, its name must consist of only lowercase alphanumeric characters, hyphens, and underscores and start with either a letter or a number. You cannot use uppercase characters. 
 
@@ -384,13 +412,13 @@ Otherwise, please use the following --profile commands:
  ./k2space.sh create --profile=studio_pg spacename
 ```
 
-2. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM. 
+1. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM. 
    
 ```bash
  ./k2space.sh create --profile=studio_cass spacename
 ```
 
-3. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System. 
+1. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System. 
 
 ```bash
  ./k2space.sh create --profile=studio_pg_cass spacename
@@ -427,7 +455,7 @@ When presented with the login screen, enter:
 If you access Fabric Web Studio, you have successfully installed it. 
 
 
-## Operating and Managing Docker Compose Runtime for Fabric Web Studio
+## Operating and Managing Fabric Web Studio for Docker Compose
 
 ### Fabric Spaces
 This k2space.sh shell script makes it easy to create and delete Fabric. You can also use it to list and get information about existing Fabric Spaces using: 
@@ -503,7 +531,7 @@ You are ready to add users. You can experiment with the built-in System DB (e.g.
 
 To use the built-in authentication provider, navigate to the [Web Admin App](https://support.k2view.com/Academy/articles/30_web_framework/03_web_admin_application.html). Select the Security tab. Select the Users tab and add a user. Select the Roles tab, create a new role (e.g., User), and then assign Fabric permissions to the newly created role. 
 
-The Docker Compose Runtime for K2view Fabric Web Studio employs underlying Fabric security capabilities and configurations. Fabric works with several authentication providers. Each authenticator is responsible for user authentication and managing user IDs and roles.
+The K2view Fabric Web Studio for Docker Compose employs underlying Fabric security capabilities and configurations. Fabric works with several authentication providers. Each authenticator is responsible for user authentication and managing user IDs and roles.
 
 Following are the supported authentication providers as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/07_user_IAM_overview.html). 
 
@@ -529,9 +557,12 @@ Here are the command options for k2space.sh:
 | --profile=        | Allows you to select the desired Fabric Space Profile        |
 | --heap=           | Allows you to override the default 2GB allocated heap size   |
 | --fabric-version= | Allows you to override the Fabric version specified in the .env file |
-| --compose=        | Allows user to use a custom Docker compose.yaml file         |
+| --compose=        | Allows you to use a custom Docker compose.yaml file         |
+| --env=            | Allows you to use a custom Docker environment file |
+| --project=            | Allows you to specify the Project's name |
 
-The Fabric version is specified using major.minor Fabric version identifiers. E.g., 8.1.6_5. 
+
+The Fabric version is specified using the desired image tag. E.g., 8.2.1_46 
 
 ### .config File Format
 These configuration files contain required or custom settings used by Fabric. Configure  parameters as if you were editing any "ini" file to update config.ini
@@ -549,3 +580,76 @@ key2=value2
 ### About the fabric-init Container
 
 This temporary container sets the proper ownership of the persistent data's _Space_ folder. After its execution, it should exit automatically.
+
+
+
+## Customizing Runtime Files Per Space
+
+K2view Fabric Web Studio's Docker Compose Runtime supports **per-Space configuration overrides** using custom `.env`, `compose.yaml`, and `.config` files. When a new Fabric Space is created using the `k2space.sh` script, the runtime checks for specially named files corresponding to the Space name and applies them accordingly.
+
+### File Customization Behavior
+
+When creating a Space named, for example, `dcr210`, the following behavior applies:
+
+- **`.env` and `.config` files** are **appended to** the base configuration.
+- **`compose.yaml` files** are **overridden completely** if a matching file is found.
+
+#### `.env` Customization
+
+- The base `.env` file is always loaded first.
+- If a file named `.env-dcr210` exists (where `dcr210` is the Space name), its values will be **appended to or override** those defined in the base `.env`.
+- You can use this to set environment-specific parameters such as `MAX_HEAP`, `GIT_REPO`, or other custom variables.
+
+#### `compose.yaml` Customization
+
+- The default `compose.yaml` is loaded unless a file named `compose-dcr210.yaml` exists.
+- If `compose-dcr210.yaml` exists  (where `dcr210` is the Space name), it will **completely replace** the default `compose.yaml` for that Space.
+
+#### `.config` Customization
+
+- The base `common.config` file is always loaded.
+- If a file named `dcr210.config` exists (where `dcr210` is the Space name), its values will be **appended to or override** settings from `common.config`.
+- This allows per-Space configuration of Fabric runtime behavior, such as a custom system DB path or SSO settings.
+
+### Manual Overrides
+
+You can also explicitly specify files when using the `k2space.sh` script:
+
+```
+./k2space.sh create --env=custom.env --compose=custom-compose.yaml --config=custom.config dcr210
+```
+
+When using the `--env` or `--compose` options, **automatic detection of `.env-[spacename]` and `compose-[spacename].yaml` is skipped**.
+
+### Example Use Case
+
+For a Space named `dcr210`, you might create:
+
+- `.env-dcr210` to override heap size:
+
+  ```
+  env
+  
+  MAX_HEAP=8G
+  ```
+
+- `compose-dcr210.yaml` to expose an additional port (e.g., JDBC port 5124):
+
+  ```
+  yaml
+  
+  ports:
+    - "5124:5124"
+  ```
+
+- `dcr210.config` to point to a different System DB path or define SSO behavior:
+
+  ```
+  ini
+  
+  [System]
+  db.path=/custom/path/system.db
+  ```
+
+This flexible mechanism supports both shared and isolated runtime customization for Fabric Web Studio Spaces, making it ideal for multi-tenant development, QA, or demo environments.
+
