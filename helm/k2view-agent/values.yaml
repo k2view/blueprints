@@ -68,29 +68,14 @@ serviceAccount:
   role:
     rules:
       - apiGroups: [""]
-        resources: 
-          - "namespaces"
-          - "pods"
-          - "configmaps"
-          - "secrets"
-          - "serviceaccounts"
-          - "services"
-          - "persistentvolumeclaims"
-        verbs: 
-          - "create"
-          - "delete"
-          - "get"
-          - "list"
-          - "patch"
-      - apiGroups: [ "" ]
-        resources:
-          - "nodes"
-        verbs:
-          - "get"
-          - "list"
+        resources: ["namespaces", "pods", "configmaps", "secrets", "serviceaccounts", "events"]
+        verbs: ["create", "delete", "get", "list", "patch", "watch", "update"]
+      - apiGroups: [""]
+        resources: ["nodes"]
+        verbs: ["get", "list"]
       - apiGroups: ["apps"]
-        resources: ["deployments", "statefulsets"]
-        verbs: ["create", "delete", "get", "list", "patch"]
+        resources: ["deployments", "statefulsets", "deployments/scale", "statefulsets/scale"]
+        verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
       - apiGroups: ["batch"]
         resources: ["jobs", "jobs/status"]
         verbs: ["create", "delete", "get", "list"]
@@ -106,24 +91,15 @@ serviceAccount:
       - apiGroups: [""]
         resources: ["services", "persistentvolumeclaims"]
         verbs: ["create", "delete", "get", "list"]
-      - apiGroups: [ "" ]
-        resources: ["events"]
-        verbs: ["list" ] 
       - apiGroups: ["monitoring.coreos.com"]
         resources: ["podmonitors"]
         verbs: ["create", "delete"]
       - apiGroups: ["autoscaling"]
-        resources: 
-          - "horizontalpodautoscalers"
-        verbs: 
-          - "create"
-          - "delete"
-          - "get"
-          - "list"
-          - "patch"
-      - apiGroups: [ "storage.k8s.io" ]
-        resources:
-          - "storageclasses"
-        verbs:
-          - "get"
-          - "list"
+        resources: ["horizontalpodautoscalers"]
+        verbs: ["create", "delete", "get", "list", "patch"]
+      - apiGroups: ["storage.k8s.io"]
+        resources: ["storageclasses"]
+        verbs: ["get", "list"]
+      - apiGroups: ["rbac.authorization.k8s.io"]
+        resources: ["roles", "rolebindings"]
+        verbs: ["get", "list", "watch", "create", "patch", "delete", "update"]
