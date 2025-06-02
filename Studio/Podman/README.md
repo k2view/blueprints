@@ -35,7 +35,7 @@ Version 2.1 of K2view Fabric Web Studio for Podman supports the creation of mult
 **Version 2.1 incorporates a few updates**:
 
 * Added support for Podman in addition to Docker Compose
-* Upgrades the Fabric version to 8.2.1_46.
+* Upgrades the Fabric version to 8.2.4_3.
 * The Heap size was increased to 4GB.
 * We now use PROJECT_NAME to define the project name; previously, this field used the same value as the SPACE_NAME parameter.
 * When creating a Space, we automatically load a custom .env, compose.yaml, and a .config based on the Space's name. Refer to the Configuring Runtime File Per Space section for details.
@@ -45,8 +45,8 @@ Version 2.1 of K2view Fabric Web Studio for Podman supports the creation of mult
 
 **New Release Location**
 
-* The Docker Compose runtime release download was renamed as Docker-Studio-latest.zip.
-* For Podman, the distribution is named Podman-Studio-latest.zip.
+* The Docker Compose runtime release download was renamed as Studio-Docker-latest.zip.
+* For Podman, the distribution is named Studio-Podman-latest.zip.
 
 **k2space.sh changes include**:
 
@@ -221,15 +221,15 @@ There are two options to obtain Fabric Web Studio. You can download a zip file o
 You can download the latest version of Fabric Web Studio for Podman from this location: 
 
 ```bash
-https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Podman-Studio-latest.zip
+https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Studio-Podman-latest.zip
 ```
 
-Then, change the directory to the K2view directory. Copy `Podman-Studio-latest.zip` to this directory, and unzip `Podman-Studio-latest.zip` to this directory. Then, rename the `Podman-Studio-latest.zip` directory as `Studio`.
+Then, change the directory to the K2view directory. Copy `Studio-Podman-latest.zip` to this directory, and unzip `Studio-Podman-latest.zip` to this directory. Then, rename the `Studio-Podman-latest.zip` directory as `Studio`.
 
 ```bash
 cd K2view
-# copy Podman-Studio-latest.zip to this directory
-# unzip Podman-Studio-latest.zip to this directory
+# copy Studio-Podman-latest.zip to this directory
+# unzip Studio-Podman-latest.zip to this directory
 ```
 
 The Studio directory contains the configuration, YAML, and the `k2Space.sh` script files to configure and create your Fabric Web Studio spaces. Please refer to the What's in this Package topic above for details about these files. 
@@ -600,7 +600,7 @@ Here are the command options for `k2space.sh`:
 | --project=            | Allows you to specify the Project's name |
 
 
-The Fabric version is specified using the desired image tag. E.g., 8.2.1_46 
+The Fabric version is specified using the desired image tag. E.g., 8.2.4_3 
 
 ### .config File Format
 These configuration files contain required or custom settings used by Fabric. Configure  parameters as if you were editing any "ini" file to update config.ini
