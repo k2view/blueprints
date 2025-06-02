@@ -31,7 +31,7 @@ K2view Fabric Web Studio for Docker Compose, Version 2.1, supports multiple spac
 **Version 2.1 incorporates a few updates**:
 
 * Added support for Podman in addition to Docker Compose
-* Upgrades the Fabric version to 8.2.1_46.
+* Upgrades the Fabric version to 8.2.4_3.
 * The Heap size was increased to 4GB.
 * We now use PROJECT_NAME to define the project name; previously, this field used the same value as the SPACE_NAME parameter.
 * When creating a Space, we automatically load a custom .env, compose.yaml, and a .config based on the Space's name. Refer to the Configuring Runtime File Per Space section for details.
@@ -41,8 +41,8 @@ K2view Fabric Web Studio for Docker Compose, Version 2.1, supports multiple spac
 
 **New Release Location**
 
-* The Docker Compose runtime release download was renamed to Docker-Studio-latest.zip.
-* For Podman, the distribution is named Podman-Studio-latest.zip.
+* The Docker Compose runtime release download was renamed to Studio-Docker-latest.zip.
+* For Podman, the distribution is named Studio-Podman-latest.zip.
 
 **k2space.sh changes include**:
 
@@ -244,15 +244,15 @@ There are two options to obtain Fabric Web Studio. You can download a zip file o
 You can download the latest version of Fabric Web Studio for Docker Compose from this location: 
 
 ```bash
-https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Docker-Studio-latest.zip
+https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Studio-Docker-latest.zip
 ```
 
-Then, change the directory to the K2view directory. Copy `Docker-Studio-latest.zip` to this directory, and unzip `Docker-Studio-latest.zip` to this directory. Then, rename the `Docker-Studio-latest.zip` directory as `Studio`.
+Then, change the directory to the K2view directory. Copy `Studio-Docker-latest.zip` to this directory, and unzip `Studio-Docker-latest.zip` to this directory. Then, rename the `Studio-Docker-latest.zip` directory as `Studio`.
 
 ```bash
 cd K2view
-# copy Docker-Studio-latest.zip to this directory
-# unzip Docker-Studio-latest.zip to this directory
+# copy Studio-Docker-latest.zip to this directory
+# unzip Studio-Docker-latest.zip to this directory
 ```
 
 The Studio directory contains the configuration, YAML, and the `k2Space.sh` script files to configure and create your Fabric Web Studio spaces. Please refer to the What's in this Package topic above for details about these files. 
@@ -588,7 +588,7 @@ Here are the command options for `k2space.sh`:
 | --project=            | Allows you to specify the Project's name |
 
 
-The Fabric version is specified using the desired image tag. E.g., 8.2.1_46 
+The Fabric version is specified using the desired image tag. E.g., 8.2.4_3 
 
 ### .config File Format
 These configuration files contain required or custom settings used by Fabric. Configure  parameters as if you were editing any "ini" file to update config.ini
