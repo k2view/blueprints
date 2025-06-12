@@ -1,8 +1,11 @@
-{{- if .Values.namespace.create }}
+{{- $namespace := default dict .Values.namespace }}
+{{- $namespace_name := default .Release.Name $namespace.name }}
+
+{{- if $namespace.create }}
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ .Values.namespace.name }}
+  name: {{ $namespace_name }}
   labels:
     app: k2view-agent
 {{- end }}

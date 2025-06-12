@@ -1,11 +1,15 @@
-{{- if .Values.serviceAccount.create -}}
+{{- $namespace := default dict .Values.namespace }}
+{{- $namespace_name := default .Release.Name $namespace.name }}
+{{- $serviceAccount := default dict .Values.serviceAccount }}
+
+{{- if $serviceAccount.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Values.namespace.name }}-cr
-  namespace: {{ .Values.namespace.name }}
+  name: {{ $namespace_name }}-cr
+  namespace: {{ $namespace_name }}
 rules:
-  {{- range $rule := .Values.serviceAccount.role.rules }}
+  {{- range $rule := $serviceAccount.role.rules }}
   - apiGroups: [{{ range $i, $apiGroup := $rule.apiGroups }}"{{ $apiGroup }}"{{ if ne (len $rule.apiGroups) (add $i 1) }},{{ end }}{{ end }}]
     resources: [{{ range $i, $resource := $rule.resources }}"{{ $resource }}"{{ if ne (len $rule.resources) (add $i 1) }},{{ end }}{{ end }}]
     verbs: [{{ range $i, $verb := $rule.verbs }}"{{ $verb }}"{{ if ne (len $rule.verbs) (add $i 1) }},{{ end }}{{ end }}]

@@ -58,7 +58,7 @@ storage:
     enabled: true
   securityContext: true
   class: regional-pd
-  alocated_amount: 10Gi
+  allocated_amount: 10Gi
 
 # Whether if Fabric will scale up or not
 scaling:

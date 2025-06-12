@@ -18,4 +18,4 @@ spec:
   {{- end }}
   resources:
     requests:
-      storage: {{ default "10Gi" $storage.alocated_amount }}
+      storage: {{ default "10Gi" $storage.allocated_amount }}
