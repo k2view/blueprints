@@ -1,15 +1,19 @@
-{{- if .Values.serviceAccount.create -}}
+{{- $namespace := default dict .Values.namespace }}
+{{- $namespace_name := default .Release.Name $namespace.name }}
+{{- $serviceAccount := default dict .Values.serviceAccount }}
+
+{{- if $serviceAccount.create -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .Values.namespace.name }}-crb
-  namespace: {{ .Values.namespace.name }}
+  name: {{ $namespace_name }}-crb
+  namespace: {{ $namespace_name }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole 
-  name: {{ .Values.namespace.name }}-cr
+  name: {{ $namespace_name }}-cr
 subjects:
   - kind: ServiceAccount
-    name: {{ .Values.namespace.name }}-sa
-    namespace: {{ .Values.namespace.name }}
+    name: {{ $namespace_name }}-sa
+    namespace: {{ $namespace_name }}
 {{- end }}

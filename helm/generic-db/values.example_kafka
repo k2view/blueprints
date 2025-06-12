@@ -53,4 +53,4 @@ service:
 # pvc.yaml
 storage:
   class: regional-pd
-  alocated_amount: 10Gi
+  allocated_amount: 10Gi
