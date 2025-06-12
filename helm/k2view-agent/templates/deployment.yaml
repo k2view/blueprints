@@ -1,8 +1,18 @@
+
+{{- $namespace := default dict .Values.namespace }}
+{{- $namespace_name := default .Release.Name $namespace.name }}
+{{- $image := default dict .Values.image }}
+{{- $serviceAccount := default dict .Values.serviceAccount }}
+{{- $repoSecret := default dict .Values.repoSecret }}
+{{- $resources := default dict .Values.resources }}
+{{- $limits := default dict $resources.limits }}
+{{- $requests := default dict $resources.requests }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Chart.Name }}
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ $namespace_name }}
   labels:
     app: k2view-agent
 spec:
@@ -15,16 +25,16 @@ spec:
       labels:
         app: k2view-agent
     spec:
-      {{- if .Values.image.addDockerRegistry }}
+      {{- if $image.addDockerRegistry | default false }}
       imagePullSecrets:
-        -name: {{ .Values.image.dockerRegistrySecret }}
+        -name: {{ $image.dockerRegistrySecret }}
       {{- end }}
-      {{- if .Values.serviceAccount.attach }}
-      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- if $serviceAccount.attach | default false }}
+      serviceAccountName: {{ $serviceAccount.name }}
       {{- end }}
       containers:
-        - name: {{ .Chart.Name }}
-          image: {{ .Values.image.url }}
+        - name: k2view-agent
+          image: {{ $image.url }}
           imagePullPolicy: IfNotPresent
           env:
             {{- range $key, $value :=  .Values.secrets }}
@@ -52,11 +62,11 @@ spec:
                   name: {{ .secretName }}
                   key: {{ .key }}
             {{- end }}
-            {{- if .Values.serviceAccount.create }}
+            {{- if $serviceAccount.create }}
             - name: kubeToken
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.namespace.name }}-secret
+                  name: {{ $namespace_name }}-secret
                   key: token
             {{- end }}
           livenessProbe:
@@ -70,8 +80,8 @@ spec:
             timeoutSeconds: 5
           resources:
             limits:
-              memory: {{ .Values.resources.limits.memory }}
-              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ default "256Mi" $limits.memory }}
+              cpu: {{ default "0.4" $limits.cpu }}
             requests:
-              memory: {{ .Values.resources.requests.memory }}
-              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ default "128Mi" $requests.memory }}
+              cpu: {{ default "0.1" $requests.cpu }}

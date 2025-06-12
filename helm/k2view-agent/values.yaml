@@ -9,57 +9,32 @@ namespace:
 image:
   url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.5"
 
-  repoSecret:
-    name: "registry-secret"
-    enabled: false
-    dockerRegistry:
-      auths:
-        "docker.share.cloud.k2view.com":
-          username: ""
-          password: ""
-
-# Secrets used to config the agent
+# Secrets used to configure the agent
 secrets:
   K2_MAILBOX_ID: ""
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
-  CLOUD: "" # GCP|AWS
+  CLOUD: "" # GCP|AWS|AZURE
   REGION: ""
   # AWS parameters
   SPACE_SA_ARN: "" # For AWS role for Fabric spaces
-  AWS_KEYSPACE_USER: ""
-  AWS_KEYSPACE_PASSWORD: ""
-  AWS_ACCESS_KEY_ID: ""
-  AWS_SECRET_ACCESS_KEY: ""
   # GCP parameters
   PROJECT: ""
   GCP_CONF_FILE: ""
-
-secrets_from_file:
-  TLS_KEY_PATH: ""
-  TLS_CERT_PATH: ""
 
 externalSecrets:
   #- secretName: "keyspace_secret"
   #  key: "AWS_KEYSPACE_USER"
   #  varName: "AWS_KEYSPACE_USER"
 
-resources:
-  requests:
-    memory: 128Mi
-    cpu: '0.1'
-  limits:
-    memory: 256Mi
-    cpu: '0.4'
-
 serviceAccount:
-  # will create service account with cluster role and secret with tocken of this SA
+  # Will create service account with cluster role and secret with token of this SA
   create: true
   # Attach SA to agent pod
   attach: false
   # The name of the service account to use.
   name: "k2view-agent"
-  provider: ""   #aws|gcp
+  provider: ""   # aws|gcp|azure
   arn: ""        # For AWS role
   gcp_service_account_name: "" # For GCP sa
   project_id: "" # For GCP SA
@@ -68,26 +43,20 @@ serviceAccount:
   role:
     rules:
       - apiGroups: [""]
-        resources: 
-          - "namespaces"
-          - "pods"
-          - "configmaps"
-          - "secrets"
-          - "serviceaccounts"
-          - "services"
-          - "persistentvolumeclaims"
-        verbs: 
-          - "create"
-          - "delete"
-          - "get"
-          - "list"
-          - "patch"
-      - apiGroups: [ "" ]
-        resources:
-          - "nodes"
-        verbs:
-          - "get"
-          - "list"
+        resources: ["namespaces", "services", "persistentvolumeclaims"]
+        verbs: ["create", "delete", "get", "list"]
+      - apiGroups: [""]
+        resources: ["configmaps", "secrets", "serviceaccounts"]
+        verbs: ["create", "delete", "get", "list", "patch"]
+      - apiGroups: [""]
+        resources: ["nodes"]
+        verbs: ["get", "list"]
+      - apiGroups: [""]
+        resources: ["pods"]
+        verbs: ["delete", "list"]
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["list"]
       - apiGroups: ["apps"]
         resources: ["deployments", "statefulsets"]
         verbs: ["create", "delete", "get", "list", "patch"]
@@ -97,33 +66,12 @@ serviceAccount:
       - apiGroups: ["networking.k8s.io"]
         resources: ["ingresses", "networkpolicies"]
         verbs: ["create", "delete", "get"]
-      - apiGroups: [""]
-        resources: ["pods"]
-        verbs: ["delete", "list"]
-      - apiGroups: [""]
-        resources: ["configmaps", "secrets", "serviceaccounts"]
-        verbs: ["create", "delete", "get", "list", "patch"]
-      - apiGroups: [""]
-        resources: ["services", "persistentvolumeclaims"]
-        verbs: ["create", "delete", "get", "list"]
-      - apiGroups: [ "" ]
-        resources: ["events"]
-        verbs: ["list" ] 
       - apiGroups: ["monitoring.coreos.com"]
         resources: ["podmonitors"]
         verbs: ["create", "delete"]
       - apiGroups: ["autoscaling"]
-        resources: 
-          - "horizontalpodautoscalers"
-        verbs: 
-          - "create"
-          - "delete"
-          - "get"
-          - "list"
-          - "patch"
+        resources: ["horizontalpodautoscalers"]
+        verbs: ["create", "delete", "get", "list", "patch"]
       - apiGroups: [ "storage.k8s.io" ]
-        resources:
-          - "storageclasses"
-        verbs:
-          - "get"
-          - "list"
+        resources: ["storageclasses"]
+        verbs: ["get", "list"]

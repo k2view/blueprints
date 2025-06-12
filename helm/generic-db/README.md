@@ -36,7 +36,7 @@ The generic-db Helm chart is designed to deploy a database like PostgreSQL on Ku
 | `secrets[1].key` | string | `"POSTGRES_PASSWORD"` | Key for the PostgreSQL password secret |
 | `secrets[1].value` | string | `"postgres"` | Value for the PostgreSQL password secret |
 | `service.port` | int | `5432` | Port for the PostgreSQL service |
-| `storage.alocated_amount` | string | `"10Gi"` | Amount of storage allocated for the database |
+| `storage.allocated_amount` | string | `"10Gi"` | Amount of storage allocated for the database |
 | `storage.class` | string | `"regional-pd"` | Storage class for the persistent volume |
 
 
