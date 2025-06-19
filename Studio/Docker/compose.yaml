@@ -30,7 +30,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     volumes:
-      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/postgres:/var/lib/postgresql/data
+      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/postgres:/var/lib/postgresql/data/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB "]
       interval: 15s
@@ -67,10 +67,10 @@ services:
       fab-net:
     ports:
       - 3213
+      - 5124
     environment:
-      COMPOSE_PROJECT_NAME:
-      SPACE_NAME:
-      PROJECT_NAME: "${COMPOSE_PROJECT_NAME}"
+      SPACE_NAME: "${COMPOSE_PROJECT_NAME}"
+      PROJECT_NAME:
       PROJECT_DIR:
       GIT_REPO:
       GIT_BRANCH:
@@ -91,11 +91,10 @@ services:
         cat /opt/apps/fabric/common.config /opt/apps/fabric/profile.config > ${INI_CONFIG_UPDATE_FILE}
         sed -i "s/__COMPOSE_PROJECT_NAME__/${COMPOSE_PROJECT_NAME}/g" ${INI_CONFIG_UPDATE_FILE}
         ./docker-entrypoint.sh
-        tail -f /dev/null
+        tail -F /opt/apps/fabric/workspace/logs/k2fabric.log
     labels:
       - "k2viewspace"
       - "space-profile=${PROFILE}"
-      - "release=2.0.0"
       - "traefik.enable=true"
       - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3213"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.entrypoints=web"
@@ -106,10 +105,10 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=web-to-websecure@file"
     healthcheck:
       test: ["CMD", "/bin/bash", "/opt/apps/fabric/isAlive.sh"]
-      interval: 60s
+      interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 120s
+      start_period: 60s
     ulimits:
       nofile:
         soft: 1048576

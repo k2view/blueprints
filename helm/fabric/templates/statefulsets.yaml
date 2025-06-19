@@ -23,7 +23,7 @@ spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: {{ .Values.storage.alocated_amount }}
+            storage: {{ .Values.storage.allocated_amount }}
     template:
         metadata:
           labels: *id001

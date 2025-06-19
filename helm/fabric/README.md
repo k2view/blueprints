@@ -99,7 +99,7 @@ The `fabric` Helm chart is designed to deploy the Fabric application on Kubernet
 | serviceAccount.name | string | `""` | Name of the service account |
 | serviceAccount.project_id | string | `""` | Project ID for service account |
 | serviceAccount.provider | string | `""` | Provider for service account |
-| storage.alocated_amount | string | `"10Gi"` | Amount of storage allocated |
+| storage.allocated_amount | string | `"10Gi"` | Amount of storage allocated |
 | storage.class | string | `"gp2"` | Storage class |
 | storage.pvc.enabled | bool | `true` | Enable PVC for storage |
 | storage.securityContext | bool | `true` | Enable security context for storage |

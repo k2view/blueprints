@@ -15,5 +15,5 @@ spec:
   storageClassName: {{ .Values.storage.class }}
   resources:
     requests:
-      storage: {{ .Values.storage.alocated_amount }}
+      storage: {{ default "10Gi" .Values.storage.allocated_amount }}
 {{ end }}
