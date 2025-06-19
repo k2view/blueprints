@@ -35,15 +35,15 @@ This Helm chart is designed to deploy an Nginx ingress controller in a Kubernete
 
 ## Resources
 ### 404-nginx-error-page
-Deploy k2view costome error page that will replase the 404 and 503 error pages of nginx
->NOTE: if you dont want to create the test pod set errorPage.enabled=flase
+Deploy k2view custom error page that will replace the 404 and 503 error pages of nginx
+>NOTE: if you don't want to create the test pod set errorPage.enabled=false
 
 ### ingress-controller
 Nginx controller
 
 ### test-pod
 Test pod that will return string 'SUCCESS' from ingress-test.{{ .Values.domain }}
->NOTE: if you dont want to create the test pod set ingressTest.enabled=flase
+>NOTE: if you don't want to create the test pod set ingressTest.enabled=false
 
 ### tls-secret
 TLS secret for default ssl certificate for the Nginx controller

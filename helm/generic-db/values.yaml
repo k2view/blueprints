@@ -8,7 +8,7 @@ labels:
   - name: space
     value: my-space
 
-# app_name will be app lable and prefix for resources
+# app_name will be app label and prefix for resources
 app_name: "postgres"
 
 # deployment.yaml
@@ -50,4 +50,4 @@ service:
 
 # pvc.yaml
 storage:
-  alocated_amount: 10Gi
+  allocated_amount: 10Gi

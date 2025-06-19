@@ -60,7 +60,7 @@ Blueprints for setting up and managing Docker environments.
 
 
 ### Helm Deployment & resources
-to use the helm, the assupmtion is that you already have running K8s env.
+To use the helm, the assumption is that you already have running K8s env.
 Blueprints for setting up and managing Helm charts.
 - **AWS:** [aws](helm/aws/)
 - **Fabric:** [fabric](helm/fabric/)
