@@ -1,12 +1,14 @@
 {{ $namespace := default dict .Values.namespace }}
 {{- $storage := default dict .Values.storage -}}
+{{- $app_name := .Values.app_name | default .Chart.Name -}}
+{{- /* ---------------------------- */ -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Values.app_name }}-claim
+  name: {{ $app_name }}-claim
   namespace: {{ default .Release.Name $namespace.name }}
   labels:
-    app: {{ .Values.app_name }}
+    app: {{ $app_name }}
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}

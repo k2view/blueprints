@@ -1,20 +1,34 @@
 {{ $namespace := default dict .Values.namespace }}
+{{ $app_name := .Values.app_name | default .Chart.Name }}
+{{ $service := .Values.service }}
+{{ $service_port := $service.port }}
+{{- /* Default values for common apps */ -}}
+{{- if $app_name | eq "postgres" }}
+  {{ $service_port := $service.port | default 5432 }}
+{{- else if $app_name | eq "cassandra" }}
+  {{ $service_port := $service.port | default 9042 }}
+{{- else if $app_name | eq "kafka" }}
+  {{ $service_port := $service.port | default 9092 }}
+{{- else if $app_name | eq "neo4j" }}
+  {{ $service_port := $service.port | default 7474 }}
+{{- end }}
+{{- /* ---------------------------- */ -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.app_name }}-service
+  name: {{ $app_name }}-service
   namespace: {{ default .Release.Name $namespace.name }}
   labels:
-    app: {{ .Values.app_name }}
+    app: {{ $app_name }}
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
   type: 
   ports:
-  - port: {{ .Values.service.port }}
-    targetPort: {{ .Values.service.port }}
+  - port: {{ $service_port }}
+    targetPort: {{ $service_port }}
     protocol: TCP
-    name: {{ .Values.app_name }}-port
+    name: {{ $app_name }}-port
   selector:
-    app: {{ .Values.app_name }}
+    app: {{ $app_name }}

@@ -12,17 +12,8 @@ app_name: "neo4j"
 
 # deployment.yaml
 container:
-  replicas: 1
   image:
     url: neo4j:5.25.1-enterprise
-    repoSecret:
-      name: "registry-secret"
-      enabled: false
-      dockerRegistry:
-        auths:
-          "docker.share.cloud.k2view.com":
-            username: ""
-            password: ""
   storage_path: "/var/lib/neo4j/data"
 
   resource_allocation:
@@ -30,16 +21,11 @@ container:
       memory: 4Gi
       cpu: '1'
     requests:
-      memory: 1Gi
-      cpu: '0.4'
-
-affinity:
-  type: none  # Options: affinity, anti-affinity, none
-  label: 
-    name: topology.kubernetes.io/zone
-    value: region-a
+      memory: 2Gi
+      cpu: '0.5'
 
 # secrets.yaml
+create_secrets: true
 secrets:
 - key: NEO4JLABS_PLUGINS
   value: '["graph-data-science", "apoc"]'
@@ -58,5 +44,5 @@ service:
 
 # pvc.yaml
 storage:
-  class: regional-pd
+  class: managed
   allocated_amount: 10Gi
