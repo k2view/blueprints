@@ -1,12 +1,18 @@
-{{ if .Values.networkPolicy.enabled }}
-kind: NetworkPolicy
+{{ $namespace := default dict .Values.namespace }}
+{{ $networkPolicy := default dict .Values.networkPolicy }}
+{{ $egress := default dict $networkPolicy.egress }}
+{{ $global := default dict .Values.global }}
+{{ $labels := default dict $global.labels }}
+
+{{ if $egress.enabled | default false }}
 apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
 metadata:
   name: egress-fabric-np
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: fabric
-    {{- range $label := .Values.labels }}
+    {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
@@ -26,13 +32,27 @@ spec:
   - to:
     - podSelector:
         matchLabels:
+          app: neo4j
+    ports:
+    - port: 7474
+    - port: 7687
+  - to:
+    - podSelector:
+        matchLabels:
+          app: kafka
+    ports:
+    - port: 9092
+    - port: 9093
+  - to:
+    - podSelector:
+        matchLabels:
           app: postgres
     ports:
     - port: 5432
   - to:
     ports:
-      - port: 53
-        protocol: TCP
-      - port: 53
-        protocol: UDP
+    - port: 53
+      protocol: TCP
+    - port: 53
+      protocol: UDP
 {{ end }}
