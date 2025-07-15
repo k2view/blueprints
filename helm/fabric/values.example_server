@@ -1,12 +1,14 @@
+
+global:
+  labels:
+    - name: tenant
+      value: my-tenant
+    - name: space
+      value: my-space
+
 namespace:
   name: "space-tenant"
   create: true
-
-labels:
-  - name: tenant
-    value: my-tenant
-  - name: space
-    value: my-space
 
 deploy:
   type: StatefulSet
@@ -32,9 +34,7 @@ container:
     requests:
       memory: 2Gi
       cpu: '0.4'
-  livenessProbe:
-    initialDelaySeconds: 120
-    periodSeconds: 60
+
 
   # Fabric Image to be populated into Deployment
   image:
@@ -57,20 +57,23 @@ storage:
     enabled: false
   securityContext: true
   class: regional-pd
-  allocated_amount: 10Gi
+  alocated_amount: 10Gi
 
 # Whether if Fabric will scale up or not
+
 scaling:
   enabled: false
-  targetKind: StatefulSet
-  targetName: fabric-stateful-sets
   minReplicas: 1
   maxReplicas: 1
   targetCPU: 90
 
 # Deploy network policy that allows fabric egress only to cassandra pod
+
 networkPolicy:
-  enabled: false
+  egress:
+    enabled: false
+  ingress:
+    enabled: false
 
 ingress:
   enabled: true
@@ -102,27 +105,35 @@ mountSecret:
     mountPath: /opt/apps/fabric/config-secrets
     data:
       config: |
-        fabric|SERVER_AUTHENTICATOR|fabric
-        fabric|SYNC_CASSANDRA_SYSTEM_AUTH|false
-        fabric|OVERRIDE_API_SCHEMA|HTTPS|ADD
-        fabric|OVERRIDE_API_PORT|443|ADD
-        fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/tmp/fdb_cache
-        system_db|SYSTEM_DB_TYPE|POSTGRESQL
-        system_db|SYSTEM_DB_HOST|postgres-service
-        system_db|SYSTEM_DB_USER|postgres
-        system_db|SYSTEM_DB_PASSWORD|postgres
-        system_db|SYSTEM_DB_PORT|5432
-        system_db|SYSTEM_DB_DATABASE|postgres
-        default_pubsub|TYPE|KAFKA
-        default_pubsub|BOOTSTRAP_SERVERS|kafka-service:9093
-        common_area_pubsub|TYPE|KAFKA
+        [fabric]
+        SERVER_AUTHENTICATOR=fabric
+        SYNC_CASSANDRA_SYSTEM_AUTH=false
+        OVERRIDE_API_SCHEMA=HTTPS
+        OVERRIDE_API_PORT=443
+
+        [fabricdb]
+        MDB_DEFAULT_CACHE_PATH=/opt/apps/fabric/tmp/fdb_cache
+
+        [system_db]
+        SYSTEM_DB_TYPE=POSTGRESQL
+        SYSTEM_DB_HOST=postgres-service
+        SYSTEM_DB_USER=postgres
+        SYSTEM_DB_PASSWORD=postgres
+        SYSTEM_DB_PORT=5432
+        SYSTEM_DB_DATABASE=postgres
+
+        [default_pubsub]
+        TYPE=KAFKA
+        BOOTSTRAP_SERVERS=kafka-service:9093
+
+        [common_area_pubsub]
+        TYPE=KAFKA
       cp_files: ''
+
 
 secretsList:
   - name: common-env-secrets
     data:
-      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
-      COPY_FILES: ''
       PROJECT_ID: ''
       PROJECT_NAME: ''
       SPACE_NAME: 'space-tenant'

@@ -1,16 +1,40 @@
-{{ if eq .Values.deploy.type "StatefulSet" }}
+{{ $namespace := default dict .Values.namespace }}
+{{ $deploy := default dict .Values.deploy }}
+{{ $type := default "StatefulSet" $deploy.type }}
+{{ $global := default dict .Values.global }}
+{{ $labels := default dict $global.labels }}
+{{ $serviceAccount := default dict .Values.serviceAccount }}
+{{ $serviceAccountName := default .Release.Name (default $namespace.name $serviceAccount.name) }}
+{{ $storage := default dict .Values.storage }}
+{{ $container := default dict .Values.container }}
+{{ $imageRepoSecret := default dict $container.image.repoSecret }}
+{{ $mountSecret := default dict .Values.mountSecret }}
+{{ $mountSecretB64enc := default dict .Values.mountSecretB64enc }}
+{{ $affinity := default dict .Values.affinity }}
+{{ $secretsList := default dict .Values.secretsList }}
+{{ $initSecretsList := default dict .Values.initSecretsList }}
+{{ $resource_allocation := default dict $container.resource_allocation }}
+{{ $limits := default dict $resource_allocation.limits }}
+{{ $requests := default dict $resource_allocation.requests }}
+{{ $livenessProbe := default dict $container.livenessProbe }}
+{{ $readinessProbe := default dict $container.readinessProbe }}
+
+{{ if eq $type "StatefulSet" }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: fabric-stateful-sets
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels: &id001
     app: fabric
-    {{- range $label := .Values.labels }}
+    {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- if eq $serviceAccount.provider "azure" }}
+    azure.workload.identity/use: "true"
+    {{- end }}
 spec:
-    replicas: {{ .Values.container.replicas }}
+    replicas: {{ $container.replicas | default 1 }}
     serviceName: fabric-stateful-sets
     selector:
       matchLabels:
@@ -19,44 +43,44 @@ spec:
     - metadata:
         name: fabric-storage-private
       spec:
-        storageClassName: {{ .Values.storage.class }}
+        storageClassName: {{ $storage.class }}
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: {{ .Values.storage.allocated_amount }}
+            storage: {{ $storage.alocated_amount | default "10Gi" }}
     template:
         metadata:
           labels: *id001
         spec:
-          {{- if .Values.container.image.repoSecret.enabled }}
+          {{- if $imageRepoSecret.enabled | default false }}
           imagePullSecrets:
-            - name: {{ .Values.container.image.repoSecret.name }}
+            - name: {{ $imageRepoSecret.name }}
           {{- end }}
-          {{- if ne .Values.serviceAccount.name "" }}
-          serviceAccountName: {{ .Values.serviceAccount.name }}
-          {{- else if .Values.serviceAccount.create }}
-          serviceAccountName: {{ .Values.namespace.name }}-sa
+          {{- if ne $serviceAccount.name "" }}
+          serviceAccountName: {{ $serviceAccountName }}
+          {{- else if $serviceAccount.create | default false }}
+          serviceAccountName: {{ $serviceAccountName }}-sa
           {{- end }}
-          {{- if or (eq .Values.affinity.type "affinity") (eq .Values.affinity.type "anti-affinity") }}
+          {{- if or (eq $affinity.type "affinity") (eq $affinity.type "anti-affinity") }}
           affinity:
-            {{- if eq .Values.affinity.type "affinity" }}
+            {{- if eq $affinity.type "affinity" }}
             nodeAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
                 - matchExpressions:
-                  - key: {{ .Values.affinity.label.name }}
+                  - key: {{ $affinity.label.name }}
                     operator: In
                     values:
-                    - {{ .Values.affinity.label.value }}
-            {{- else if eq .Values.affinity.type "anti-affinity" }}
+                    - {{ $affinity.label.value }}
+            {{- else if eq $affinity.type "anti-affinity" }}
             nodeAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
                 - matchExpressions:
-                  - key: {{ .Values.affinity.label.name }}
+                  - key: {{ $affinity.label.name }}
                     operator: NotIn
                     values:
-                    - {{ .Values.affinity.label.value }}
+                    - {{ $affinity.label.value }}
             {{- end }}
           {{- end }}
           initContainers:
@@ -67,18 +91,20 @@ spec:
             - -c
             - ./docker-entrypoint.sh
             imagePullPolicy: IfNotPresent
-            image: {{ .Values.container.image.url }}
+            image: {{ $container.image.url }}
             name: init-fabric
             resources:
               limits:
-                memory: {{ .Values.container.resource_allocation.limits.memory | default "4Gi" }}
-                cpu: {{ .Values.container.resource_allocation.limits.cpu | default "1" }}
+                memory: {{ $limits.memory | default "8Gi" }}
+                cpu: {{ $limits.cpu | default "2" }}
               requests:
-                memory: {{ .Values.container.resource_allocation.requests.memory | default "1Gi" }}
-                cpu: {{ .Values.container.resource_allocation.requests.cpu | default "0.4" }}
+                memory: {{ $requests.memory | default "4Gi" }}
+                cpu: {{ $requests.cpu | default "1" }}
             env:
+            - name: SPACE_NAME
+              value: {{ default .Release.Name $namespace.name }}
             # common secrets
-            {{- range $secret := .Values.secretsList }}
+            {{- range $secret := $secretsList }}
             {{- range $key, $value := $secret.data }}
             {{- if not (empty $value) }}
             - name: {{ $key }}
@@ -90,7 +116,7 @@ spec:
             {{- end }}
             {{- end }}
             # init secrets
-            {{- range $secret := .Values.initSecretsList }}
+            {{- range $secret := $initSecretsList }}
             {{- range $key, $value := $secret.data }}
             {{- if not (empty $value) }}
             - name: {{ $key }}
@@ -104,8 +130,10 @@ spec:
             volumeMounts:
             - name: fabric-storage-private
               mountPath: /opt/apps/fabric/workspace
-            - name: {{ .Values.mountSecret.name }}
-              mountPath: {{ .Values.mountSecret.mountPath }}
+            - name: {{ $mountSecret.name }}
+              mountPath: {{ $mountSecret.mountPath }}
+            - name: {{ $mountSecretB64enc.name }}
+              mountPath: {{ $mountSecretB64enc.mountPath }}
           containers:
           - command:
             - /bin/bash
@@ -114,7 +142,7 @@ spec:
             - -c
             - ./docker-entrypoint.sh && tail -F workspace/logs/k2fabric.log
             imagePullPolicy: IfNotPresent
-            image: {{ .Values.container.image.url }}
+            image: {{ $container.image.url }}
             lifecycle:
               preStop:
                 exec:
@@ -129,13 +157,15 @@ spec:
               allowPrivilegeEscalation: false
             resources:
               limits:
-                memory: {{ .Values.container.resource_allocation.limits.memory | default "4Gi" }}
-                cpu: {{ .Values.container.resource_allocation.limits.cpu | default "1" }}
+                memory: {{ $limits.memory | default "8Gi" }}
+                cpu: {{ $limits.cpu | default "2" }}
               requests:
-                memory: {{ .Values.container.resource_allocation.requests.memory | default "2Gi" }}
-                cpu: {{ .Values.container.resource_allocation.requests.cpu | default "0.4" }}
+                memory: {{ $requests.memory | default "4Gi" }}
+                cpu: {{ $requests.cpu | default "1" }}
             env:
-            {{- range $secret := .Values.secretsList }}
+            - name: SPACE_NAME
+              value: {{ default .Release.Name $namespace.name }}
+            {{- range $secret := $secretsList }}
             {{- range $key, $value := $secret.data }}
             {{- if not (empty $value) }}
             - name: {{ $key }}
@@ -147,8 +177,17 @@ spec:
             {{- end }}
             {{- end }}
             livenessProbe:
-              initialDelaySeconds: {{ .Values.container.livenessProbe.initialDelaySeconds | default 120 }}
-              periodSeconds: {{ .Values.container.livenessProbe.periodSeconds | default 60 }}
+              initialDelaySeconds: {{ $livenessProbe.initialDelaySeconds | default 60 }}
+              periodSeconds: {{ $livenessProbe.periodSeconds | default 60 }}
+              exec:
+                command:
+                - /bin/bash
+                - /opt/apps/fabric/isAlive.sh
+            readinessProbe:
+              initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default 30 }}
+              periodSeconds: {{ $readinessProbe.periodSeconds | default 60 }}
+              successThreshold: {{ $readinessProbe.successThreshold | default 3 }}
+              failureThreshold: {{ $readinessProbe.failureThreshold | default 5 }}
               exec:
                 command:
                 - /bin/bash
@@ -156,19 +195,34 @@ spec:
             volumeMounts:
             - name: fabric-storage-private
               mountPath: /opt/apps/fabric/workspace
-            {{- if .Values.mountSecret.enabled }}
-            - name: {{ .Values.mountSecret.name }}
-              mountPath: {{ .Values.mountSecret.mountPath }}
+            {{- if $mountSecret.enabled | default false }}
+            - name: {{ $mountSecret.name }}
+              mountPath: {{ $mountSecret.mountPath }}
+            {{- end }}
+            {{- if $mountSecretB64enc.enabled | default false }}
+            - name: {{ $mountSecretB64enc.name }}
+              mountPath: {{ $mountSecretB64enc.mountPath }}
             {{- end }}
           terminationGracePeriodSeconds: 150
-          {{ if .Values.storage.securityContext }}
+          {{- if $storage.securityContext }}          
           securityContext:
             runAsUser: 1000
             runAsGroup: 1000
             fsGroup: 1000
-          {{ end }}
+          {{- end }}
           volumes:
-          - name: {{ .Values.mountSecret.name }}
+          {{- if $mountSecret.name }}
+          - name: {{ $mountSecret.name }}
             secret:
-              secretName: {{ .Values.mountSecret.name }}
+              secretName: {{ $mountSecret.name }}
+          {{- end }}
+          {{- if $mountSecretB64enc.name }}
+          - name: {{ $mountSecretB64enc.name }}
+            secret:
+              secretName: {{ $mountSecretB64enc.name }}
+          {{- end }}
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        partition: 0
 {{ end }}

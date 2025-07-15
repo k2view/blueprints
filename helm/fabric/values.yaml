@@ -1,34 +1,40 @@
-# Source: fabric/templates/namespace.yaml
+
+# Global labels for all Fabric resources
+global:
+  labels:
+    #- name: label-name
+    #  value: label-value
+
+
+# Namespace to deploy Fabric into
 namespace:
+  create: false  # Create namespace if true
   name: "space-tenant"
-  create: true
 
-labels:
-  - name: tenant
-    value: my-tenant
-  - name: space
-    value: my-space
 
+# Deployment type: Deployment (dev) or StatefulSet (prod)
 deploy:
-  type: Deployment 
-  # type = StatefulSet|Deployment
+  type: Deployment
 
-# Source: fabric/templates/serviceaccount.yaml
+
+# ServiceAccount settings (IAM integration)
 serviceAccount:
-  create: true   # For new sa, creation of sa only in k8s side
-  name: ""       # For existing sa, if create is true, name should be an empty string
-  provider: ""   # aws|gcp
-  arn: ""        # For AWS role
-  # gcp_service_account_name: "" # For GCP sa
-  project_id: "" # For GCP SA
-  cluster_name: ""
+  create: true  # Create new ServiceAccount if true
+  name: ""      # Existing ServiceAccount name if create is false
+  provider: ""  # aws | gcp | azure
+  arn: ""       # AWS IAM Role ARN
+  gcp_service_account_name: "" # GCP full SA name
+  project_id: "" # GCP project
+  cluster_name: "" # GCP cluster
+  azure_client_id: "" # Azure Managed Identity client ID
 
-# Source: fabric/templates/deployment.yaml or fabric/templates/statefulsets.yaml
+
+# Container settings
 container:
   replicas: 1
   annotationsList:
-  - name: description
-    value: Fabric on Kubernetes
+    - name: description
+      value: Fabric on Kubernetes
   resource_allocation:
     limits:
       memory: 8Gi
@@ -36,13 +42,8 @@ container:
     requests:
       memory: 2Gi
       cpu: '0.4'
-  livenessProbe:
-    initialDelaySeconds: 120
-    periodSeconds: 60
-
-  # Fabric Image to be populated into Deployment
   image:
-    url: "" 
+    url: ""
     repoSecret:
       name: "registry-secret"
       enabled: false
@@ -52,45 +53,57 @@ container:
             username: ""
             password: ""
 
-# Source: fabric/templates/service.yaml
-# Fabric's Advertising Bound Port (Where it is accessible)
-listening_port: 3213
 
-# Source: fabric/templates/pvc.yaml
+# Storage settings
 storage:
   pvc:
-    enabled: true
+    enabled: true  # Create PVC if true, else use ephemeral
   securityContext: true
-  class: regional-pd
-  allocated_amount: 10Gi
+  class: managed
+  alocated_amount: 10Gi
 
-# Whether if Fabric will scale up or not
+
+# Autoscaling (HPA)
 scaling:
   enabled: false
-  targetKind: StatefulSet
-  targetName: fabric-stateful-sets
   minReplicas: 1
   maxReplicas: 1
   targetCPU: 90
 
-# Deploy network policy that allows fabric egress only to cassandra pod
-networkPolicy:
-  enabled: false
 
-# Source: fabric/templates/ingress.yaml
+# Network policies
+networkPolicy:
+  egress:
+    enabled: false
+  ingress:
+    enabled: false
+    allowedNamespaces:
+      name: grafana-agent
+    allowedPods:
+      app.kubernetes.io/instance: grafana-agent
+    allowedIPs:
+      # - 10.0.0.1/16
+
+# Ingress Settings
+# These settings control the ingress configuration for the Fabric deployment.
+# Ingress is used to expose the Fabric service to external traffic.
+# If enabled, an ingress resource will be created.
 ingress:
   enabled: true
   class_name: "nginx"
   type: "nginx"
   appgw_ssl_certificate_name: ""
-  port: 3213
+  cert_manager:
+    enabled: false
+    cluster_issuer: ""
+  # Ingress Hostname
+  # This is the hostname that will be used to access the Fabric service.
+  # It should be a fully qualified domain name (FQDN).
   host: space-tenant.domain
+  path: false # boolean true uses same value as namespace or hardcoded "string"
+  subdomain: false # boolean true uses same value as namespace or hardcoded "string"
   tlsSecret:
     enabled: false
-    key: ""
-    crt: ""
-    key_b64: ""
-    crt_b64: ""
 
   custom_annotations:
     enabled: false
@@ -98,53 +111,99 @@ ingress:
       - key: nginx.ingress.kubernetes.io/proxy-body-size
         value: "0"
       - key: nginx.ingress.kubernetes.io/proxy-read-timeout
-        value: "7d"
+        value: "86400"
+      - key: nginx.ingress.kubernetes.io/proxy-send-timeout
+        value: "900"
       - key: nginx.ingress.kubernetes.io/ssl-redirect
         value: "false"
 
-# Source: fabric/templates/mount_secret.yaml
+# Mounting Secrets Settings
+# These settings control how secrets are mounted into the Fabric pods.
 mountSecret:
     name: config-secrets
+    # True to mount the secret on both init container and fabric pod, false for mount only on init container
+    enabled: false 
+    # Path where the secrets will be mounted in the Fabric pod.
+    mountPath: /opt/apps/fabric/config-secrets
+    # Data to be mounted as secrets.
+    # The keys in this map will be the filenames in the mountPath directory.
+    data:
+      # Fabric configuration.
+      # Those settings will be applied to the Fabric config.ini file.
+      config: |
+        [fabricdb]
+        MDB_DEFAULT_CACHE_PATH=/opt/apps/fabric/pod_tmp/fdb_cache
+
+        [default_pubsub]
+        TYPE=MEMORY
+
+        [common_area_pubsub]
+        TYPE=MEMORY
+
+        [fabric]
+        WEB_SESSION_EXPIRATION_TIME_OUT=540
+        ENABLE_BROADWAY_DEBUG_SERVLET=true
+        ENABLE_DB_INTERFACE_PROXY=true
+        WEBSERVER_FILTERS=[{"class":"com.k2view.cdbms.ws.ProxyForward","patterns":["/studio/*"],"params":{"target":"http://localhost:3000","isStaticTarget":true}},{"class":"com.k2view.cdbms.ws.ProxyForward","patterns":["/socket.io/*"],"params":{"target":"http://localhost:3000","isStaticTarget":false}}]
+        OVERRIDE_API_SCHEMA=HTTPS
+        OVERRIDE_API_PORT=443
+        SERVER_AUTHENTICATOR=fabric
+
+        [default_session]
+        RECONNECT_MAX_DELAY_MS=1000
+
+        [system_db]
+        SYSTEM_DB_TYPE=SQLITE
+        SYSTEM_DB_HOST=/opt/apps/fabric/workspace/internal_db
+      # Additional files to be copied to the Fabric pod.
+      # The logic mainly used to copy files from mounted secrets to the pod persistent volume
+      # 
+      # Example:
+      # cp_files: "/opt/apps/fabric/config-secrets/FILE_1 /opt/apps/fabric/workspace/FILE_1"
+      cp_files: ''
+      # IDP certificate in plain text to load to fabric truststore.
+      # Example: "-----BEGIN CERTIFICATE-----\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n-----END CERTIFICATE-----"
+      idp_cert: ''
+
+# Mounting Base64 Secrets Settings
+# Same logic as mountSecret, but for base64 encoded secrets.
+mountSecretB64enc:
+    name: mount-b64-secrets
     enabled: false # true for mount the secret on fabric pod, false for mount only on init container
     mountPath: /opt/apps/fabric/config-secrets
     data:
-      config: |
-        fabricdb|MDB_DEFAULT_CACHE_PATH|/opt/apps/fabric/pod_tmp/fdb_cache
-        default_pubsub|TYPE|MEMORY
-        common_area_pubsub|TYPE|MEMORY
-        fabric|WEB_SESSION_EXPIRATION_TIME_OUT|540
-        fabric|ENABLE_BROADWAY_DEBUG_SERVLET|true
-        default_session|RECONNECT_MAX_DELAY_MS|1000
-        fabric|ENABLE_DB_INTERFACE_PROXY|true
-        fabric|WEBSERVER_FILTERS|[{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/studio/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":true}},{\"class\":\"com.k2view.cdbms.ws.ProxyForward\",\"patterns\":[\"/socket.io/*\"],\"params\":{\"target\":\"http://localhost:3000\",\"isStaticTarget\":false}}];
-        fabric|OVERRIDE_API_SCHEMA|HTTPS|ADD
-        fabric|OVERRIDE_API_PORT|443|ADD
-        system_db|SYSTEM_DB_TYPE|SQLITE
-        system_db|SYSTEM_DB_HOST|/opt/apps/fabric/workspace/internal_db
-        fabric|SERVER_AUTHENTICATOR|fabric
-      cp_files: ''
+      placeholder: ''
 
+# Environment Variables Settings
+# These settings control the environment variables that are set in the Fabric pods.
 secretsList:
   - name: common-env-secrets
     data:
-      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
-      COPY_FILES: ''
-      INIT_CONF: ''
       PROJECT_ID: ''
       PROJECT_NAME: ''
       SPACE_NAME: ''
 
+# Init Secrets Environment Variables Settings
+# These settings control the environment variables that are set in the init container of the Fabric pods or required for initialization.
 initSecretsList:
   - name: config-init-secrets
     data:
+      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
+      COPY_FILES: '/opt/apps/fabric/config-secrets/cp_files'
+      IDP_CERT_PATH: ''
+      IDP_ROLE: ''
       GIT_BRANCH: ''
       GIT_PATH_IN_REPO: ''
       GIT_REPO: ''
       GIT_TOKEN: ''
       START_FABRIC: 'false' 
 
+# Pod Affinity Settings
+# These settings control the pod affinity and anti-affinity rules for the Fabric deployment.
 affinity:
-  type: none  # Options: affinity, anti-affinity, none
+  # Options: affinity, anti-affinity, none
+  type: none 
+  
   label: 
     name: topology.kubernetes.io/zone
     value: region-a

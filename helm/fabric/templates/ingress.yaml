@@ -1,45 +1,70 @@
-{{ if .Values.ingress.enabled }}
+{{ $namespace := default dict .Values.namespace }}
+{{ $global := default dict .Values.global }}
+{{ $labels := default dict $global.labels }}
+{{ $ingress := default dict .Values.ingress }}
+{{ $cert_manager := default dict $ingress.cert_manager }}
+{{ $path := "" }}
+{{ if kindIs "string" $ingress.path }}
+  {{- $path = $ingress.path }}
+{{ else if and (kindIs "bool" $ingress.path) $ingress.path }}
+  {{- $path = default .Release.Name $namespace.name }}
+{{ end }}
+{{ $host := $ingress.host }}
+{{ if and (kindIs "string" $ingress.subdomain) $ingress.subdomain }}
+  {{- $host = printf "%s.%s" $ingress.subdomain $ingress.host }}
+{{ else if and (kindIs "bool" $ingress.subdomain) $ingress.subdomain }}
+  {{- $subdomain := default .Release.Name $namespace.name }}
+  {{- $host = printf "%s.%s" $subdomain $ingress.host }}
+{{ end }}
+
+{{ if $ingress.enabled | default true }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: fabric-ingress
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: fabric
-    {{- range $label := .Values.labels }}
+    {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
   annotations:
-    {{- if and .Values.ingress.custom_annotations.enabled }}
-    {{- range $label := .Values.ingress.custom_annotations.annotations }}
+    {{- if and $ingress.custom_annotations.enabled }}
+    {{- range $label := $ingress.custom_annotations.annotations }}
     {{ $label.key }}: {{ $label.value | quote }}
     {{- end }}
-    {{- else if eq .Values.ingress.type "nginx" }}
+    {{- else if eq $ingress.type "nginx" }}
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "7d"
-    {{- else if eq .Values.ingress.type "appgw" }}
-    {{- if ne .Values.ingress.appgw_ssl_certificate_name "" }}
-    appgw.ingress.kubernetes.io/appgw-ssl-certificate: {{ .Values.ingress.appgw_ssl_certificate_name }}
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+    {{- else if eq $ingress.type "appgw" }}
+    {{- if ne $ingress.appgw_ssl_certificate_name "" }}
+    appgw.ingress.kubernetes.io/appgw-ssl-certificate: {{ $ingress.appgw_ssl_certificate_name }}
     {{- end }}
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
     {{- end }}
+    {{- if and $cert_manager.enabled (ne $cert_manager.cluster_issuer "") }}
+    cert-manager.io/cluster-issuer: {{ $cert_manager.cluster_issuer }}
+    {{- end }}
 spec:
-  ingressClassName: {{ .Values.ingress.class_name }}
+  ingressClassName: {{ $ingress.class_name | default "nginx" }}
   tls:
   - hosts:
-    - {{ .Values.ingress.host }}
-    {{- if and .Values.ingress.tlsSecret.enabled (ne .Values.ingress.tlsSecret.key "") (ne .Values.ingress.tlsSecret.crt "") }}
+    - {{ $host }}
+    {{- if $ingress.tlsSecret.enabled }}
     secretName: fabric-private-ingress-ssl
+    {{- else if $cert_manager.enabled }}
+    secretName: cert-manager-ssl-cert
     {{- end }}
   rules:
-  - host: {{ .Values.ingress.host }}
+  - host: {{ $host }}
     http:
       paths:
-        - path: /
+        - path: /{{ $path }}
           pathType: Prefix
           backend:
             service:
               name: fabric-service
               port:
-                number: {{ .Values.ingress.port }}
+                number: {{ $ingress.port | default 3213 }}
 {{ end }}
