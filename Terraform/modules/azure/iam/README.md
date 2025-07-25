@@ -35,7 +35,7 @@ No modules.
 | <a name="input_k2view_agent_namespace"></a> [k2view\_agent\_namespace](#input\_k2view\_agent\_namespace) | K2view agent namespace name | `string` | `"k2view-agent"` | no |
 | <a name="input_kubernetes_oidc_issuer_url"></a> [kubernetes\_oidc\_issuer\_url](#input\_kubernetes\_oidc\_issuer\_url) | K8S OIDC URL | `string` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | Resources location in Azure | `string` | `"West Europe"` | no |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | RG name in Azure | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Azure resource group name | `string` | n/a | yes |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | Virtual network subnet ID | `string` | n/a | yes |
 
 ## Outputs
