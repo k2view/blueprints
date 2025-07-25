@@ -1,18 +1,23 @@
+{{ $namespace := default dict .Values.namespace }}
+{{ $global := default dict .Values.global }}
+{{ $labels := default dict $global.labels }}
+{{ $service := default dict .Values.service }}
+
 apiVersion: v1
 kind: Service
 metadata:
   name: fabric-service
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: fabric
-    {{- range $label := .Values.labels }}
+    {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
-  type: 
+  type: {{ $service.type | default "ClusterIP" }}
   ports:
-  - port: {{ .Values.listening_port }}
-    targetPort: {{ .Values.listening_port }}
+  - port: {{ $service.listening_port | default 3213 }}
+    targetPort: {{ $service.listening_port | default 3213 }}
     protocol: TCP
     name: fabric-port
   selector:

@@ -4,22 +4,44 @@
 {{ $resource_allocation := default dict .Values.container.resource_allocation}}
 {{ $limits := default dict $resource_allocation.limits}}
 {{ $requests := default dict $resource_allocation.requests}}
-
+{{ $app_name := .Values.app_name | default .Chart.Name }}
+{{ $service_port := .Values.service.port }}
+{{ $secrets := .Values.secrets | default (list) }}
+{{ $storage_path := .Values.container.storage_path }}
+{{- /* Default values for common apps */ -}}
+{{- if $app_name | eq "postgres" }}
+  {{ $storage_path := .Values.container.storage_path | default "/opt/apps/pgsql/data/data/" }}
+  {{ $service_port := .Values.service.port | default 5432 }}
+  {{ $secrets := .Values.secrets | default (list (dict "key" "PGDATA" "value" "/opt/apps/pgsql/data/data/pgdata") (dict "key" "POSTGRES_PASSWORD" "value" "postgres") (dict "key" "POSTGRES_USERNAME" "value" "postgres")) }}
+{{- else if $app_name | eq "cassandra" }}
+  {{ $storage_path := .Values.container.storage_path | default "/var/lib/cassandra" }}
+  {{ $service_port := .Values.service.port | default 9042 }}
+  {{ $secrets := .Values.secrets | default (list (dict "key" "HEAP_NEWSIZE" "value" "128M") (dict "key" "MAX_HEAP_SIZE" "value" "2G") (dict "key" "CASSANDRA_DC" "value" "DC1") (dict "key" "CASSANDRA_ENDPOINT_SNITCH" "value" "GossipingPropertyFileSnitch")) }}
+{{- else if $app_name | eq "kafka" }}
+  {{ $storage_path := .Values.container.storage_path | default "/home/kafka/zk_data" }}
+  {{ $service_port := .Values.service.port | default 9093 }}
+  {{ $secrets := .Values.secrets | default (list (dict "key" "DATA" "value" "/home/kafka/zk_data")) }}
+{{- else if $app_name | eq "neo4j" }}
+  {{ $storage_path := .Values.container.storage_path | default "/var/lib/neo4j/data" }}
+  {{ $service_port := .Values.service.port | default 7687 }}
+  {{ $secrets := .Values.secrets | default (list (dict "key" "NEO4J_PLUGINS" "value" "[\"graph-data-science\", \"apoc\"]") (dict "key" "NEO4J_server_config_strict__validation_enabled" "value" "false") (dict "key" "NEO4J_AUTH" "value" "neo4j/changeit") (dict "key" "NEO4J_ACCEPT_LICENSE_AGREEMENT" "value" "yes")) }}
+{{- end }}
+{{- /* ---------------------------- */ -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.app_name }}-deployment
+  name: {{ $app_name }}-deployment
   namespace: {{ default .Release.Name $namespace.name }}
   labels: &id001
-    app: {{ .Values.app_name }}
+    app: {{ $app_name }}
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.container.replicas | default 1 }}
   selector:
     matchLabels:
-      app: {{ .Values.app_name }}
+      app: {{ $app_name }}
   template:
     metadata:
       labels: *id001
@@ -51,30 +73,30 @@ spec:
         {{- end }}
       {{- end }}
       containers:
-      - name: {{ .Values.app_name }}
+      - name: {{ $app_name }}
         image: {{ .Values.container.image.url }}
         imagePullPolicy: "IfNotPresent"
         ports:
-        - containerPort: {{ .Values.service.port }}
+        - containerPort: {{ $service_port }}
         resources:
           limits:
-            memory: {{ default "4Gi" $limits.memory }}
-            cpu: {{ default "1" $limits.cpu }}
+            memory: {{ $limits.memory | default "4Gi" }}
+            cpu: {{ $limits.cpu | default "1" }}
           requests:
-            memory: {{ default "4Gi" $requests.memory }}
-            cpu: {{ default "0.5" $requests.cpu }}
+            memory: {{ $requests.memory | default "4Gi" }}
+            cpu: {{ $requests.cpu | default "1" }}
         env:
-        {{- range .Values.secrets }}
+        {{- range $secrets }}
         - name: {{ .key }}
           valueFrom:
             secretKeyRef:
-              name: {{ $.Values.app_name }}-secrets
+              name: {{ $app_name }}-secrets
               key: {{ .key }}
         {{- end }}
         volumeMounts:
-          - name: {{ .Values.app_name }}-storage
-            mountPath: {{ .Values.container.storage_path }}
+        - name: {{ $app_name }}-storage
+          mountPath: {{ $storage_path }}
       volumes:
-      - name: {{ .Values.app_name }}-storage
+      - name: {{ $app_name }}-storage
         persistentVolumeClaim:
-          claimName: {{ .Values.app_name }}-claim
+          claimName: {{ $app_name }}-claim

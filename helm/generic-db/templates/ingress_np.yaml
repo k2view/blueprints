@@ -1,20 +1,21 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $networkPolicy := default dict .Values.networkPolicy }}
+{{ $app_name := .Values.app_name | default .Chart.Name }}
 {{- if (default true $networkPolicy.enabled) }}
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: ingress-{{ .Values.app_name }}-np
+  name: ingress-{{ $app_name }}-np
   namespace: {{ default .Release.Name $namespace.name }}
   labels:
-    app: {{ .Values.app_name }}
+    app: {{ $app_name }}
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
 spec:
   podSelector:
     matchLabels:
-      app: {{ .Values.app_name }}
+      app: {{ $app_name }}
   ingress:
   - from:
     - namespaceSelector:
