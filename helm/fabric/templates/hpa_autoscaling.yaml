@@ -1,20 +1,25 @@
-{{ if .Values.scaling.enabled }}
+{{ $namespace := default dict .Values.namespace }}
+{{ $scaling := default dict .Values.scaling }}
+{{ $global := default dict .Values.global }}
+{{ $labels := default dict $global.labels }}
+
+{{ if $scaling.enabled | default false }}
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
     name: fabric-hpa
-    namespace: {{ .Values.namespace.name }}
+    namespace: {{ default .Release.Name $namespace.name }}
     labels:
         app: fabric
-        {{- range $label := .Values.labels }}
+        {{- range $label := $labels }}
         {{ $label.name }}: {{ $label.value }}
         {{- end }}
 spec:
     scaleTargetRef:
         apiVersion: apps/v1
-        kind: {{ .Values.scaling.targetKind }}
-        name: {{ .Values.scaling.targetName }}
-    minReplicas: {{ .Values.scaling.minReplicas }}
-    maxReplicas: {{ .Values.scaling.maxReplicas }}
-    targetCPUUtilizationPercentage: {{ .Values.scaling.targetCPU }}
+        kind: {{ $scaling.targetKind | default "StatefulSet" }}
+        name: {{ $scaling.targetName | default "fabric-stateful-sets" }}
+    minReplicas: {{ $scaling.minReplicas | default 1 }}
+    maxReplicas: {{ $scaling.maxReplicas | default 1 }}
+    targetCPUUtilizationPercentage: {{ $scaling.targetCPU | default 90 }}
 {{ end }}
