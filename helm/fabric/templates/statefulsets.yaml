@@ -140,7 +140,7 @@ spec:
             args:
             - -l
             - -c
-            - ./docker-entrypoint.sh && tail -F workspace/logs/k2fabric.log
+            - {{ $container.docker_entrypoint_command | default "./docker-entrypoint.sh && tail -F workspace/logs/k2fabric.log" }}
             imagePullPolicy: IfNotPresent
             image: {{ $container.image.url }}
             lifecycle:
