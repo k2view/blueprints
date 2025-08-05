@@ -2,17 +2,10 @@
 
 ![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
-This Helm chart deploys a generic database on Kubernetes, supporting multiple database types.
+This Helm chart deploys a generic database on Kubernetes with support for multiple database types.
 
 ## Description
-The `generic-db` Helm chart provides a unified and configurable approach to deploying database systems, including PostgreSQL, Cassandra, Kafka, and Neo4j, on Kubernetes. It uses a single chart with parameterized values to control behavior per database type (`app_name`), including image selection, ports, volumes, and secrets.
-
-This chart is well-suited for teams managing infrastructure across environments and looking to standardize the deployment of different databases without maintaining multiple charts. Key capabilities include:
-
-- Automatic configuration of service ports, storage paths, and default secrets based on `app_name`
-- Support for resource requests and limits, affinity rules, and network policies
-- Secrets and storage provisioning with options to override all defaults
-- Example values files provided for each supported database
+The generic-db Helm chart is designed to deploy various types of databases (PostgreSQL, Cassandra, Kafka, Neo4j) on Kubernetes clusters. It provides automatic configuration based on the database type while allowing custom overrides. The chart supports configuring resource requests and limits, storage options, affinity rules, and secrets management.
 
 ## Supported Database Types
 The chart supports the following database types through the `app_name` value:
@@ -146,7 +139,7 @@ The `generic-db` Helm chart can be customized to deploy different databases by a
 - **Neo4j**: `values.example_neo4j`
 - **Postgres**: `values.yaml` (default configuration)
 
-These high-level configurations demonstrate how to customize the generic-db Helm chart to suit various database systems by modifying key parameters in the values files.
+These high-level configurations illustrate how you can tailor the generic-db Helm chart to suit different database systems by modifying key parameters in the values files.
 
 ### Cassandra
 To deploy **Cassandra**, use `values.example_cassandra`. This configuration sets `app_name` to `cassandra`, specifies the Cassandra Docker image, adjusts resource allocations suitable for a Cassandra deployment, and includes necessary secrets for authentication.
