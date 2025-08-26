@@ -140,7 +140,7 @@ spec:
             args:
             - -l
             - -c
-            - ./docker-entrypoint.sh && tail -F workspace/logs/k2fabric.log
+            - {{ $container.docker_entrypoint_command | default "./docker-entrypoint.sh && tail -F workspace/logs/k2fabric.log" }}
             imagePullPolicy: IfNotPresent
             image: {{ $container.image.url }}
             lifecycle:
@@ -179,19 +179,19 @@ spec:
             livenessProbe:
               initialDelaySeconds: {{ $livenessProbe.initialDelaySeconds | default 60 }}
               periodSeconds: {{ $livenessProbe.periodSeconds | default 60 }}
+              timeoutSeconds: {{ $livenessProbe.timeoutSeconds | default 15 }}
+              failureThreshold: {{ $livenessProbe.failureThreshold | default 3 }}
+              successThreshold: {{ $livenessProbe.successThreshold | default 1 }}
               exec:
-                command:
-                - /bin/bash
-                - /opt/apps/fabric/isAlive.sh
+                command: ["/bin/bash", "-l", "-c", "/opt/apps/fabric/isAlive.sh"]
             readinessProbe:
               initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default 30 }}
               periodSeconds: {{ $readinessProbe.periodSeconds | default 60 }}
-              successThreshold: {{ $readinessProbe.successThreshold | default 3 }}
+              timeoutSeconds: {{ $readinessProbe.timeoutSeconds | default 15 }}
+              successThreshold: {{ $readinessProbe.successThreshold | default 2 }}
               failureThreshold: {{ $readinessProbe.failureThreshold | default 5 }}
               exec:
-                command:
-                - /bin/bash
-                - /opt/apps/fabric/isAlive.sh
+                command: ["/bin/bash", "-l", "-c", "/opt/apps/fabric/isAlive.sh"]
             volumeMounts:
             - name: fabric-storage-private
               mountPath: /opt/apps/fabric/workspace

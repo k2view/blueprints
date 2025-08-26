@@ -8,7 +8,14 @@ services:
       - fab-net
     volumes:
       - ${SOCKET}:${SOCKET}:ro
-    command: tcp-listen:2375,fork,reuseaddr unix-connect:${SOCKET}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        until [[ -S ${SOCKET} ]]; do
+          echo "Waiting for Docker socket..."
+          sleep 2
+        done
+        exec socat tcp-listen:2375,fork,reuseaddr unix-connect:${SOCKET}
     healthcheck:
       test: ["CMD-SHELL", "socat /dev/null TCP4:localhost:2375 || exit 1"]
       interval: 15s

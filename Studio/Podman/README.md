@@ -597,7 +597,8 @@ Here are the command options for `k2space.sh`:
 | --fabric-version= | Allows you to override the Fabric version specified in the .env file |
 | --compose=        | Allows you to use a custom Docker compose.yaml file         |
 | --env=            | Allows you to use a custom Docker environment file |
-| --project=            | Allows you to specify the Project's name |
+| --project=        | Allows you to specify the Project's name |
+| --git-authorship= | Allows you to set the Git AUTHOR and COMMITTER name and email. The value is to be passed in as "name:email". |
 
 
 The Fabric version is specified using the desired image tag. E.g., 8.2.4_3 
