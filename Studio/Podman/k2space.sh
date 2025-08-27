@@ -48,7 +48,7 @@ function k2spaceStart() {
     [[ "$arg" =~ ^"--compose=" ]] && { compose="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--env=" ]] && { env="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--fabric-version=" ]] && { export FABRIC_VERSION="${arg#*=}"; continue; }
-    [[ "$arg" =~ ^"--git-authorship=" ]] && { export GIT_AUTHOR="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--git-authorship=" ]] && { export GIT_AUTHORSHIP="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--git-branch=" ]] && { export GIT_BRANCH="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--heap=" ]] && { export MAX_HEAP="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--profile=" ]] && { export PROFILE="${arg#*=}"; continue; }
@@ -83,10 +83,10 @@ function k2spaceStart() {
     local profile="--profile $PROFILE"
   fi
 
-  if [[ -n "$GIT_AUTHOR" ]]; then
-    [[ ! "$GIT_AUTHOR" =~ ":" ]] && { echo "invalid GIT_AUTHOR format (must be Your Name:you@example.com)" 1>&2; return 1; }
-    [[ -z "$GIT_AUTHOR_NAME" ]] && export GIT_AUTHOR_NAME="$(awk 'BEGIN { FS=":" }; { print $1 }' <<< $GIT_AUTHOR)"
-    [[ -z "$GIT_AUTHOR_EMAIL" ]] && export GIT_AUTHOR_EMAIL="$(awk 'BEGIN { FS=":" }; { print $2 }' <<< $GIT_AUTHOR)"
+  if [[ -n "$GIT_AUTHORSHIP" ]]; then
+    [[ ! "$GIT_AUTHORSHIP" =~ ":" ]] && { echo "invalid GIT_AUTHORSHIP format (must be Your Name:you@example.com)" 1>&2; return 1; }
+    [[ -z "$GIT_AUTHOR_NAME" ]] && export GIT_AUTHOR_NAME="$(awk 'BEGIN { FS=":" }; { print $1 }' <<< $GIT_AUTHORSHIP)"
+    [[ -z "$GIT_AUTHOR_EMAIL" ]] && export GIT_AUTHOR_EMAIL="$(awk 'BEGIN { FS=":" }; { print $2 }' <<< $GIT_AUTHORSHIP)"
     [[ -z "$GIT_COMMITTER_NAME" ]] && export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
     [[ -z "$GIT_COMMITTER_EMAIL" ]] && export GIT_COMMITTER_EMAIL="$GIT_COMMITTER_EMAIL"
   fi
