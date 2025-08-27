@@ -41,6 +41,9 @@ metadata:
     {{- if ne $ingress.appgw_ssl_certificate_name "" }}
     appgw.ingress.kubernetes.io/appgw-ssl-certificate: {{ $ingress.appgw_ssl_certificate_name }}
     {{- end }}
+    {{- if ne $ingress.appgw_use_private_ip "" }}
+    appgw.ingress.kubernetes.io/use-private-ip: {{ $ingress.appgw_use_private_ip | quote }}
+    {{- end }}
     appgw.ingress.kubernetes.io/ssl-redirect: "true"
     {{- end }}
     {{- if and $cert_manager.enabled (ne $cert_manager.cluster_issuer "") }}
