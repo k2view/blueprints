@@ -6,6 +6,33 @@
 
 The Fabric Helm chart provides a robust, production-ready deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, security, and ease of use, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments, and is maintained with best practices for reliability and scalability.
 
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+  - [1. Add the Helm Repository (Remote Installation)](#1-add-the-helm-repository-remote-installation)
+  - [2. Install the Chart from Remote Repository](#2-install-the-chart-from-remote-repository)
+  - [3. Install the Chart Locally (After Cloning the Repo)](#3-install-the-chart-locally-after-cloning-the-repo)
+  - [4. Custom Installation](#4-custom-installation)
+- [Upgrading](#upgrading)
+- [Uninstallation](#uninstallation)
+- [Configuration](#configuration)
+  - [Deployment Options](#deployment-options)
+    - [1. Deployment (Recommended for Development/Studio)](#1-deployment-recommended-for-developmentstudio)
+    - [2. StatefulSet (Recommended for Production/Server)](#2-statefulset-recommended-for-productionserver)
+  - [Fabric Application Configuration](#fabric-application-configuration)
+- [RBAC](#rbac)
+- [Horizontal Pod Autoscaling (HPA)](#horizontal-pod-autoscaling-hpa)
+- [Ingress](#ingress)
+  - [Ingress Routing Types](#ingress-routing-types)
+    - [1. Path-Based Routing (No Wildcard TLS - Recommended)](#1-path-based-routing-no-wildcard-tls---recommended)
+    - [2. Domain-Based Routing (Wildcard TLS)](#2-domain-based-routing-wildcard-tls)
+- [Storage (Persistence)](#storage-persistence)
+- [Environment Variables](#environment-variables)
+- [Troubleshooting](#troubleshooting)
+- [Support](#support)
+
 ## Features
 
 - **Configurable Deployments:** Easily customize replicas, resources, and environment variables.
@@ -290,48 +317,11 @@ This method is recommended when you have a wildcard TLS certificate for your dom
 - Set `ingress.host` to the subdomain (e.g., `space-tenant.domain`)
 - Set `ingress.path` to `/` or leave it blank (default)
 - Optional: set `ingress.subdomain` to `true` to use namespace name as subdomain
+=======
+Below are the two most common routing strategies: 1. Path-Based Routing (No Wildcard TLS - Recommended) and 2. Domain-Based Routing (Wildcard TLS)
 
-**Example values.yaml:**
-```yaml
-ingress:
-  enabled: true
-  host: space-tenant.domain
-  # ...other values...
-```
-
-**Resulting Ingress manifest:**
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: fabric-ingress
-  namespace: space-tenant
-  labels:
-    app: fabric
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - space-tenant.domain
-  rules:
-    - host: space-tenant.domain
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: fabric-service
-                port:
-                  number: 3213
-```
-
-#### 2. Path-Based Routing (No Wildcard TLS)
-Use this method if you do not have a wildcard TLS certificate. Each space is accessed via a unique path on a shared domain (e.g., `domain/space-tenant`).
+#### 1. Path-Based Routing (No Wildcard TLS - Recommended)
+Use this method if you do not have a wildcard TLS certificate. Each space is accessed via a unique path on a shared domain (e.g., `domain/space-tenant`). This is the recommended configuration.
 
 - **Ingress host:** Static (e.g., `domain`)
 - **Ingress path:** Dynamic (per space)
@@ -381,10 +371,78 @@ spec:
                   number: 3213
 ```
 
+#### 2. Path-Based Routing (No Wildcard TLS)
+Use this method if you do not have a wildcard TLS certificate. Each space is accessed via a unique path on a shared domain (e.g., `domain/space-tenant`).
+
+- **Ingress host:** Static (e.g., `domain`)
+- **Ingress path:** Dynamic (per space)
+
+**How to use:**
+- Set `ingress.host` to your domain (e.g., `domain`)
+- Set `ingress.path` to the space name (e.g., `space-tenant`)
+- Optional: set `ingress.path` to `true` to use namespace name as a path prefix
+=======
 > **Note:**
 > - Choose the routing type that matches your certificate and DNS setup.
 > - The chart templates are designed to support both strategies out-of-the-box.
 > - For advanced ingress controller features or custom annotations, refer to your ingress controller's documentation.
+
+#### 2. Domain-Based Routing (Wildcard TLS)
+This method is recommended when you have a wildcard TLS certificate for your domain. Each space is accessed via a subdomain (e.g., `space-tenant.domain`).
+
+- **Ingress host:** Dynamic (per space, as subdomain)
+- **Ingress path:** Static (`/`)
+
+**How to use:**
+- Set `ingress.host` to the subdomain (e.g., `space-tenant.domain`)
+- Set `ingress.path` to `/` or leave it blank (default)
+- Optional: set `ingress.subdomain` to `true` to use namespace name as subdomain
+
+**Example values.yaml:**
+```yaml
+ingress:
+  enabled: true
+  host: domain
+  path: space-tenant
+  # ...other values...
+```
+
+**Resulting Ingress manifest:**
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: fabric-ingress
+  namespace: space-tenant
+  labels:
+    app: fabric
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "900"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - domain
+  rules:
+    - host: domain
+      http:
+        paths:
+          - path: /space-tenant
+            pathType: Prefix
+            backend:
+              service:
+                name: fabric-service
+                port:
+                  number: 3213
+```
+
+> **Note:**
+> - Choose the routing type that matches your certificate and DNS setup.
+> - The chart templates are designed to support both strategies out-of-the-box.
+> - For advanced ingress controller features or custom annotations, refer to your ingress controller's documentation.
+
 
 ## Storage (Persistence)
 
