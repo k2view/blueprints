@@ -76,6 +76,10 @@ services:
       GIT_BRANCH:
       GIT_USERNAME:
       GIT_TOKEN:
+      GIT_AUTHOR_NAME:
+      GIT_AUTHOR_EMAIL:
+      GIT_COMMITTER_NAME:
+      GIT_COMMITTER_EMAIL:
       MAX_HEAP:
       INI_CONFIG_UPDATE_FILE:
       CLOUD_LINK: "https://cloud.k2view.com"
