@@ -48,6 +48,7 @@ function k2spaceStart() {
     [[ "$arg" =~ ^"--compose=" ]] && { compose="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--env=" ]] && { env="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--fabric-version=" ]] && { export FABRIC_VERSION="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--git-authorship=" ]] && { export GIT_AUTHOR="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--git-branch=" ]] && { export GIT_BRANCH="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--heap=" ]] && { export MAX_HEAP="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--profile=" ]] && { export PROFILE="${arg#*=}"; continue; }
@@ -80,6 +81,14 @@ function k2spaceStart() {
   if [[ -n "$PROFILE" ]]; then
     [[ ! -f "$self_path/$PROFILE.config" ]] && { echo "profile '$PROFILE' not found" 1>&2; return 1; }
     local profile="--profile $PROFILE"
+  fi
+
+  if [[ -n "$GIT_AUTHOR" ]]; then
+    [[ ! "$GIT_AUTHOR" =~ ":" ]] && { echo "invalid GIT_AUTHOR format (must be Your Name:you@example.com)" 1>&2; return 1; }
+    [[ -z "$GIT_AUTHOR_NAME" ]] && export GIT_AUTHOR_NAME="$(awk 'BEGIN { FS=":" }; { print $1 }' <<< $GIT_AUTHOR)"
+    [[ -z "$GIT_AUTHOR_EMAIL" ]] && export GIT_AUTHOR_EMAIL="$(awk 'BEGIN { FS=":" }; { print $2 }' <<< $GIT_AUTHOR)"
+    [[ -z "$GIT_COMMITTER_NAME" ]] && export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+    [[ -z "$GIT_COMMITTER_EMAIL" ]] && export GIT_COMMITTER_EMAIL="$GIT_COMMITTER_EMAIL"
   fi
 
   local space_info=$(podman ps --all --filter label=k2viewspace --filter label=com.docker.compose.project=$COMPOSE_PROJECT_NAME --format "{{index .Labels \"space-profile\"}}")

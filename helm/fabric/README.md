@@ -1,6 +1,6 @@
 # Fabric Helm Chart
 
-![Version: 1.2.17](https://img.shields.io/badge/Version-1.2.17-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
+![Version: 1.2.23](https://img.shields.io/badge/Version-1.2.23-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
 
 ## Overview
 
@@ -32,6 +32,7 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 - [Environment Variables](#environment-variables)
 - [Troubleshooting](#troubleshooting)
 - [Support](#support)
+
 
 ## Features
 
@@ -305,19 +306,6 @@ This allows for flexible ingress host and path generation, supporting both domai
 - Use `ingress.path` for path-based routing (e.g., `domain/space-tenant`).
 - You can set either to `true` (use namespace), a string (custom value), or `false` (disable).
 
-Below are the two most common routing strategies:
-
-#### 1. Domain-Based Routing (Wildcard TLS)
-This method is recommended when you have a wildcard TLS certificate for your domain. Each space is accessed via a subdomain (e.g., `space-tenant.domain`).
-
-- **Ingress host:** Dynamic (per space, as subdomain)
-- **Ingress path:** Static (`/`)
-
-**How to use:**
-- Set `ingress.host` to the subdomain (e.g., `space-tenant.domain`)
-- Set `ingress.path` to `/` or leave it blank (default)
-- Optional: set `ingress.subdomain` to `true` to use namespace name as subdomain
-=======
 Below are the two most common routing strategies: 1. Path-Based Routing (No Wildcard TLS - Recommended) and 2. Domain-Based Routing (Wildcard TLS)
 
 #### 1. Path-Based Routing (No Wildcard TLS - Recommended)
@@ -371,17 +359,6 @@ spec:
                   number: 3213
 ```
 
-#### 2. Path-Based Routing (No Wildcard TLS)
-Use this method if you do not have a wildcard TLS certificate. Each space is accessed via a unique path on a shared domain (e.g., `domain/space-tenant`).
-
-- **Ingress host:** Static (e.g., `domain`)
-- **Ingress path:** Dynamic (per space)
-
-**How to use:**
-- Set `ingress.host` to your domain (e.g., `domain`)
-- Set `ingress.path` to the space name (e.g., `space-tenant`)
-- Optional: set `ingress.path` to `true` to use namespace name as a path prefix
-=======
 > **Note:**
 > - Choose the routing type that matches your certificate and DNS setup.
 > - The chart templates are designed to support both strategies out-of-the-box.
@@ -402,8 +379,7 @@ This method is recommended when you have a wildcard TLS certificate for your dom
 ```yaml
 ingress:
   enabled: true
-  host: domain
-  path: space-tenant
+  host: space-tenant.domain
   # ...other values...
 ```
 
@@ -424,12 +400,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - domain
+        - space-tenant.domain
   rules:
-    - host: domain
+    - host: space-tenant.domain
       http:
         paths:
-          - path: /space-tenant
+          - path: /
             pathType: Prefix
             backend:
               service:
@@ -437,11 +413,6 @@ spec:
                 port:
                   number: 3213
 ```
-
-> **Note:**
-> - Choose the routing type that matches your certificate and DNS setup.
-> - The chart templates are designed to support both strategies out-of-the-box.
-> - For advanced ingress controller features or custom annotations, refer to your ingress controller's documentation.
 
 
 ## Storage (Persistence)
