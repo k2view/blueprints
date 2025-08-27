@@ -33,7 +33,6 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 - [Troubleshooting](#troubleshooting)
 - [Support](#support)
 
-
 ## Features
 
 - **Configurable Deployments:** Easily customize replicas, resources, and environment variables.
@@ -306,6 +305,19 @@ This allows for flexible ingress host and path generation, supporting both domai
 - Use `ingress.path` for path-based routing (e.g., `domain/space-tenant`).
 - You can set either to `true` (use namespace), a string (custom value), or `false` (disable).
 
+Below are the two most common routing strategies:
+
+#### 1. Domain-Based Routing (Wildcard TLS)
+This method is recommended when you have a wildcard TLS certificate for your domain. Each space is accessed via a subdomain (e.g., `space-tenant.domain`).
+
+- **Ingress host:** Dynamic (per space, as subdomain)
+- **Ingress path:** Static (`/`)
+
+**How to use:**
+- Set `ingress.host` to the subdomain (e.g., `space-tenant.domain`)
+- Set `ingress.path` to `/` or leave it blank (default)
+- Optional: set `ingress.subdomain` to `true` to use namespace name as subdomain
+=======
 Below are the two most common routing strategies: 1. Path-Based Routing (No Wildcard TLS - Recommended) and 2. Domain-Based Routing (Wildcard TLS)
 
 #### 1. Path-Based Routing (No Wildcard TLS - Recommended)
@@ -359,6 +371,17 @@ spec:
                   number: 3213
 ```
 
+#### 2. Path-Based Routing (No Wildcard TLS)
+Use this method if you do not have a wildcard TLS certificate. Each space is accessed via a unique path on a shared domain (e.g., `domain/space-tenant`).
+
+- **Ingress host:** Static (e.g., `domain`)
+- **Ingress path:** Dynamic (per space)
+
+**How to use:**
+- Set `ingress.host` to your domain (e.g., `domain`)
+- Set `ingress.path` to the space name (e.g., `space-tenant`)
+- Optional: set `ingress.path` to `true` to use namespace name as a path prefix
+=======
 > **Note:**
 > - Choose the routing type that matches your certificate and DNS setup.
 > - The chart templates are designed to support both strategies out-of-the-box.
@@ -379,7 +402,8 @@ This method is recommended when you have a wildcard TLS certificate for your dom
 ```yaml
 ingress:
   enabled: true
-  host: space-tenant.domain
+  host: domain
+  path: space-tenant
   # ...other values...
 ```
 
@@ -400,12 +424,12 @@ spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - space-tenant.domain
+        - domain
   rules:
-    - host: space-tenant.domain
+    - host: domain
       http:
         paths:
-          - path: /
+          - path: /space-tenant
             pathType: Prefix
             backend:
               service:
@@ -414,6 +438,10 @@ spec:
                   number: 3213
 ```
 
+> **Note:**
+> - Choose the routing type that matches your certificate and DNS setup.
+> - The chart templates are designed to support both strategies out-of-the-box.
+> - For advanced ingress controller features or custom annotations, refer to your ingress controller's documentation.
 
 
 ## Storage (Persistence)
