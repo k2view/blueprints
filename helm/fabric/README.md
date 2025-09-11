@@ -1,6 +1,6 @@
 # Fabric Helm Chart
 
-![Version: 1.2.23](https://img.shields.io/badge/Version-1.2.23-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
+![Version: 1.2.24](https://img.shields.io/badge/Version-1.2.24-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
 
 ## Overview
 
@@ -40,7 +40,7 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 - **Production-Ready Defaults:** Secure and scalable out-of-the-box settings.
 - **Support for Ingress:** Integrate with popular ingress controllers for external access, including:
   - **NGINX Ingress Controller** (default, fully supported)
-  - **AWS ALB Ingress Controller** (annotation changes may be required)
+  - **AWS ALB Ingress Controller** (annotation changes may be required).
   - **Azure Application Gateway Ingress Controller (AGIC)** (annotation changes may be required)
   - **GCE Ingress Controller** (annotation changes may be required)
   
