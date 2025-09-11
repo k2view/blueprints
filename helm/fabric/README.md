@@ -34,6 +34,7 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 - [Support](#support)
 
 
+
 ## Features
 
 - **Configurable Deployments:** Easily customize replicas, resources, and environment variables.
