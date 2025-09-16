@@ -6,14 +6,25 @@ namespace:
   create: true
   name: "k2view-agent"
 
-image:
-  url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.5"
+container:
+  securityContext: true # Supported only for k2view-agent version 2.11 and above
+  image:
+    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.11"
+  # Pod Affinity Settings
+  # These settings control the pod affinity and anti-affinity rules for the Fabric deployment.
+  affinity:
+    # Options: affinity, anti-affinity, none
+    type: none
+    label: 
+      name: topology.kubernetes.io/zone
+      value: region-a
 
 # Secrets used to configure the agent
 secrets:
   K2_MAILBOX_ID: ""
   K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
   kubeInterface: "https://kubernetes.default.svc"
+  #kubeToken: "" # If serviceAccount.create is false, this secret must be provided as secret or externalSecrets
   CLOUD: "" # GCP|AWS|AZURE
   REGION: ""
   # AWS parameters
@@ -26,9 +37,16 @@ externalSecrets:
   #- secretName: "keyspace_secret"
   #  key: "AWS_KEYSPACE_USER"
   #  varName: "AWS_KEYSPACE_USER"
+  #- secretName: "my-secret" # If serviceAccount.create is false, this secret must be provided as secret or externalSecrets
+  #  key: "kubeToken"
+  #  varName: "kubeToken"
+
 
 serviceAccount:
-  # Will create service account with cluster role and secret with token of this SA
+  # Controls the creation of Kubernetes RBAC resources for the agent.
+  # When true: Creates ServiceAccount, ClusterRole, ClusterRoleBinding, and a Secret containing the service account token.
+  # The agent pod will automatically use the kubeToken environment variable from this secret.
+  # When false: No RBAC resources are created. You must manually provide the kubeToken secret for the agent.
   create: true
   # Attach SA to agent pod
   attach: false
@@ -66,6 +84,15 @@ serviceAccount:
       - apiGroups: ["networking.k8s.io"]
         resources: ["ingresses", "networkpolicies"]
         verbs: ["create", "delete", "get"]
+      - apiGroups: [""]
+        resources: ["pods", "pods/log"]
+        verbs: ["delete", "list", "get"]
+      - apiGroups: [""]
+        resources: ["configmaps", "secrets", "serviceaccounts"]
+        verbs: ["create", "delete", "get", "list", "patch"]
+      - apiGroups: [""]
+        resources: ["services", "persistentvolumeclaims"]
+        verbs: ["create", "delete", "get", "list"]
       - apiGroups: ["monitoring.coreos.com"]
         resources: ["podmonitors"]
         verbs: ["create", "delete"]

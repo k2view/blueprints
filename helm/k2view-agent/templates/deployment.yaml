@@ -1,10 +1,14 @@
 
 {{- $namespace := default dict .Values.namespace }}
 {{- $namespace_name := default .Release.Name $namespace.name }}
+{{- $container := default dict .Values.container }}
 {{- $image := default dict .Values.image }}
+{{- $image := $image | default $container.image }} {{- /* Support for backward compatibility (image moved to container) */ -}}
+{{- $repoSecret := default dict $image.repoSecret }}
+{{- $repoSecret := $repoSecret | default $container.image.repoSecret }} {{- /* Support for backward compatibility (image moved to container) */ -}}
+{{- $affinity := default dict $container.affinity }}
 {{- $serviceAccount := default dict .Values.serviceAccount }}
-{{- $repoSecret := default dict .Values.repoSecret }}
-{{- $resources := default dict .Values.resources }}
+{{- $resources := default dict $container.resources }}
 {{- $limits := default dict $resources.limits }}
 {{- $requests := default dict $resources.requests }}
 
@@ -32,10 +36,40 @@ spec:
       {{- if $serviceAccount.attach | default false }}
       serviceAccountName: {{ $serviceAccount.name }}
       {{- end }}
+      {{- if or (eq $affinity.type "affinity") (eq $affinity.type "anti-affinity") }}
+        affinity:
+          {{- if eq $affinity.type "affinity" }}
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: {{ $affinity.label.name }}
+                  operator: In
+                  values:
+                  - {{ $affinity.label.value }}
+          {{- else if eq $affinity.type "anti-affinity" }}
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: {{ $affinity.label.name }}
+                  operator: NotIn
+                  values:
+                  - {{ $affinity.label.value }}
+          {{- end }}
+        {{- end }}
       containers:
         - name: k2view-agent
           image: {{ $image.url }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ $image.pullPolicy | default "IfNotPresent" }}
+          {{- if $container.securityContext | default false }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          {{- end }}
           env:
             {{- range $key, $value :=  .Values.secrets }}
             {{- if not (empty $value) }}
