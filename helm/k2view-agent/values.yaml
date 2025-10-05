@@ -7,9 +7,9 @@ namespace:
   name: "k2view-agent"
 
 container:
-  securityContext: false # Supported only for k2view-agent version 2.11 and above
+  securityContext: true # Supported only for k2view-agent version 2.11 and above
   image:
-    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.10"
+    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.11"
   # Pod Affinity Settings
   # These settings control the pod affinity and anti-affinity rules for the Fabric deployment.
   affinity:
