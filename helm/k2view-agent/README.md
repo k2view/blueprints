@@ -1,19 +1,19 @@
 # k2view-agent
 
-![Version: 1.1.9](https://img.shields.io/badge/Version-1.1.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.5](https://img.shields.io/badge/AppVersion-2.5-informational?style=flat-square)
+![Version: 1.1.13](https://img.shields.io/badge/Version-1.1.13-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
 
-This Helm chart simplifies the deployment of the K2view cloud manager site agent, ensuring a streamlined integration with your cloud infrastructure.
+This Helm chart simplifies the deployment of the K2view cloud orchestrator site agent, ensuring a streamlined integration with your cloud infrastructure.
 
 ## Prerequisites
 Before installing the K2view agent, ensure you have the following:
 
 * **Helm 3.x** - [Install Helm](https://helm.sh/docs/intro/install/)
 * **Kubernetes cluster** - Access to a running Kubernetes cluster (v1.19+)
-* **MAILBOX ID** - Unique identifier provided by K2view cloud manager owner to associate your site with the agent
+* **MAILBOX ID** - Unique identifier provided by K2view to associate your site with K2view cloud orchestrator
 * **Cloud provider credentials** - Appropriate IAM roles or service accounts configured for your cloud provider (AWS/GCP/Azure)
 * **Network access** - The agent pod must be able to reach:
   - Kubernetes API server
-  - K2view cloud manager (`https://cloud.k2view.com`)
+  - K2view cloud orchestrator (`https://cloud.k2view.com`)
   - Your cloud provider APIs
 
 ## Values
@@ -23,8 +23,8 @@ Below is a table detailing the various configurable parameters for the K2view ag
 |-----|------|---------|-------------|
 | namespace.name | string | `"k2view-agent"` | Name of the namespace for the agent. |
 | namespace.create | bool | `true` | Create new namespace for agent. |
-| container.securityContext | bool | `false` | Enable security context for the container (supported only for k2view-agent version 2.11 and above). |
-| container.image.url | string | `"docker.share.cloud.k2view.com/k2view/k2v-agent:2.10"` | URL for the K2view agent Docker image. |
+| container.securityContext | bool | `true` | Enable security context for the container (supported only for k2view-agent version 2.11 and above). |
+| container.image.url | string | `"docker.share.cloud.k2view.com/k2view/k2v-agent:2.11"` | URL for the K2view agent Docker image. |
 | container.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy for the container. |
 | container.image.addDockerRegistry | bool | `false` | Set true if you want to pull image from external repo, set false if your Kubernetes already have access to the repo. |
 | container.image.dockerRegistrySecret | string | `"registry-secret"` | Name of the repository secret for private registry. |
@@ -36,8 +36,8 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | container.affinity.label.name | string | `"topology.kubernetes.io/zone"` | Node label name for affinity rules. |
 | container.affinity.label.value | string | `"region-a"` | Node label value for affinity rules. |
 | secrets | object |  | Configuration secrets for K2view agent. |
-| secrets.K2_MAILBOX_ID | string | `""` | ID for K2view cloud manager, need to be provided by K2view cloud manager owner, used to associate site with agent (the ID unique and used for one agent). |
-| secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com/api/mailbox"` | K2view cloud manager url. |
+| secrets.K2_MAILBOX_ID | string | `""` | Unique identifier provided by K2view to associate your site with K2view cloud orchestrator. |
+| secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com/api/mailbox"` | K2view cloud orchestrator url. |
 | secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | Kubernetes API interface, need to be accessible from the agent. |
 | secrets.CLOUD | string | `""` | Cloud provider (GCP\|AWS\|AZURE). |
 | secrets.REGION | string | `""` | Cloud region. |
@@ -94,7 +94,7 @@ Required to deploy Fabric project using Kubernetes Jobs.
 |------------------------|-----------------------------------|
 | `jobs`, `jobs/status`  | `create`, `delete`, `get`, `list` |
 
-#### Cloud Manager Operations
+#### Cloud orchestrator Operations
 Required for environment management and inspection.
 
 | Resources                                                                 | Verbs                  |
