@@ -2,11 +2,15 @@
 {{ $deploy := default dict .Values.deploy }}
 {{ $type := default "StatefulSet" $deploy.type }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $labels := default (list) .Values.labels }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
 {{ $serviceAccount := default dict .Values.serviceAccount }}
 {{ $serviceAccountName := default .Release.Name (default $namespace.name $serviceAccount.name) }}
 {{ $storage := default dict .Values.storage }}
 {{ $container := default dict .Values.container }}
+{{ $resource_annotations := default (list) $container.annotations }}
 {{ $imageRepoSecret := default dict $container.image.repoSecret }}
 {{ $mountSecret := default dict .Values.mountSecret }}
 {{ $mountSecretB64enc := default dict .Values.mountSecretB64enc }}
@@ -30,9 +34,24 @@ metadata:
     {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
     {{- if eq $serviceAccount.provider "azure" }}
     azure.workload.identity/use: "true"
     {{- end }}
+  {{- if or $global_annotations $resource_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
     replicas: {{ $container.replicas | default 1 }}
     serviceName: fabric-stateful-sets

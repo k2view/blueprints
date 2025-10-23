@@ -1,9 +1,13 @@
 
 # Global labels for all Fabric resources
-global:
-  labels:
-    #- name: label-name
-    #  value: label-value
+# labels:
+#   - name: label-name
+#     value: label-value
+# annotations:
+#   - key: "app.kubernetes.io/component"
+#     value: "fabric"
+#   - key: "kubernetes.io/description"
+#     value: "K2View Fabric data virtualization platform"
 
 
 # Namespace to deploy Fabric into
@@ -27,7 +31,6 @@ serviceAccount:
   project_id: "" # GCP project
   cluster_name: "" # GCP cluster
   azure_client_id: "" # Azure Managed Identity client ID
-
 
 # Container settings
 container:
@@ -54,13 +57,17 @@ container:
             password: ""
 
 
+# Service settings
+service:
+  listening_port: 3213
+
 # Storage settings
 storage:
   pvc:
     enabled: true  # Create PVC if true, else use ephemeral
   securityContext: true
   class: managed
-  alocated_amount: 10Gi
+  allocated_amount: 10Gi
 
 
 # Autoscaling (HPA)
@@ -184,6 +191,7 @@ secretsList:
       SPACE_NAME: ''
       MAX_HEAP: '10Gi'
 
+
 # Init Secrets Environment Variables Settings
 # These settings control the environment variables that are set in the init container of the Fabric pods or required for initialization.
 initSecretsList:
@@ -204,7 +212,6 @@ initSecretsList:
 affinity:
   # Options: affinity, anti-affinity, none
   type: none 
-  
   label: 
     name: topology.kubernetes.io/zone
     value: region-a
