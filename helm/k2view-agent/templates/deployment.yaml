@@ -58,6 +58,10 @@ spec:
                   - {{ $affinity.label.value }}
           {{- end }}
         {{- end }}
+      {{- if $container.securityContext | default false }}
+      securityContext:
+        fsGroup: 1000
+      {{- end }}
       containers:
         - name: k2view-agent
           image: {{ $image.url }}
@@ -68,7 +72,6 @@ spec:
             runAsNonRoot: true
             runAsUser: 1000
             runAsGroup: 1000
-            fsGroup: 1000
           {{- end }}
           env:
             {{- range $key, $value :=  .Values.secrets }}
