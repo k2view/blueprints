@@ -1,7 +1,9 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
+{{ $global_annotations := $global.annotations | default (list) }}
 {{ $service := default dict .Values.service }}
+{{ $resource_annotations := $service.annotations | default (list) }}
 
 apiVersion: v1
 kind: Service
@@ -13,6 +15,15 @@ metadata:
     {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+  {{- if or $global_annotations $resource_annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   type: {{ $service.type | default "ClusterIP" }}
   ports:

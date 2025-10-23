@@ -2,11 +2,13 @@
 {{ $deploy := default dict .Values.deploy }}
 {{ $type := default "StatefulSet" $deploy.type }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
+{{ $global_annotations := $global.annotations | default (list) }}
 {{ $serviceAccount := default dict .Values.serviceAccount }}
 {{ $serviceAccountName := default .Release.Name (default $namespace.name $serviceAccount.name) }}
 {{ $storage := default dict .Values.storage }}
 {{ $container := default dict .Values.container }}
+{{ $resource_annotations := $container.annotations | default (list) }}
 {{ $imageRepoSecret := default dict $container.image.repoSecret }}
 {{ $mountSecret := default dict .Values.mountSecret }}
 {{ $mountSecretB64enc := default dict .Values.mountSecretB64enc }}
@@ -33,6 +35,15 @@ metadata:
     {{- if eq $serviceAccount.provider "azure" }}
     azure.workload.identity/use: "true"
     {{- end }}
+  {{- if or $global_annotations $resource_annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
     replicas: {{ $container.replicas | default 1 }}
     selector:

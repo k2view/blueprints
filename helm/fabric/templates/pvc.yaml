@@ -1,8 +1,11 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
+{{ $global_annotations := $global.annotations | default (list) }}
 {{ $storage := default dict .Values.storage }}
 {{ $pvc := default dict $storage.pvc }}
+{{ $resource_annotations := $storage.annotations | default (list) }}
+{{ $allocated_amount := $storage.alocated_amount | default $storage.allocated_amount }} {{- /* for backward compatibility, fix spelling error */ -}}
 
 {{ if $pvc.enabled | default true }}
 apiVersion: v1
@@ -15,6 +18,15 @@ metadata:
     {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+  {{- if or $global_annotations $resource_annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -23,5 +35,5 @@ spec:
   {{- end }}
   resources:
     requests:
-      storage: {{ $storage.alocated_amount | default "10Gi" }}
+      storage: {{ $allocated_amount | default "10Gi" }}
 {{ end }}

@@ -1,6 +1,6 @@
 # Fabric Helm Chart
 
-![Version: 1.2.24](https://img.shields.io/badge/Version-1.2.24-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
+![Version: 1.2.26](https://img.shields.io/badge/Version-1.2.26-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
 
 ## Overview
 
@@ -39,6 +39,7 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 
 - **Configurable Deployments:** Easily customize replicas, resources, and environment variables.
 - **Production-Ready Defaults:** Secure and scalable out-of-the-box settings.
+- **Global Labels and Annotations:** Apply consistent labels and annotations across all Kubernetes resources for better organization, monitoring, and compliance.
 - **Support for Ingress:** Integrate with popular ingress controllers for external access, including:
   - **NGINX Ingress Controller** (default, fully supported)
   - **AWS ALB Ingress Controller** (annotation changes may be required).
@@ -122,9 +123,11 @@ The following table lists the main configurable parameters of the Fabric chart a
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `global.labels` | object | `[]` | Additional global labels to add to resources |
+| `global.labels` | array | `[]` | Global labels applied to all resources |
+| `global.annotations` | array | `[]` | Global annotations applied to all resources |
 | `namespace.create` | bool | `false` | Whether to create the namespace |
 | `namespace.name` | string | `"space-tenant"` | Namespace to deploy into |
+| `namespace.annotations` | array | `[]` | Resource-specific annotations for namespace |
 | `deploy.type` | string | `Deployment` | Deployment type (`Deployment` or `StatefulSet`) |
 | `serviceAccount.create` | bool | `true` | Create a new service account |
 | `serviceAccount.name` | string | `""` | Name of the service account (empty for new) |
@@ -133,8 +136,10 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `serviceAccount.project_id` | string | `""` | GCP project ID |
 | `serviceAccount.cluster_name` | string | `""` | Cluster name |
 | `serviceAccount.azure_client_id` | string | `""` | Azure Managed Identity client ID |
+| `serviceAccount.annotations` | array | `[]` | Resource-specific annotations for service account |
 | `container.replicas` | int | `1` | Number of Fabric pods |
 | `container.annotationsList` | list | `[{{name: description, value: Fabric on Kubernetes}}]` | List of pod annotations |
+| `container.annotations` | array | `[]` | Resource-specific annotations for deployment/statefulset |
 | `container.resource_allocation.limits.memory` | string | `8Gi` | Memory limit |
 | `container.resource_allocation.limits.cpu` | string | `2` | CPU limit |
 | `container.resource_allocation.requests.memory` | string | `2Gi` | Memory request |
@@ -145,11 +150,16 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `storage.pvc.enabled` | bool | `true` | Enable persistent volume claim |
 | `storage.securityContext` | bool | `true` | Enable pod security context |
 | `storage.class` | string | `managed` | Storage class name |
-| `storage.alocated_amount` | string | `10Gi` | PVC size |
+| `storage.allocated_amount` | string | `10Gi` | PVC size |
+| `storage.annotations` | array | `[]` | Resource-specific annotations for PVC |
+| `service.annotations` | array | `[]` | Resource-specific annotations for service |
+| `networkPolicy.annotations` | array | `[]` | Resource-specific annotations for network policy |
+| `secrets.annotations` | array | `[]` | Resource-specific annotations for secrets |
 | `scaling.enabled` | bool | `false` | Enable autoscaling |
 | `scaling.minReplicas` | int | `1` | Minimum replicas for autoscaling |
 | `scaling.maxReplicas` | int | `1` | Maximum replicas for autoscaling |
 | `scaling.targetCPU` | int | `90` | Target CPU utilization for HPA |
+| `scaling.annotations` | array | `[]` | Resource-specific annotations for HPA |
 | `networkPolicy.egress.enabled` | bool | `false` | Enable egress network policy |
 | `networkPolicy.ingress.enabled` | bool | `false` | Enable ingress network policy |
 | `ingress.enabled` | bool | `true` | Enable ingress |
@@ -426,7 +436,7 @@ storage:
   pvc:
     enabled: true
   class: managed
-  alocated_amount: 20Gi
+  allocated_amount: 20Gi
   securityContext: true
 ```
 

@@ -1,7 +1,9 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $scaling := default dict .Values.scaling }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
+{{ $global_annotations := $global.annotations | default (list) }}
+{{ $scaling_annotations := $scaling.annotations | default (list) }}
 
 {{ if $scaling.enabled | default false }}
 apiVersion: autoscaling/v1
@@ -14,6 +16,15 @@ metadata:
         {{- range $label := $labels }}
         {{ $label.name }}: {{ $label.value }}
         {{- end }}
+    {{- if or $global_annotations $scaling_annotations }}
+    annotations:
+      {{- range $annotation := $global_annotations }}
+      {{ $annotation.key }}: {{ $annotation.value | quote }}
+      {{- end }}
+      {{- range $annotation := $scaling_annotations }}
+      {{ $annotation.key }}: {{ $annotation.value | quote }}
+      {{- end }}
+    {{- end }}
 spec:
     scaleTargetRef:
         apiVersion: apps/v1

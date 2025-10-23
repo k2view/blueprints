@@ -2,7 +2,9 @@
 {{ $networkPolicy := default dict .Values.networkPolicy }}
 {{ $egress := default dict $networkPolicy.egress }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
+{{ $global_annotations := $global.annotations | default (list) }}
+{{ $resource_annotations := $networkPolicy.annotations | default (list) }}
 
 {{ if $egress.enabled | default false }}
 apiVersion: networking.k8s.io/v1
@@ -15,6 +17,15 @@ metadata:
     {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+  {{- if or $global_annotations $resource_annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   podSelector:
     matchLabels:

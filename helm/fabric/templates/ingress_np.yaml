@@ -1,8 +1,10 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
+{{ $global_annotations := $global.annotations | default (list) }}
 {{ $networkPolicy := default dict .Values.networkPolicy }}
 {{ $ingress := default dict $networkPolicy.ingress }}
+{{ $resource_annotations := $networkPolicy.annotations | default (list) }}
 
 {{ if $ingress.enabled | default false }}
 apiVersion: networking.k8s.io/v1
@@ -10,6 +12,20 @@ kind: NetworkPolicy
 metadata:
   name: fabric-monitor-np
   namespace: {{ default .Release.Name $namespace.name }}
+  labels:
+    app: fabric
+    {{- range $label := $labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  {{- if or $global_annotations $resource_annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   podSelector:
     matchLabels:

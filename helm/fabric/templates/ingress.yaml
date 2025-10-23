@@ -1,6 +1,6 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $labels := $global.labels | default (list) }}
 {{ $ingress := default dict .Values.ingress }}
 {{ $cert_manager := default dict $ingress.cert_manager }}
 {{ $path := "" }}
