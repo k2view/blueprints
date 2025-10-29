@@ -1,6 +1,10 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $global := default dict .Values.global }}
-{{ $labels := default dict $global.labels }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $labels := default (list) .Values.labels }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
+{{ $namespace_annotations := default (list) $namespace.annotations }}
 
 {{- if $namespace.create | default false }}
 apiVersion: v1
@@ -12,5 +16,20 @@ metadata:
     {{- range $label := $labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
     subdomain: {{ default .Release.Name $namespace.name }}
+  {{- if or $global_annotations $namespace_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $namespace_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 {{- end }}
