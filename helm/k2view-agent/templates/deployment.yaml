@@ -11,6 +11,7 @@
 {{- $resources := default dict $container.resources }}
 {{- $limits := default dict $resources.limits }}
 {{- $requests := default dict $resources.requests }}
+{{- $customCACerts := default dict .Values.customCACerts }}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -57,15 +58,40 @@ spec:
                   values:
                   - {{ $affinity.label.value }}
           {{- end }}
-        {{- end }}
+      {{- end }}
       {{- if $container.securityContext | default false }}
       securityContext:
         fsGroup: 1000
+      {{- end }}
+      {{- if $customCACerts }}
+      initContainers:
+        - name: init-k2view-agent
+          image: {{ $image.url }}
+          imagePullPolicy: {{ $image.pullPolicy | default "IfNotPresent" }}
+          securityContext:
+            runAsNonRoot: false
+            runAsUser: 0
+          command:
+            - /bin/bash
+            - -l
+            - -c
+            - update-ca-trust export && cp /etc/pki/ca-trust/extracted/java/cacerts /custom-cacerts/
+          volumeMounts:
+            - name: custom-ca-certs
+              mountPath: /etc/pki/ca-trust/source/anchors
+              readOnly: true
+            - name: system-cacerts
+              mountPath: /custom-cacerts
       {{- end }}
       containers:
         - name: k2view-agent
           image: {{ $image.url }}
           imagePullPolicy: {{ $image.pullPolicy | default "IfNotPresent" }}
+          command: [ "K2v-Agent" ]
+          args:
+            {{- if $customCACerts }}
+            - "-Djavax.net.ssl.trustStore=/etc/pki/ca-trust/extracted/java/cacerts"
+            {{- end }}
           {{- if $container.securityContext | default false }}
           securityContext:
             allowPrivilegeEscalation: false
@@ -122,3 +148,18 @@ spec:
             requests:
               memory: {{ default "128Mi" $requests.memory }}
               cpu: {{ default "0.1" $requests.cpu }}
+          {{- if $customCACerts }}
+          volumeMounts:
+            - name: system-cacerts
+              mountPath: /etc/pki/ca-trust/extracted/java/cacerts
+              subPath: cacerts
+              readOnly: true
+          {{- end }}
+      {{- if $customCACerts }}
+      volumes:
+        - name: custom-ca-certs
+          secret:
+            secretName: custom-ca-certs
+        - name: system-cacerts
+          emptyDir: {}
+      {{- end }}
