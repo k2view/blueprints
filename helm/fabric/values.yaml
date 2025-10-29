@@ -7,7 +7,7 @@
 #   - key: "app.kubernetes.io/component"
 #     value: "fabric"
 #   - key: "kubernetes.io/description"
-#     value: "K2View Fabric data virtualization platform"
+#     value: "K2view Fabric Data Product Platform"
 
 
 # Namespace to deploy Fabric into
