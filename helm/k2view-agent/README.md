@@ -1,6 +1,6 @@
 # k2view-agent
 
-![Version: 1.1.14](https://img.shields.io/badge/Version-1.1.14-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
+![Version: 1.1.17](https://img.shields.io/badge/Version-1.1.17-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
 
 This Helm chart simplifies the deployment of the K2view cloud orchestrator site agent, ensuring a streamlined integration with your cloud infrastructure.
 
@@ -44,6 +44,8 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | secrets.SPACE_SA_ARN | string | `""` | For AWS only, IAM role ARN attached to the Kubernetes fabric namespace service account. |
 | secrets.PROJECT | string | `""` | GCP project. |
 | secrets.GCP_CONF_FILE | string | `""` | GCP service account json (in case used service account access mode). |
+| secrets.AGENT_PROXY_HOST | string | `""` | The proxy host used for outbound connectivity, if required. |
+| secrets.AGENT_PROXY_PORT | string | `""` | The proxy port used for outbound connectivity, if required |
 | secrets_from_file | object | `{}` | Configuration for secrets loaded from files. |
 | secrets_from_file.TLS_KEY_PATH | string | `""` | Path to TLS private key file (will be base64 encoded twice). |
 | secrets_from_file.TLS_CERT_PATH | string | `""` | Path to TLS certificate file (will be base64 encoded twice). |
@@ -56,6 +58,7 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | serviceAccount.gcp_service_account_name | string | `""` | For GCP only, service account name. |
 | serviceAccount.project_id | string | `""` | For GCP only, project id. |
 | serviceAccount.role.rules | list | See values.yaml | List of rules for Cluster role. |
+| customCACerts | object |  | A map of custom CA certificate files to be added to the trust store. Keys are used filenames (e.g., `company-rootca-1.crt`), and values are the certificate contents in PEM format. |
 
 * Get K2_MAILBOX_ID and K2_MANAGER_URL from your K2view contact.
 * The kubeInterface should be accessible from the agent pod.
@@ -74,6 +77,8 @@ Additional secrets are specified in the format key: "value". They are added to t
 | `GCP_CONF_FILE` | GCP service account JSON (for service account access mode) |
 | `SPACE_SA_ARN` | AWS IAM role ARN for Fabric spaces |
 | `kubeToken` | Kubernetes Service Account token used by the agent to authenticate and interact with the Kubernetes API. |
+| `AGENT_PROXY_HOST` | Hostname or IP address of the proxy server used for outbound connections to the Mailbox. |
+| `AGENT_PROXY_PORT` | The port of the proxy server used for outbound connections to the Mailbox. |
 
 
 ### ServiceAccount Permissions
