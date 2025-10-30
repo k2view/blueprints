@@ -7,9 +7,9 @@ namespace:
   name: "k2view-agent"
 
 container:
-  securityContext: true # Supported only for k2view-agent version 2.11 and above
+  securityContext: true
   image:
-    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.11"
+    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.10"
   # Pod Affinity Settings
   # These settings control the pod affinity and anti-affinity rules for the Fabric deployment.
   affinity:
@@ -32,6 +32,9 @@ secrets:
   # GCP parameters
   PROJECT: ""
   GCP_CONF_FILE: ""
+  # Proxy settings
+  #AGENT_PROXY_HOST: proxy.example.org
+  #AGENT_PROXY_PORT: 8080
 
 externalSecrets:
   #- secretName: "keyspace_secret"
@@ -102,3 +105,15 @@ serviceAccount:
       - apiGroups: [ "storage.k8s.io" ]
         resources: ["storageclasses"]
         verbs: ["get", "list"]
+
+# Add custom certificates into K2view Agent's container.
+# It should be in pem format, with header and footer, one certificate per key
+#customCACerts:
+#  company-rootca-1.crt: |
+#    -----BEGIN CERTIFICATE-----
+#    MII...
+#    -----END CERTIFICATE-----
+#  company-rootca-2.cer: |
+#    -----BEGIN CERTIFICATE-----
+#    MII...
+#    -----END CERTIFICATE-----

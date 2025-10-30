@@ -1,0 +1,18 @@
+{{ $namespace := default dict .Values.namespace }}
+{{ $namespace_name := default .Release.Name $namespace.name }}
+{{ $customCACerts := default dict .Values.customCACerts }}
+
+{{ if $customCACerts }}
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: custom-ca-certs
+  namespace: {{ $namespace_name }}
+data:
+{{- range $key, $value := $customCACerts }}
+{{- if $value }}
+  {{ $key }}: {{ $value | toString | b64enc | quote }}
+{{- end }}
+{{- end }}
+{{ end }}
