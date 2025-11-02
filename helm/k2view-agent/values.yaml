@@ -9,7 +9,7 @@ namespace:
 container:
   securityContext: true
   image:
-    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.10"
+    url: "docker.share.cloud.k2view.com/k2view/k2v-agent:2.11"
   # Pod Affinity Settings
   # These settings control the pod affinity and anti-affinity rules for the Fabric deployment.
   affinity:
@@ -31,10 +31,6 @@ secrets:
   SPACE_SA_ARN: "" # For AWS role for Fabric spaces
   # GCP parameters
   PROJECT: ""
-  GCP_CONF_FILE: ""
-  # Proxy settings
-  #AGENT_PROXY_HOST: proxy.example.org
-  #AGENT_PROXY_PORT: 8080
 
 externalSecrets:
   #- secretName: "keyspace_secret"
@@ -56,9 +52,13 @@ serviceAccount:
   # The name of the service account to use.
   name: "k2view-agent"
   provider: ""   # aws|gcp|azure
+  # AWS parameters
   arn: ""        # For AWS role
+  # GCP parameters
   gcp_service_account_name: "" # For GCP sa
   project_id: "" # For GCP SA
+  # Azure parameters
+  azure_client_id: "" # For Azure SA
 
   # Role for SA
   role:
