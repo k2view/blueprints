@@ -1,3 +1,5 @@
+docker/readme.md
+
 # K2view Fabric Web Studio for Docker Compose, Version 2.1
 This **README** describes the **Docker Compose** container runtime used to host K2view Fabric Web Studio. It covers setup, components, installation options, and features. 
 
@@ -54,7 +56,7 @@ K2view Fabric Web Studio for Docker Compose, Version 2.1, supports multiple spac
 ## The Components
 
 1. **Docker Compose Runtime**: Fabric Web Studio can be installed within a Docker Compose Runtime environment. Docker and its Compose plugin provide the ability to run Web Studio, for which three profiles can be selected, an embedded Fabric engine, and a Traefik reverse proxy, which combined provide the means to create multiple Fabric Spaces within the Docker Compose Runtime. 
-2. **Fabric Image**: The Docker Compose Runtime is certified to run specific Fabric releases you can download from K2view's Nexus Container Registry.
+2. **Fabric Image**: The Docker Compose Runtime is certified to run specific Fabric releases you can download from K2view's Container Registry.
 3. **K2view Fabric Web Studio**: Available with four profiles that each embeds Fabric.
    1. **studio.config**. The default Web Studio profile embeds SQLite for its System DB.
    2. **studio_pg.config**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
@@ -86,15 +88,15 @@ The amount of RAM you need will depend on your use case. 32GB of memory should b
 
 **K2view Software**
 
-1. The installation assumes you have Internet access, allowing you to obtain Fabric images from the K2view Nexus Container Registry and perform a Git clone on your machine. 
-2. To obtain a Fabric Studio docker image, you need a K2view Nexus account. Your K2view representative can arrange this for you. 
+1. The installation assumes you have Internet access, allowing you to obtain Fabric images from the K2view Container Registry and perform a Git clone on your machine. 
+2. To obtain a Fabric Studio docker image, you need a K2view Container Registry account. Your K2view representative can arrange this for you. 
 
 **Internet Access is Required**
 
 Internet access is required to perform this installation. You will need access to:
 
 1. (Optional) Github.com to clone K2view’s blueprints at https://github.com/k2view/blueprints.git
-2. K2view’s Nexus Docker Image repository at https://docker.share.cloud.k2view.com
+2. K2view’s Docker Image repository at https://docker.share.cloud.k2view.com
 3. If you plan to install TDM, you need access to K2view’s Exchange.
 
 Refer to the "Docker Image Offline Package Download" section below for instructions on obtaining the necessary images in a disconnected environment. 
@@ -142,13 +144,13 @@ Follow these steps to get Fabric Web Studio up and running within the Fabric Doc
 * Step 3: Download
 * Step 4: Configure Git and TLS
 * Step 5: Select a Fabric Blueprint Profile to Use
-* Step 6: Log in to K2view's Nexus Container Registry
+* Step 6: Log in to K2view's Container Registry
 * Step 7: Create and Launch a Fabric Space
 * Step 8: Access Web Studio
 
-**Before you proceed, confirm that you have a K2view Nexus Container Registry Account**
+**Before you proceed, confirm that you have a K2view Container Registry Account**
 
-You need to obtain credentials to access the K2view Nexus. Your K2view account representative can arrange this for you. If you do not have access, please contact your K2view representative, who can provide steps to help you through this process.
+You need to obtain credentials to access the K2view Container Registry. Your K2view account representative can arrange this for you. If you do not have access, please contact your K2view representative, who can provide steps to help you through this process.
 
 ### **Step 1**: Install and Validate Docker and Docker Compose 
 
@@ -241,11 +243,7 @@ There are two options to obtain Fabric Web Studio. You can download a zip file o
 
 #### Option 1: Download The Latest Version of Fabric Web Studio for Docker Compose
 
-You can download the latest version of Fabric Web Studio for Docker Compose from this location: 
-
-```bash
-https://nexus.share.cloud.k2view.com/repository/k2view-download/web-studio/Studio-Docker-latest.zip
-```
+You can download the latest version of Fabric Web Studio for Docker Compose from this location: [studio-docker-latest](https://download.k2view.com/index.php/s/hBv6Xz8bP9K8fwm/download)
 
 Then, change the directory to the K2view directory. Copy `Studio-Docker-latest.zip` to this directory, and unzip `Studio-Docker-latest.zip` to this directory. Then, rename the `Studio-Docker-latest.zip` directory as `Studio`.
 
@@ -327,7 +325,11 @@ Traefik will use its own self-signed TLS certificates for HTTPS connections by d
 
 These files must be named `cert.cer` and `cert.key`, respectively. The TLS certificate must be in PEM format and contain the server, root, and intermediate certificates, should they exist.
 
-If you perform this step after the initial installation, you must restart Fabric for these to take effect.
+If you perform this step after the initial installation, you must restart Fabric for these to take effect. In addition, you will also need to restart the ingress using this command:
+
+```bash
+docker compose -f k2vingress-compose.yaml restart
+```
 
 ### **Step 5**: Select a Fabric Blueprint Profile to Use
 
@@ -341,13 +343,13 @@ There are four profiles, each of which embeds Fabric. The default is 'studio'.
 Using the default profile, 'studio', you will not need to provide the profile on the `k2space.sh` command line. Otherwise, you will need to enter one of the other profiles. 
 
 
-### **Step 6**: Log in to K2view's Nexus Container Registry
+### **Step 6**: Log in to K2view's Container Registry
 
 *Prerequisite*
 
 Docker and its Compose extension must be running on the server to perform this step. 
 
-Using the K2view Nexus Container Registry account provided to you, run the following command from the same directory that you have performed the git clone command - please note that you need to use sudo on some Linux systems, depending on your permissions:
+Using the K2view Container Registry account provided to you, run the following command from the same directory that you have performed the git clone command - please note that you need to use sudo on some Linux systems, depending on your permissions:
 
 ```bash
 docker login -u [YourAccount] https://docker.share.cloud.k2view.com
@@ -355,12 +357,12 @@ docker login -u [YourAccount] https://docker.share.cloud.k2view.com
 
 You will be asked to enter your password.
 
-**Note**: The Docker login command and the `k2space.sh` bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com. 
+**Note**: The Docker login command and the `k2space.sh` bash shell script require Internet access to log in and pull K2view Fabric images from the K2view Container Registry at docker.share.cloud.k2view.com. 
 
 
 #### Docker Image Offline Package Download
 
-The Docker login command and the `k2space.sh` bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com.
+The Docker login command and the `k2space.sh` bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Container Registry at docker.share.cloud.k2view.com.
 
 If your target machine **does not have Internet connectivity**, you can follow this **offline download procedure** to transfer the required image from another system. The Fabric image is approximately **1.9GB**, and its version must match the value specified in your local `.env` file.
 
@@ -379,7 +381,7 @@ Here is the flow:
 
 Doing this before you run the first `k2space.sh` command ensures the file is present on your system to create your first space and avoids downloading it from the Internet.
 
-**Note**: The Docker login command and the `k2space.sh` bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Nexus Container Registry at docker.share.cloud.k2view.com. 
+**Note**: The Docker login command and the `k2space.sh` bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Container Registry at docker.share.cloud.k2view.com. 
 
 ### **Step 7**: Create and Launch a Fabric Space
 
@@ -452,7 +454,7 @@ Otherwise, please use the following --profile commands:
 
 #### The Initial Installation
 
-You will download Fabric from the K2view Nexus Container Registry when creating your first Fabric Space. While this is happening, you should observe the following.
+You will download Fabric from the K2view Container Registry when creating your first Fabric Space. While this is happening, you should observe the following.
 
 ```bash
 $ ./k2space.sh create myspace
