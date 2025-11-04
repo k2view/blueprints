@@ -69,17 +69,40 @@ Additional secrets are specified in the format key: "value". They are added to t
 ##### Common additional secrets
 | Secret | Description |
 |--------|-------------|
-| `CLOUD` | The cloud provider: `AWS`, `GCP`, or `AZURE` |
-| `REGION` | The cloud region where your cluster is located |
-| `PROJECT` | GCP project ID (for GCP deployments) |
-| `AWS_KEYSPACE_USER` | AWS Keyspace username (if using AWS Keyspace) |
-| `AWS_KEYSPACE_PASSWORD` | AWS Keyspace password (if using AWS Keyspace) |
-| `GCP_CONF_FILE` | GCP service account JSON (for service account access mode) |
-| `SPACE_SA_ARN` | AWS IAM role ARN for Fabric spaces |
-| `kubeToken` | Kubernetes Service Account token used by the agent to authenticate and interact with the Kubernetes API. |
-| `AGENT_PROXY_HOST` | Hostname or IP address of the proxy server used for outbound connections to the Mailbox. |
-| `AGENT_PROXY_PORT` | The port of the proxy server used for outbound connections to the Mailbox. |
+| `CLOUD` | The cloud provider where the cluster is running (e.g., `AWS`, `GCP`, `AZURE`). |
+| `REGION` | The cloud region where your cluster is located (e.g., `us-east-1`). |
+| `kubeToken` | Kubernetes Service Account token used by the agent to authenticate and interact with the Kubernetes API. This is automatically populated if `serviceAccount.create` is `true`. |
+| `AGENT_PROXY_HOST` | Hostname or IP address of the proxy server used for outbound connections to the K2cloud Orchestrator. |
+| `AGENT_PROXY_PORT` | The port of the proxy server used for outbound connections to the K2cloud Orchestrator. |
+| `HELM_USER_VALUES_JSON` | JSON string containing user-defined Helm values, used by the cloud deployer to overwrite space template values. |
+| `NETWORK_NAME` | The name of the virtual network (VNet/VPC) where the cluster is deployed. |
 
+###### Common additional secrets (AWS)
+| Secret | Description |
+|--------|-------------|
+| `AWS_KEYSPACE_USER` | AWS Keyspace username (if using AWS Keyspace as a data source). |
+| `AWS_KEYSPACE_PASSWORD` | AWS Keyspace password (if using AWS Keyspace as a data source). |
+| `SPACE_SA_ARN` | AWS IAM role ARN for Fabric spaces, used for cross-account access or specific permissions. |
+
+###### Common additional secrets (GCP)
+| Secret | Description |
+|--------|-------------|
+| `GCP_CONF_FILE` | GCP service account JSON content (base64 encoded) for programmatic access to GCP resources. |
+| `PROJECT` | GCP project ID (required for GCP deployments). |
+
+###### Common additional secrets (Azure)
+| Secret | Description |
+|--------|-------------|
+| `SUBNET_NAME` | The name of the subnet where the K2view agent is deployed. |
+| `AZURE_SUBSCRIPTION_ID` | The Azure subscription ID where resources are provisioned. |
+| `AZURE_SPACE_IDENTITY_TENANT_ID` | The Azure tenant ID associated with the managed identity used by K2view spaces. |
+| `AZURE_SPACE_IDENTITY_OBJECT_ID` | The Azure object ID of the managed identity used by K2view spaces. |
+| `AZURE_SPACE_IDENTITY_CLIENT_ID` | The Azure client ID of the managed identity used by K2view spaces. |
+| `AZURE_RESOURCE_GROUP_NAME` | The Azure resource group name where K2view resources are deployed. |
+| `AZURE_OIDC_ISSUER_URL` | The OIDC issuer URL for Azure Kubernetes Service (AKS) workload identity federation. |
+| `AZURE_CLIENT_ID` | The Azure client ID for the K2view agent's service principal or managed identity. |
+| `APPGW_USE_PRIVATE_IP` | Set to `true` if the Azure Application Gateway should use a private IP address. |
+| `APPGW_SSL_CERTIFICATE_NAME` | The name of the SSL certificate configured for the Azure Application Gateway. |
 
 ### ServiceAccount Permissions
 This chart requires a ServiceAccount with the following Kubernetes RBAC permissions.
