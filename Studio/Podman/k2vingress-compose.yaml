@@ -3,6 +3,7 @@ services:
   socat:
     container_name: socat
     image: alpine/socat
+    pull_policy: ${INGRESS_PULL_POLICY}
     restart: always
     networks:
       - fab-net
@@ -26,7 +27,8 @@ services:
 
   traefik:
     container_name: traefik
-    image: traefik:latest
+    image: traefik
+    pull_policy: ${INGRESS_PULL_POLICY}
     depends_on:
       socat:
         condition: service_healthy
@@ -34,9 +36,9 @@ services:
     networks:
       - fab-net
     ports:
-      - ${API_PORT}:8080
       - ${INGRESS_HTTP_PORT}:80
       - ${INGRESS_HTTPS_PORT}:443
+      - ${INGRESS_API_PORT}:8080
     volumes:
       - ./ssl-certs/:/etc/certs/:Z
       - ./tls-config.yaml:/etc/traefik/dynamic/tls-config.yaml:Z

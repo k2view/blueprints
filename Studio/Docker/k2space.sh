@@ -5,8 +5,11 @@ usage="Usage: $(basename "$0") COMMAND
 
 Commands:
   list                        List all Spaces
-  create [OPTIONS] SPACENAME  Launch a Space "SPACENAME". When creating the first Space, Traefik, a reverse proxy will also be deployed
+  create [OPTIONS] SPACENAME  Launch a Space "SPACENAME". (Automatically starts Traefik, a reverse proxy that manages ingress for the Space)
   destroy SPACENAME           Delete the Space "SPACENAME". (Related persistent files are kept and will have to be manually deleted)
+  ingress restart             Restart Traefik. (Force to recreate it)
+  ingress stop                Stop / remove Traefik
+  ingress upgrade             Upgrade Traefik image and start it (Should not be used if Traefik image was manually loaded)
 
 Options:
   --compose=FILENAME        Allows user to use a custom Docker compose.yaml file
@@ -30,15 +33,26 @@ function k2spaceList() {
 function k2spaceIngress() {
   unset COMPOSE_PROJECT_NAME
 
-  local state=$(docker ps --all --filter label=k2v-ingress --format "{{.State}}")
-  if ! [[ "$state" == "running" ]]; then
-    echo "Starting Traefik"
-    if [[ -z "$state" ]]; then
-      docker compose --file "$self_path/k2vingress-compose.yaml" up --detach
-    else
-      docker compose --file "$self_path/k2vingress-compose.yaml" start
-    fi
-  fi
+  local action="$1"
+  shift
+  case "$action" in
+    start | restart | up)
+      local state=$(docker ps --all --filter label=k2v-ingress --format "{{.State}}")
+      if ! [[ "$state" == "running" ]] || [[ "$action" == "restart" ]]; then
+        [[ "$action" == "restart" ]] && recreate='--force-recreate'
+        echo "Starting Traefik"
+        docker compose --file "$self_path/k2vingress-compose.yaml" up --detach $recreate
+      fi
+      ;;
+    stop | down)
+        echo "Stopping Traefik"
+        docker compose --file "$self_path/k2vingress-compose.yaml" down
+      ;;
+    upgrade)
+      echo "Upgrading Traefik"
+      docker compose --file "$self_path/k2vingress-compose.yaml" up --detach --force-recreate --pull=always
+      ;;
+  esac
 }
 
 function k2spaceStart() {
@@ -105,7 +119,7 @@ function k2spaceStart() {
     return $err
   fi
 
-  k2spaceIngress
+  k2spaceIngress start
 }
 
 command="$1"
@@ -122,6 +136,9 @@ case "$command" in
     ;;
   list)
     k2spaceList
+    ;;
+  ingress)
+    k2spaceIngress "$@"
     ;;
   *)
     echo "$usage" 1>&2

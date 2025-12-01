@@ -1,5 +1,3 @@
-podman/readme.md
-
 # K2view Fabric Web Studio for Podman, Version 2.1
 This **README** describes how to use **Podman Compose** container runtime to host K2view Fabric Web Studio. It outlines the setup, components, installation options, and features relevant to Podman-based container environments.
 
@@ -549,16 +547,32 @@ Use:
 ```
 
 ### Traefik
+Many Traefik-related actions can be executed through `k2space.sh` by using command `ingress` and the desired subcommand. For actions not supported via `k2space.sh`, you may use `podman compose -f k2vingress-compose.yaml (...)`
+
+```bash
+Usage: `./k2space.sh ingress SUBCOMMAND`
+```
+
 #### Starting Traefik
 Traefik starts automatically after you create your first Fabric Space. It will also check whenever a new Fabric Space is created. If it is not running, it will be started automatically.
+
+Before initializing, Traefik will auto-update its image. This behavior can be changed by setting the environment variable `INGRESS_PULL_POLICY="never"` in the .env file (image will need to be pre-loaded with `podman pull` or `podman load` before starting)
 
 > __Note:__ Traefik relies on the Docker network created during the creation of a Fabric Space. Therefore, it must be started __after__ the Fabric Space.
 
 #### Restarting Traefik
-To restart Traefik (e.g., after configuring your TLS certificates),  run the command below:
+To restart Traefik (e.g., after configuring your TLS certificates), run the command below:
 
 ```bash
-podman compose -f k2vingress-compose.yaml restart
+./k2space.sh ingress restart
+```
+> __Note:__ This command not only restarts Traefik, but it actually completely recreates it
+
+#### Upgrading Traefik
+Forces Traefik's image to be updated. This may cause Spaces to be temporarily unreachable while Traefik reload.
+
+```bash
+./k2space.sh ingress update
 ```
 
 ### Adding Users
