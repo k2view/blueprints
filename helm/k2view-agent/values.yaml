@@ -105,6 +105,9 @@ serviceAccount:
       - apiGroups: [ "storage.k8s.io" ]
         resources: ["storageclasses"]
         verbs: ["get", "list"]
+      - apiGroups: ["cilium.io"]
+        resources: ["ciliumnetworkpolicies"]
+        verbs: ["get", "list", "create", "delete"]
 
 # Add custom certificates into K2view Agent's container.
 # It should be in pem format, with header and footer, one certificate per key
