@@ -77,4 +77,18 @@ spec:
         - namespaceSelector:
             matchLabels:
               app.kubernetes.io/instance: ingress-nginx
+    - ports:
+        - protocol: TCP
+          port: 3213
+      from:
+        - namespaceSelector:
+            matchLabels:
+              app: k2view-agent
+    - ports:
+        - protocol: TCP
+          port: 3213
+      from:
+        - podSelector:
+            matchLabels:
+              job-name: fabric-deployer
 {{ end }}
