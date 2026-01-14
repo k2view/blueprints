@@ -85,9 +85,9 @@ networkPolicy:
   ingress:
     enabled: false
     allowedNamespaces:
-      name: grafana-agent
+      kubernetes.io/metadata.name: observability-v2
     allowedPods:
-      app.kubernetes.io/instance: grafana-agent
+      app.kubernetes.io/instance: observability
     allowedIPs:
       # - 10.0.0.1/16
 
