@@ -1,6 +1,4 @@
 # Default values for K2view agent.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
 
 namespace:
   create: true
@@ -13,30 +11,30 @@ container:
   # Pod Affinity Settings
   # These settings control the pod affinity and anti-affinity rules for the Fabric deployment.
   affinity:
-    # Options: affinity, anti-affinity, none
-    type: none
+    type: none # Set to "affinity" to enable pod affinity, "anti-affinity" to enable pod anti-affinity, or "none" to disable both.
     label: 
       name: topology.kubernetes.io/zone
       value: region-a
 
 # Secrets used to configure the agent
 secrets:
-  K2_MAILBOX_ID: ""
-  K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox"
-  kubeInterface: "https://kubernetes.default.svc"
+  K2_MAILBOX_ID: "" # Unique identifier provided by K2view to associate your site with K2cloud Orchestrator.
+  K2_MANAGER_URL: "https://cloud.k2view.com/api/mailbox" # K2cloud Orchestrator URL.
+  kubeInterface: "https://kubernetes.default.svc" # Kubernetes API interface, need to be accessible from the agent.
   #kubeToken: "" # If serviceAccount.create is false, this secret must be provided as secret or externalSecrets
-  CLOUD: "" # GCP|AWS|AZURE
-  REGION: ""
+  CLOUD: "" # Cloud provider: GCP|AWS|AZURE
+  REGION: "" # Cloud region: us-east-1, us-west-1, eu-west-1, etc.
   # AWS parameters
-  SPACE_SA_ARN: "" # For AWS role for Fabric spaces
+  SPACE_SA_ARN: "" # AWS IAM role ARN for Fabric spaces, used for access to cloud resources by the Fabric spaces.
   # GCP parameters
-  PROJECT: ""
+  PROJECT: "" # GCP project ID (example: k2view-gcp-project)
 
+# External secrets referenced to existing secrets in the namespace
 externalSecrets:
   #- secretName: "keyspace_secret"
   #  key: "AWS_KEYSPACE_USER"
   #  varName: "AWS_KEYSPACE_USER"
-  #- secretName: "my-secret" # If serviceAccount.create is false, this secret must be provided as secret or externalSecrets
+  #- secretName: "my-secret"
   #  key: "kubeToken"
   #  varName: "kubeToken"
 
@@ -47,20 +45,21 @@ serviceAccount:
   # The agent pod will automatically use the kubeToken environment variable from this secret.
   # When false: No RBAC resources are created. You must manually provide the kubeToken secret for the agent.
   create: true
-  # Attach SA to agent pod
+  # Attach Service Account to agent pod
   attach: false
-  # The name of the service account to use.
+  # The name of the service account to use
   name: "k2view-agent"
-  provider: ""   # aws|gcp|azure
+  # Bind with cloud provider IAM role (with permissions to create/delete resources in the cloud provider, optional)
+  provider: ""   # Cloud provider name: aws|gcp|azure
   # AWS parameters
-  arn: ""        # For AWS role
+  arn: ""        # AWS IAM role ARN (example: arn:aws:iam::123456789012:role/K2viewAgentRole)
   # GCP parameters
-  gcp_service_account_name: "" # For GCP sa
-  project_id: "" # For GCP SA
+  gcp_service_account_name: "" # GCP service account name (example: k2view-gcp-sa@k2view-gcp-project.iam.gserviceaccount.com)
+  project_id: "" # GCP project ID (example: k2view-gcp-project)
   # Azure parameters
-  azure_client_id: "" # For Azure SA
+  azure_client_id: "" # Azure client ID (example: 12345678-9012-3456-7890-123456789012)
 
-  # Role for SA
+  # Cluster Role permissions for Service Account (if serviceAccount.create is true, role used by K2view Agent and Cloud deployer)
   role:
     rules:
       - apiGroups: [""]
@@ -70,11 +69,11 @@ serviceAccount:
         resources: ["configmaps", "secrets", "serviceaccounts"]
         verbs: ["create", "delete", "get", "list", "patch"]
       - apiGroups: [""]
-        resources: ["nodes"]
+        resources: ["nodes", "pods/log"]
         verbs: ["get", "list"]
       - apiGroups: [""]
         resources: ["pods"]
-        verbs: ["delete", "list"]
+        verbs: ["delete", "list", "get"]
       - apiGroups: [""]
         resources: ["events"]
         verbs: ["list"]
@@ -87,15 +86,6 @@ serviceAccount:
       - apiGroups: ["networking.k8s.io"]
         resources: ["ingresses", "networkpolicies"]
         verbs: ["create", "delete", "get"]
-      - apiGroups: [""]
-        resources: ["pods", "pods/log"]
-        verbs: ["delete", "list", "get"]
-      - apiGroups: [""]
-        resources: ["configmaps", "secrets", "serviceaccounts"]
-        verbs: ["create", "delete", "get", "list", "patch"]
-      - apiGroups: [""]
-        resources: ["services", "persistentvolumeclaims"]
-        verbs: ["create", "delete", "get", "list"]
       - apiGroups: ["monitoring.coreos.com"]
         resources: ["podmonitors"]
         verbs: ["create", "delete"]
