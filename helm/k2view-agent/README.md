@@ -1,6 +1,6 @@
 # k2view-agent
 
-![Version: 1.1.19](https://img.shields.io/badge/Version-1.1.19-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
+![Version: 1.1.22](https://img.shields.io/badge/Version-1.1.22-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
 
 This Helm chart simplifies the deployment of the K2cloud Orchestrator site agent, ensuring a streamlined integration with your cloud infrastructure.
 
@@ -38,14 +38,14 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | secrets | object |  | Configuration secrets for K2view agent. |
 | secrets.K2_MAILBOX_ID | string | `""` | Unique identifier provided by K2view to associate your site with K2cloud Orchestrator. |
 | secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com/api/mailbox"` | K2cloud Orchestrator url. |
-| secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | Kubernetes API interface, need to be accessible from the agent. |
+| secrets.kubeInterface | string | `"https://kubernetes.default.svc"` | Kubernetes API interface, needs to be accessible from the agent. |
 | secrets.CLOUD | string | `""` | Cloud provider (GCP\|AWS\|AZURE). |
 | secrets.REGION | string | `""` | Cloud region. |
 | secrets.SPACE_SA_ARN | string | `""` | For AWS only, IAM role ARN attached to the Kubernetes fabric namespace service account. |
 | secrets.PROJECT | string | `""` | GCP project. |
 | secrets.GCP_CONF_FILE | string | `""` | GCP service account json (in case used service account access mode). |
 | secrets.AGENT_PROXY_HOST | string | `""` | The proxy host used for outbound connectivity, if required. |
-| secrets.AGENT_PROXY_PORT | string | `""` | The proxy port used for outbound connectivity, if required |
+| secrets.AGENT_PROXY_PORT | string | `""` | The proxy port used for outbound connectivity, if required. |
 | secrets_from_file | object | `{}` | Configuration for secrets loaded from files. |
 | secrets_from_file.TLS_KEY_PATH | string | `""` | Path to TLS private key file (will be base64 encoded twice). |
 | secrets_from_file.TLS_CERT_PATH | string | `""` | Path to TLS certificate file (will be base64 encoded twice). |
@@ -65,32 +65,35 @@ Below is a table detailing the various configurable parameters for the K2view ag
 
 #### Additional secrets
 Additional secrets are specified in the format key: "value". They are added to the agent-config-secrets and passed as environment variables to the agent container.
+**Note:** These secrets are used by the ("k2-cloud-deployer") component for deploying and managing spaces.
 
 ##### Common additional secrets
 | Secret | Description |
 |--------|-------------|
+| `K2_MAILBOX_ID` | Unique identifier provided by K2view to associate your site with K2cloud Orchestrator. |
+| `K2_MANAGER_URL` | K2cloud Orchestrator url. (default: "https://cloud.k2view.com/api/mailbox") |
+| `kubeInterface` | Kubernetes API interface, needs to be accessible from the agent. (default: "https://kubernetes.default.svc") |
+| `kubeToken` | Kubernetes Service Account token used by the agent to authenticate and interact with the Kubernetes API. This is automatically populated if `serviceAccount.create` is `true`. |
 | `CLOUD` | The cloud provider where the cluster is running (e.g., `AWS`, `GCP`, `AZURE`). |
 | `REGION` | The cloud region where your cluster is located (e.g., `us-east-1`). |
-| `kubeToken` | Kubernetes Service Account token used by the agent to authenticate and interact with the Kubernetes API. This is automatically populated if `serviceAccount.create` is `true`. |
 | `AGENT_PROXY_HOST` | Hostname or IP address of the proxy server used for outbound connections to the K2cloud Orchestrator. |
 | `AGENT_PROXY_PORT` | The port of the proxy server used for outbound connections to the K2cloud Orchestrator. |
-| `HELM_USER_VALUES_JSON` | JSON string containing user-defined Helm values, used by the cloud deployer to overwrite space template values. |
 | `NETWORK_NAME` | The name of the virtual network (VNet/VPC) where the cluster is deployed. |
 
-###### Common additional secrets (AWS)
+###### Common additional secrets - AWS
 | Secret | Description |
 |--------|-------------|
 | `AWS_KEYSPACE_USER` | AWS Keyspace username (if using AWS Keyspace as a data source). |
 | `AWS_KEYSPACE_PASSWORD` | AWS Keyspace password (if using AWS Keyspace as a data source). |
 | `SPACE_SA_ARN` | AWS IAM role ARN for Fabric spaces, used for cross-account access or specific permissions. |
 
-###### Common additional secrets (GCP)
+###### Common additional secrets - GCP
 | Secret | Description |
 |--------|-------------|
 | `GCP_CONF_FILE` | GCP service account JSON content (base64 encoded) for programmatic access to GCP resources. |
 | `PROJECT` | GCP project ID (required for GCP deployments). |
 
-###### Common additional secrets (Azure)
+###### Common additional secrets - Azure
 | Secret | Description |
 |--------|-------------|
 | `SUBNET_NAME` | The name of the subnet where the K2view agent is deployed. |
@@ -103,6 +106,25 @@ Additional secrets are specified in the format key: "value". They are added to t
 | `AZURE_CLIENT_ID` | The Azure client ID for the K2view agent's service principal or managed identity. |
 | `APPGW_USE_PRIVATE_IP` | Set to `true` if the Azure Application Gateway should use a private IP address. |
 | `APPGW_SSL_CERTIFICATE_NAME` | The name of the SSL certificate configured for the Azure Application Gateway. |
+
+###### Common additional secrets - Cloud Deployer Configuration
+| Secret | Description |
+|--------|-------------|
+| `USE_DEFAULT_HELM` | Controls Helm chart source. Set to `"false"` to disable the default embedded Helm chart and enable external chart sources (Git repository or URL). Default: `"true"`. |
+| `HELM_USER_VALUES_JSON` | JSON string containing user-defined Helm values to customize space deployments. These values override the default space template values during deployment. |
+
+###### Common additional secrets - Linux proxy
+| Secret | Description |
+|--------|-------------|
+| `HTTP_PROXY` | HTTP proxy URL for outbound HTTP connections (e.g., `http://proxy.example.com:8080`). |
+| `HTTPS_PROXY` | HTTPS proxy URL for outbound HTTPS connections (e.g., `https://proxy.example.com:8443`). |
+| `NO_PROXY` | Comma-separated list of hosts that should bypass the proxy. **Recommended Kubernetes-related values:** `localhost,.svc,.svc.cluster.local,.cluster.local,kubernetes.default.svc,kubernetes.default`. Include your pod/service CIDR ranges and any internal domains. |
+| `http_proxy` | Lowercase alternative for HTTP_PROXY, some applications require lowercase environment variables. |
+| `https_proxy` | Lowercase alternative for HTTPS_PROXY, some applications require lowercase environment variables. |
+| `no_proxy` | Lowercase alternative for NO_PROXY, some applications require lowercase environment variables. |
+
+**Note:** These are Linux native environment variables. Adding these parameters may affect some cloud manager functionality. Ensure that internal Kubernetes service communication and cloud provider APIs are properly excluded in `NO_PROXY`/`no_proxy`. For more details, see [Proxy Environment Variables](https://www.gnu.org/software/wget/manual/html_node/Proxies.html).
+
 
 ### ServiceAccount Permissions
 This chart requires a ServiceAccount with the following Kubernetes RBAC permissions.
