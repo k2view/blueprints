@@ -1,5 +1,5 @@
 # nginx-ingress-controller
-![Version: 1.3.2](https://img.shields.io/badge/Version-1.3.2-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.12.1](https://img.shields.io/badge/AppVersion-1.12.1-informational?style=flat-square)
+![Version: 1.3.6](https://img.shields.io/badge/Version-1.3.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.12.1](https://img.shields.io/badge/AppVersion-1.12.1-informational?style=flat-square)
 
 This Helm chart is designed to deploy an Nginx ingress controller in a Kubernetes environment. This controller manages the routing of HTTP and HTTPS traffic to the appropriate services within the cluster. It is particularly configured for the K2view site, ensuring optimized performance and security.
 
@@ -11,10 +11,6 @@ This Helm chart is designed to deploy an Nginx ingress controller in a Kubernete
 | domain | string | `"site.cloud.k2view.com"` | Domain for the site, this parameter used for test page |
 | errorPage.enabled | bool | `true` | Enable custom error pages |
 | errorPage.image | string | `"registry.k8s.io/ingress-nginx/nginx-errors:v20230505"` | Docker image for custom error pages |
-| errorPage.resource_allocation.limits.cpu | string | `"0.4"` | CPU limits for error page resources |
-| errorPage.resource_allocation.limits.memory | string | `"256Mi"` | Memory limits for error page resources |
-| errorPage.resource_allocation.requests.cpu | string | `"0.1"` | CPU requests for error page resources |
-| errorPage.resource_allocation.requests.memory | string | `"128Mi"` | Memory requests for error page resources |
 | errorPage.secrets.K2_MANAGER_URL | string | `"https://cloud.k2view.com"` | K2 Manager URL for error pages |
 | ingressTest.enabled | bool | `true` | Enable ingress test |
 | namespace.name | string | `"ingress-nginx"` | Namespace for the ingress controller |

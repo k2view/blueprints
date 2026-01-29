@@ -45,15 +45,6 @@ errorPageS3:
   # url for cloudFront - default is dev-cloud  
   cloudfron_url: "https://dn37e3zom5xe1.cloudfront.net/index.html"
 
- 
   # The redirect to link to be set in the custom error
   secrets:
     K2_MANAGER_URL: "https://cloud.k2view.com"
-
-  resource_allocation:
-    requests:
-      memory: 128Mi
-      cpu: '0.1'
-    limits:
-      memory: 256Mi
-      cpu: '0.4'

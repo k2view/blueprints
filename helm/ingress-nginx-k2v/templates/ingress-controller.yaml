@@ -403,8 +403,7 @@ spec:
     port: 443
     protocol: TCP
     targetPort: http
-  {{- else}}
-  {{- if .Values.nginx.httpPort.enabled }}
+  {{- else if .Values.nginx.httpPort.enabled }}
   - appProtocol: http
     name: http
     port: 80
@@ -416,7 +415,6 @@ spec:
     port: 443
     protocol: TCP
     targetPort: https
-  {{- end }}
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -521,11 +519,6 @@ spec:
           timeoutSeconds: 1
         name: controller
         ports:
-        {{- if .Values.nginx.httpPort.enabled }}
-        - containerPort: 80
-          name: http
-          protocol: TCP
-        {{- end }}
         {{- if eq .Values.provider "aws" }}
         - containerPort: 80
           name: https
@@ -533,11 +526,14 @@ spec:
         - containerPort: 2443
           name: tohttps
           protocol: TCP
-        {{- else }}
+        {{- else if .Values.nginx.httpPort.enabled }}
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        {{- end }}
         - containerPort: 443
           name: https
           protocol: TCP
-        {{- end }}
         - containerPort: 8443
           name: webhook
           protocol: TCP
