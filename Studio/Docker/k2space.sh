@@ -10,6 +10,7 @@ Commands:
   ingress restart             Restart Traefik. (Force to recreate it)
   ingress stop                Stop / remove Traefik
   ingress upgrade             Upgrade Traefik image and start it (Should not be used if Traefik image was manually loaded)
+  package check               Check for Fabric Web Studio available updates (requires curl)
 
 Options:
   --compose=FILENAME        Allows user to use a custom Docker compose.yaml file
@@ -20,6 +21,29 @@ Options:
   --profile=PROFILENAME     Use the desired Space Profile
   --project=PROJECTNAME     Name of Fabric project
 "
+
+function k2spacePackageUpdate() {
+  local version_file_remote="https://raw.githubusercontent.com/k2view/blueprints/refs/heads/main/Studio/Docker/.VERSION"
+  local action="$1"
+  shift
+  case "$action" in
+    check)
+      command -v curl >/dev/null || return
+
+      local version_file_local="$self_path/.VERSION"
+      [[ -f "$version_file_local" ]] || return 3
+      local version_local="$(cat $version_file_local)"
+      [[ "$version_local" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]] || return 3
+
+      local version_remote="$(curl --silent --max-time 7 "$version_file_remote" 2>/dev/null)"
+      [[ "$version_remote" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]] || return 3
+
+      if [[ "$(printf "%s\n%s\n" "$version_remote" "$version_local" | sort -V | head -n 1)" == "$version_local" ]] && [[ "$version_remote" != "$version_local" ]]; then
+        echo "There is an update available for Fabric Web Studio! ($version_local -> $version_remote)"
+      fi
+      ;;
+  esac
+}
 
 function k2spaceList() {
   [[ -z "$HOSTNAME" ]] && HOSTNAME="localhost"
@@ -120,6 +144,7 @@ function k2spaceStart() {
   fi
 
   k2spaceIngress start
+  k2spacePackageUpdate check
 }
 
 command="$1"
@@ -139,6 +164,9 @@ case "$command" in
     ;;
   ingress)
     k2spaceIngress "$@"
+    ;;
+  package)
+    k2spacePackageUpdate "$@"
     ;;
   *)
     echo "$usage" 1>&2
