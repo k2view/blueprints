@@ -1,6 +1,6 @@
 # Fabric Helm Chart
 
-![Version: 1.2.28](https://img.shields.io/badge/Version-1.2.28-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
+![Version: 1.2.29](https://img.shields.io/badge/Version-1.2.29-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
 
 ## Overview
 
@@ -49,7 +49,7 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
   > Note: Some ingress controllers may require minor changes to annotations or configuration. Refer to the documentation of your chosen ingress controller for details.
 - **Persistent Storage:** Optional persistent volume claims for data durability.
 - **Customizable Service Exposure:** Choose between ClusterIP, NodePort, or LoadBalancer.
-- **Health Checks:** Liveness and readiness probes for robust operation.
+- **Health Checks:** Liveness, readiness and startup probes for robust operation.
 - **Resource Management:** Fine-grained control over CPU and memory requests/limits.
 - **Secrets Management:** Integrate with Kubernetes secrets for sensitive data.
 - **Extensible:** Easily override or extend with your own values files.
@@ -147,6 +147,21 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `container.image.url` | string | `""` | Fabric image URL |
 | `container.image.repoSecret.name` | string | `registry-secret` | Image pull secret name |
 | `container.image.repoSecret.enabled` | bool | `false` | Enable image pull secret |
+| `container.livenessProbe.initialDelaySeconds` | int | `0` | Initial delay in seconds for the liveness probe to start. |
+| `container.livenessProbe.periodSeconds` | int | `60` | Time period in seconds for the liveness probe to repeat. |
+| `container.livenessProbe.timeoutSeconds` | int | `15` | Maximum time in seconds for liveness probe execution to fail due to timeout. |
+| `container.livenessProbe.successThreshold` | int | `1` | How many successful attempts before setting the pod to alive. |
+| `container.livenessProbe.failureThreshold` | int | `3` | How many failed attempts before setting the pod to dead. |
+| `container.readinessProbe.initialDelaySeconds` | int | `0` | Initial delay in seconds for the readiness probe to start. |
+| `container.readinessProbe.periodSeconds` | int | `30` or `15` | Time period in seconds for the readiness probe to repeat. Default value varies between Studio and Fabric-only. |
+| `container.readinessProbe.timeoutSeconds` | int | `15` | Maximum time in seconds for readiness probe execution to fail due to timeout. |
+| `container.readinessProbe.successThreshold` | int | `1` | How many successful attempts before setting the pod to healthy. |
+| `container.readinessProbe.failureThreshold` | int | `3` or `1` | How many failed attempts before setting the pod to unhealthy. Default value varies between Studio and Fabric-only. |
+| `container.startupProbe.initialDelaySeconds` | int | `30` | Initial delay in seconds for the startup probe to start. |
+| `container.startupProbe.periodSeconds` | int | `15` | Time period in seconds for the startup probe to repeat. |
+| `container.startupProbe.timeoutSeconds` | int | `5` | Maximum time in seconds for startup probe execution to fail due to timeout. |
+| `container.startupProbe.successThreshold` | int | `1` | How many successful attempts before setting the pod to started. |
+| `container.startupProbe.failureThreshold` | int | `20` | How many failed attempts before setting the pod to failed to start. |
 | `storage.pvc.enabled` | bool | `true` | Enable persistent volume claim |
 | `storage.securityContext` | bool | `true` | Enable pod security context |
 | `storage.class` | string | `managed` | Storage class name |
