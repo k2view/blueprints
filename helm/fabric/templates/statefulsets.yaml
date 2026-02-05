@@ -22,6 +22,7 @@
 {{ $requests := default dict $resource_allocation.requests }}
 {{ $livenessProbe := default dict $container.livenessProbe }}
 {{ $readinessProbe := default dict $container.readinessProbe }}
+{{ $startupProbe := default dict $container.startupProbe }}
 
 {{ if eq $type "StatefulSet" }}
 apiVersion: apps/v1
@@ -196,21 +197,29 @@ spec:
             {{- end }}
             {{- end }}
             livenessProbe:
-              initialDelaySeconds: {{ $livenessProbe.initialDelaySeconds | default 60 }}
+              initialDelaySeconds: {{ $livenessProbe.initialDelaySeconds | default 0 }}
               periodSeconds: {{ $livenessProbe.periodSeconds | default 60 }}
               timeoutSeconds: {{ $livenessProbe.timeoutSeconds | default 15 }}
-              failureThreshold: {{ $livenessProbe.failureThreshold | default 3 }}
               successThreshold: {{ $livenessProbe.successThreshold | default 1 }}
+              failureThreshold: {{ $livenessProbe.failureThreshold | default 3 }}
               exec:
                 command: ["/bin/bash", "-l", "-c", "/opt/apps/fabric/isAlive.sh"]
             readinessProbe:
-              initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default 30 }}
-              periodSeconds: {{ $readinessProbe.periodSeconds | default 60 }}
+              initialDelaySeconds: {{ $readinessProbe.initialDelaySeconds | default 0 }}
+              periodSeconds: {{ $readinessProbe.periodSeconds | default 15 }}
               timeoutSeconds: {{ $readinessProbe.timeoutSeconds | default 15 }}
-              successThreshold: {{ $readinessProbe.successThreshold | default 2 }}
-              failureThreshold: {{ $readinessProbe.failureThreshold | default 5 }}
+              successThreshold: {{ $readinessProbe.successThreshold | default 1 }}
+              failureThreshold: {{ $readinessProbe.failureThreshold | default 1 }}
               exec:
                 command: ["/bin/bash", "-l", "-c", "/opt/apps/fabric/isAlive.sh"]
+            startupProbe:
+              initialDelaySeconds: {{ $startupProbe.initialDelaySeconds | default 30 }}
+              periodSeconds: {{ $startupProbe.periodSeconds | default 15 }}
+              timeoutSeconds: {{ $startupProbe.timeoutSeconds | default 5 }}
+              successThreshold: {{ $startupProbe.successThreshold | default 1 }}
+              failureThreshold: {{ $startupProbe.failureThreshold | default 20 }}
+              exec:
+                command: ["/bin/bash", "-l", "-c", "[[ $START_FABRIC == false ]] || k2fabric status | grep -q ^READY"]
             volumeMounts:
             - name: fabric-storage-private
               mountPath: /opt/apps/fabric/workspace
