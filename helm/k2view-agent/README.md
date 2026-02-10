@@ -1,6 +1,6 @@
 # k2view-agent
 
-![Version: 1.1.22](https://img.shields.io/badge/Version-1.1.22-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
+![Version: 1.1.23](https://img.shields.io/badge/Version-1.1.23-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 2.11](https://img.shields.io/badge/AppVersion-2.11-informational?style=flat-square)
 
 This Helm chart simplifies the deployment of the K2cloud Orchestrator site agent, ensuring a streamlined integration with your cloud infrastructure.
 
@@ -178,7 +178,8 @@ cd blueprints/helm/k2view-agent/
 helm install k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
 ```
 
-### Install from helm repo
+### Helm
+#### Install
 1. Add repo
 ```bash
 helm repo add k2view-agent https://nexus.share.cloud.k2view.com/repository/k2view-agent
@@ -187,6 +188,11 @@ helm repo add k2view-agent https://nexus.share.cloud.k2view.com/repository/k2vie
 2. Install
 ```bash
 helm install k2view-agent/k2view-agent k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
+```
+
+#### Upgrade
+```bash
+helm upgrade k2view-agent/k2view-agent k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" --set container.image.url="docker.share.cloud.k2view.com/k2view/k2v-agent:VERSION" .
 ```
 
 ## Additional Resources
