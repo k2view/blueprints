@@ -1,24 +1,33 @@
 {{- if .Values.ingressTest.enabled }}
-kind: Pod
-apiVersion: v1
+kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: ingress-test-app
   namespace: {{ .Values.namespace.name }}
   labels:
     app: ingress-test
 spec:
-  serviceAccountName: restricted-sa
-  containers:
-    - name: ingress-test-app
-      securityContext:
-        allowPrivilegeEscalation: false
-      resources:
-        limits:
-          memory: 128Mi
-          cpu: '0.2'
-      image: hashicorp/http-echo
-      args:
-        - "-text=SUCCESS"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-test
+  template:
+    metadata:
+      labels:
+        app: ingress-test
+    spec:
+      serviceAccountName: restricted-sa
+      containers:
+        - name: ingress-test-app
+          securityContext:
+            allowPrivilegeEscalation: false
+          resources:
+            limits:
+              memory: 128Mi
+              cpu: '0.2'
+          image: hashicorp/http-echo
+          args:
+            - "-text=SUCCESS"
 ---
 kind: Service
 apiVersion: v1
