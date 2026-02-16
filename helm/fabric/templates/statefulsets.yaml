@@ -9,6 +9,7 @@
 {{ $serviceAccount := default dict .Values.serviceAccount }}
 {{ $serviceAccountName := default .Release.Name (default $namespace.name $serviceAccount.name) }}
 {{ $storage := default dict .Values.storage }}
+{{ $allocated_amount := default $storage.allocated_amount $storage.alocated_amount }} {{- /* for backward compatibility, fix spelling error */ -}}
 {{ $container := default dict .Values.container }}
 {{ $resource_annotations := default (list) $container.annotations }}
 {{ $imageRepoSecret := default dict $container.image.repoSecret }}
@@ -63,11 +64,13 @@ spec:
     - metadata:
         name: fabric-storage-private
       spec:
+        {{- if $storage.class }}
         storageClassName: {{ $storage.class }}
+        {{- end }}
         accessModes: [ "ReadWriteOnce" ]
         resources:
           requests:
-            storage: {{ $storage.alocated_amount | default "10Gi" }}
+            storage: {{ default "10Gi" $allocated_amount }}
     template:
         metadata:
           labels: *id001
