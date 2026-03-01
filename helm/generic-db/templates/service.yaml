@@ -1,7 +1,13 @@
 {{ $namespace := default dict .Values.namespace }}
-{{ $app_name := .Values.app_name | default .Chart.Name }}
-{{ $service := .Values.service }}
+{{ $app_name := default .Chart.Name .Values.app_name }}
+{{ $service := default dict .Values.service }}
 {{ $service_port := $service.port }}
+{{ $global := default dict .Values.global }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $resource_annotations := default (list) $service.annotations }}
+{{ $resource_labels := default (list) $service.labels }}
 {{- /* Default values for common apps */ -}}
 {{- if $app_name | eq "postgres" }}
   {{ $service_port := $service.port | default 5432 }}
@@ -23,6 +29,24 @@ metadata:
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+    {{- range $label := $resource_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  {{- if or $global_annotations $resource_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   type: 
   ports:

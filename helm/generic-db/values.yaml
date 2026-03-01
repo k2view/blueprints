@@ -1,23 +1,22 @@
 # app_name will be app label and prefix for resources
 # Supported values: postgres, cassandra, kafka, neo4j
 
-# global
-namespace:
-  name: "space-tenant"
-
-labels:
-  - name: tenant
-    value: my-tenant
-  - name: space
-    value: my-space
-
-# app_name will be app label and prefix for resources
-app_name: "postgres"
+# Global annotations and labels applied to all resources
+# annotations:
+#   - key: "app.kubernetes.io/component"
+#     value: "database"
+#   - key: "kubernetes.io/description"
+#     value: "Generic database deployment for PostgreSQL, Cassandra, Kafka, or Neo4j"
+# labels:
+#   - key: "app.kubernetes.io/component"
+#     value: "database"
+#   - key: "app.kubernetes.io/part-of"
+#     value: "generic-db"
 
 # deployment.yaml
 container:
   image:
-    url: postgres:15.8
+    url: postgres:17.5
     # repoSecret:
     #   name: "registry-secret"
     #   enabled: false
@@ -32,12 +31,11 @@ container:
       memory: 4Gi
       cpu: '1'
     requests:
-      memory: 1Gi
-      cpu: '0.4'
+      memory: 2Gi
+      cpu: '0.5'
 
 # secrets.yaml
 # Default secrets will be set based on app_name if not provided
-# create_secrets: true
 # secrets:
 # - key: POSTGRES_USERNAME
 #   value: "postgres"
