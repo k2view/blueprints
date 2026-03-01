@@ -1,13 +1,10 @@
 # Fabric Helm Chart
-
-![Version: 1.2.29](https://img.shields.io/badge/Version-1.2.29-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.2.0](https://img.shields.io/badge/AppVersion-8.2.0-informational?style=flat-square)
+![Version: 1.2.32](https://img.shields.io/badge/Version-1.2.32-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
 
 ## Overview
-
 The Fabric Helm chart provides a robust, production-ready deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, security, and ease of use, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments, and is maintained with best practices for reliability and scalability.
 
 ## Table of Contents
-
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -36,7 +33,6 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 
 
 ## Features
-
 - **Configurable Deployments:** Easily customize replicas, resources, and environment variables.
 - **Production-Ready Defaults:** Secure and scalable out-of-the-box settings.
 - **Global Labels and Annotations:** Apply consistent labels and annotations across all Kubernetes resources for better organization, monitoring, and compliance.
@@ -55,14 +51,11 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 - **Extensible:** Easily override or extend with your own values files.
 
 ## Prerequisites
-
 - Kubernetes 1.27+
 - Helm 3.0+
 - Ingress controller (e.g., NGINX)
 
 ## Installation
-
-
 ### 1. Add the Helm Repository (Remote Installation)
 
 ```sh
@@ -90,7 +83,6 @@ helm install SPACE_NAME . \
 ```
 
 ### 4. Custom Installation
-
 You can override default values using a custom `values.yaml` file:
 
 ```sh
@@ -101,7 +93,6 @@ helm install SPACE_NAME . -f my-values.yaml
 ```
 
 ## Upgrading
-
 To upgrade an existing release:
 
 ```sh
@@ -109,7 +100,6 @@ helm upgrade SPACE_NAME fabric/fabric -f my-values.yaml
 ```
 
 ## Uninstallation
-
 To uninstall the release:
 
 ```sh
@@ -117,8 +107,6 @@ helm uninstall SPACE_NAME
 ```
 
 ## Configuration
-
-
 The following table lists the main configurable parameters of the Fabric chart and their default values. For a full list and detailed descriptions, see `values.yaml` in the chart directory.
 
 | Parameter | Type | Default | Description |
@@ -206,7 +194,6 @@ The following table lists the main configurable parameters of the Fabric chart a
 > **Tip:** For advanced configuration and secret formats, refer to the comments in `values.yaml`.
 
 ### Deployment Options
-
 The Fabric Helm Chart supports two deployment types, each suited for different environments and use cases:
 
 #### 1. Deployment (Recommended for Development/Studio)
@@ -231,7 +218,6 @@ Use this mode for staging or production environments, or when running Fabric Ser
 
 
 ### Fabric Application Configuration
-
 The Fabric application is configured via the `config.ini` file, which is managed through the `mountSecret.data.config` variable in your `values.yaml`.
 
 To customize the application configuration:
@@ -255,7 +241,6 @@ SYSTEM_DB_HOST=/opt/apps/fabric/workspace/internal_db
 
 
 ## RBAC
-
 RBAC (Role-Based Access Control) in this Helm chart is managed via the `serviceAccount` section in your `values.yaml` file.
 
 - If `serviceAccount.create: true`, a dedicated Kubernetes ServiceAccount will be created in the Fabric namespace and automatically associated with the Fabric pods.
@@ -274,7 +259,6 @@ To enable cloud provider integration for IAM-based access, set the `serviceAccou
 Refer to the comments in `values.yaml` for detailed configuration examples for each cloud provider.
 
 ## Horizontal Pod Autoscaling (HPA)
-
 Horizontal Pod Autoscaling (HPA) is managed via the `scaling` section in your `values.yaml` file.
 
 To enable HPA:
@@ -296,7 +280,6 @@ scaling:
 > - The chart will automatically create the necessary Kubernetes HPA resource when enabled.
 
 ## Ingress
-
 To enable ingress, set `ingress.enabled: true` and configure the hostname:
 
 ```yaml
@@ -318,8 +301,6 @@ ingress:
 
 
 ### Ingress Routing Types
-
-
 The Fabric Helm chart supports two primary ingress routing strategies, allowing flexibility based on your domain and certificate setup. The routing logic is controlled by the `ingress.path` and `ingress.subdomain` parameters:
 
 - `ingress.path`: If set to `true`, the path will be set to the namespace name. If set to a string, that string will be used as the path. If set to `false`, path-based routing is disabled.
@@ -442,8 +423,6 @@ spec:
 
 
 ## Storage (Persistence)
-
-
 To enable persistent storage, configure the following:
 
 ```yaml
@@ -459,7 +438,6 @@ storage:
 > Enabling `pvc.enabled: true` will create a shared PersistentVolumeClaim (PVC) for the deployment. In multi-node or highly available setups, this is generally not recommended when running more than one replica, as most storage classes do not support multi-node (ReadWriteMany) access and most use cases do not require shared storage. For most deployments with `replica` count above 1, set `pvc.enabled: false` unless you have a specific need and your storage class supports multi-attach.
 
 ## Environment Variables
-
 You can set environment variables for fabric by adding them under secretsList.data in values.yaml:
 
 ```yaml
@@ -471,11 +449,9 @@ secretsList:
 ```
 
 ## Troubleshooting
-
 - Check pod logs: `kubectl logs <pod-name> -n fabric`
 - Describe resources: `kubectl describe pod <pod-name> -n fabric`
 - Verify ingress and service endpoints.
 
 ## Support
-
 For issues, questions, or feature requests, please contact your Fabric support representative, email us at [support@k2view.com](mailto:support@k2view.com), or open an issue in the official repository.

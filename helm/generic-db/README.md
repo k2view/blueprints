@@ -1,33 +1,19 @@
 # generic-db
+![Version: 1.1.8](https://img.shields.io/badge/Version-1.1.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
-![Version: 1.1.0](https://img.shields.io/badge/Version-1.1.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
-
-This Helm chart deploys a generic database on Kubernetes, supporting multiple database types.
+Example Helm chart that deploys a generic database, such as PostgreSQL, Cassandra, or Neo4j, on Kubernetes.
 
 ## Description
-The `generic-db` Helm chart provides a unified and configurable approach to deploying database systems, including PostgreSQL, Cassandra, Kafka, and Neo4j, on Kubernetes. It uses a single chart with parameterized values to control behavior per database type (`app_name`), including image selection, ports, volumes, and secrets.
-
-This chart is well-suited for teams managing infrastructure across environments and looking to standardize the deployment of different databases without maintaining multiple charts. Key capabilities include:
-
-- Automatic configuration of service ports, storage paths, and default secrets based on `app_name`
-- Support for resource requests and limits, affinity rules, and network policies
-- Secrets and storage provisioning with options to override all defaults
-- Example values files provided for each supported database
-
-## Supported Database Types
-The chart supports the following database types through the `app_name` value:
-- **postgres**: PostgreSQL database (default port: 5432)
-- **cassandra**: Apache Cassandra (default port: 9042)
-- **kafka**: Apache Kafka (default port: 9093)
-- **neo4j**: Neo4j Graph Database (default port: 7687)
+The `generic-db` Helm chart is a reference example of a unified and configurable approach to deploying database systems, including PostgreSQL, Cassandra, Kafka, and Neo4j, on Kubernetes. It uses a single chart with parameterized values to control behavior per database type (`app_name`), including image selection, ports, volumes, and secrets.
 
 ## Values
-
 ### Global Configuration
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `app_name` | string | `"generic-db"` | Name of the database type to deploy (`postgres`, `cassandra`, `kafka`, `neo4j`) |
 | `namespace.name` | string | `""` | Name of the Kubernetes namespace (defaults to release name) |
+| `annotations` | array | `[]` | Global annotations applied to all resources |
+| `labels` | array | `[]` | Global labels applied to all resources |
 
 ### Container Configuration
 | Key | Type | Default | Description |
@@ -38,38 +24,35 @@ The chart supports the following database types through the `app_name` value:
 | `container.resource_allocation.requests.cpu` | string | `"0.4"` | CPU request for the container |
 | `container.resource_allocation.requests.memory` | string | `"1Gi"` | Memory request for the container |
 | `container.storage_path` | string | `"/opt/apps/pgsql/data/data/"` | Path to the storage directory in the container |
-| `labels[0].name` | string | `"tenant"` | Name of the first label |
-| `labels[0].value` | string | `"my-tenant"` | Value of the first label |
-| `labels[1].name` | string | `"space"` | Name of the second label |
-| `labels[1].value` | string | `"my-space"` | Value of the second label |
-| `namespace.name` | string | `"space-tenant"` | Name of the Kubernetes namespace |
-| `networkPolicy.enabled` | bool | `true` | Enable or disable the network policy |
-| `secrets[0].key` | string | `"POSTGRES_USERNAME"` | Key for the PostgreSQL username secret |
-| `secrets[0].value` | string | `"postgres"` | Value for the PostgreSQL username secret |
-| `secrets[1].key` | string | `"POSTGRES_PASSWORD"` | Key for the PostgreSQL password secret |
-| `secrets[1].value` | string | `"postgres"` | Value for the PostgreSQL password secret |
-| `service.port` | int | `5432` | Port for the PostgreSQL service |
-| `storage.allocated_amount` | string | `"10Gi"` | Amount of storage allocated for the database |
-| `storage.class` | string | `"regional-pd"` | Storage class for the persistent volume |
+| `container.annotations` | array | `[]` | Resource-specific annotations for deployment |
+| `container.labels` | array | `[]` | Resource-specific labels for deployment |
 
 ### Secrets Configuration
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `create_secrets` | bool | `true` | Whether to create default secrets |
 | `secrets` | array | `[]` | List of custom secrets to create |
+| `secrets.annotations` | array | `[]` | Resource-specific annotations for secret |
+| `secrets.labels` | array | `[]` | Resource-specific labels for secret |
 
 ### Storage Configuration
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `storage.class` | string | `"managed"` | Storage class name |
-| `storage.alocated_amount` | string | `"10Gi"` | Allocated storage size |
+| `storage.allocated_amount` | string | `"10Gi"` | Allocated storage size |
 | `storage.securityContext` | bool | `true` | Enable security context |
+| `storage.annotations` | array | `[]` | Resource-specific annotations for PVC |
+| `storage.labels` | array | `[]` | Resource-specific labels for PVC |
 
 ### Network Configuration
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `service.port` | int | Database-specific | Service port (auto-configured based on database type) |
+| `service.annotations` | array | `[]` | Resource-specific annotations for service |
+| `service.labels` | array | `[]` | Resource-specific labels for service |
 | `networkPolicy.enabled` | bool | `true` | Enable network policy |
+| `networkPolicy.annotations` | array | `[]` | Resource-specific annotations for network policy |
+| `networkPolicy.labels` | array | `[]` | Resource-specific labels for network policy |
 
 ### Affinity Configuration
 | Key | Type | Default | Description |
@@ -79,7 +62,6 @@ The chart supports the following database types through the `app_name` value:
 | `affinity.label.value` | string | `"region-a"` | Affinity label value |
 
 ### Default Database Configurations
-
 The chart automatically configures certain values based on the selected database type (`app_name`):
 
 #### PostgreSQL (app_name: postgres)
