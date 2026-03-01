@@ -4,10 +4,16 @@
 {{ $resource_allocation := default dict .Values.container.resource_allocation}}
 {{ $limits := default dict $resource_allocation.limits}}
 {{ $requests := default dict $resource_allocation.requests}}
-{{ $app_name := .Values.app_name | default .Chart.Name }}
+{{ $app_name := default .Chart.Name .Values.app_name }}
 {{ $service_port := .Values.service.port }}
-{{ $secrets := .Values.secrets | default (list) }}
+{{ $secrets := default (list) .Values.secrets }}
 {{ $storage_path := .Values.container.storage_path }}
+{{ $global := default dict .Values.global }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $resource_annotations := default (list) .Values.container.annotations }}
+{{ $resource_labels := default (list) .Values.container.labels }}
 {{- /* Default values for common apps */ -}}
 {{- if $app_name | eq "postgres" }}
   {{ $storage_path := .Values.container.storage_path | default "/opt/apps/pgsql/data/data/" }}
@@ -37,6 +43,24 @@ metadata:
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+    {{- range $label := $resource_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  {{- if or $global_annotations $resource_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   replicas: {{ .Values.container.replicas | default 1 }}
   selector:

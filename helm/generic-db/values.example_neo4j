@@ -7,13 +7,13 @@ labels:
   - name: space
     value: my-space
 
-# app_name will be app label and prefix for resources
+# app_name will be app lable and prefix for resources
 app_name: "neo4j"
 
 # deployment.yaml
 container:
   image:
-    url: neo4j:5.25.1-enterprise
+    url: neo4j:2025.06.2-enterprise
   storage_path: "/var/lib/neo4j/data"
 
   resource_allocation:
@@ -25,7 +25,6 @@ container:
       cpu: '0.5'
 
 # secrets.yaml
-create_secrets: true
 secrets:
 - key: NEO4JLABS_PLUGINS
   value: '["graph-data-science", "apoc"]'
