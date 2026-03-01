@@ -24,7 +24,6 @@ container:
       cpu: '0.5'
 
 # secrets.yaml
-create_secrets: true
 secrets:
 - key: DATA
   value: "/home/kafka/zk_data"
