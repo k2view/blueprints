@@ -1,6 +1,12 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $networkPolicy := default dict .Values.networkPolicy }}
-{{ $app_name := .Values.app_name | default .Chart.Name }}
+{{ $app_name := default .Chart.Name .Values.app_name }}
+{{ $global := default dict .Values.global }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $resource_annotations := default (list) $networkPolicy.annotations }}
+{{ $resource_labels := default (list) $networkPolicy.labels }}
 {{- if (default true $networkPolicy.enabled) }}
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
@@ -12,6 +18,24 @@ metadata:
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+    {{- range $label := $resource_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  {{- if or $global_annotations $resource_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   podSelector:
     matchLabels:

@@ -7,7 +7,7 @@ labels:
   - name: space
     value: my-space
 
-# app_name will be app label and prefix for resources
+# app_name will be app lable and prefix for resources
 app_name: "cassandra"
 
 # deployment.yaml
@@ -24,7 +24,6 @@ container:
       cpu: '0.5'
 
 # secrets.yaml
-create_secrets: true
 secrets:
 - key: USERNAME
   value: "cassandra"

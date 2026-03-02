@@ -1,6 +1,13 @@
 {{ $namespace := default dict .Values.namespace }}
 {{- $storage := default dict .Values.storage -}}
-{{- $app_name := .Values.app_name | default .Chart.Name -}}
+{{- $app_name := default .Chart.Name .Values.app_name -}}
+{{ $global := default dict .Values.global }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $resource_annotations := default (list) $storage.annotations }}
+{{ $resource_labels := default (list) $storage.labels }}
+{{ $allocated_amount := default $storage.allocated_amount $storage.alocated_amount }} {{- /* for backward compatibility, fix spelling error */ -}}
 {{- /* ---------------------------- */ -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -12,6 +19,24 @@ metadata:
     {{- range $label := .Values.labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+    {{- range $label := $resource_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  {{- if or $global_annotations $resource_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $resource_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
 spec:
   accessModes:
     - ReadWriteOnce
@@ -20,4 +45,4 @@ spec:
   {{- end }}
   resources:
     requests:
-      storage: {{ default "10Gi" $storage.allocated_amount }}
+      storage: {{ default "10Gi" $allocated_amount }}
