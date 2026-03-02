@@ -26,9 +26,9 @@ services:
     networks:
       - fab-net
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     volumes:
       - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/postgres:/var/lib/postgresql/data/:Z
     healthcheck:
@@ -88,6 +88,9 @@ services:
       - |
         cat /opt/apps/fabric/common.config /opt/apps/fabric/profile.config > ${INI_CONFIG_UPDATE_FILE}
         sed -i "s/__COMPOSE_PROJECT_NAME__/${COMPOSE_PROJECT_NAME}/g" ${INI_CONFIG_UPDATE_FILE}
+        sed -i "s/__POSTGRES_DB__/${POSTGRES_DB}/g" ${INI_CONFIG_UPDATE_FILE}
+        sed -i "s/__POSTGRES_USER__/${POSTGRES_USER}/g" ${INI_CONFIG_UPDATE_FILE}
+        sed -i "s/__POSTGRES_PASSWORD__/${POSTGRES_PASSWORD}/g" ${INI_CONFIG_UPDATE_FILE}
         ./docker-entrypoint.sh
         tail -F /opt/apps/fabric/workspace/logs/k2fabric.log
     labels:
@@ -102,7 +105,7 @@ services:
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=Path(`/${COMPOSE_PROJECT_NAME}`) || PathPrefix(`/${COMPOSE_PROJECT_NAME}/`)"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=web-to-websecure@file"
     healthcheck:
-      test: ["CMD", "/bin/bash", "/opt/apps/fabric/isAlive.sh"]
+      test: ["CMD", "/bin/bash", "-l", "-c", "/opt/apps/fabric/isAlive.sh"]
       interval: 30s
       timeout: 10s
       retries: 3
