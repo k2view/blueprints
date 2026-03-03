@@ -18,6 +18,7 @@ Options:
   --fabric-version=VERSION  Set the 'tag' of fabric-studio image
   --git-branch=NAME         Override value defined for GIT_BRANCH when creating a new Space
   --heap=SIZE               Set Fabric heap size
+  --port=PORTNUMBER         The host port where the Space should bind to. If not set (recommended), a non-persistent random port is used
   --profile=PROFILENAME     Use the desired Space Profile
   --project=PROJECTNAME     Name of Fabric project
 "
@@ -89,6 +90,7 @@ function k2spaceStart() {
     [[ "$arg" =~ ^"--git-authorship=" ]] && { export GIT_AUTHORSHIP="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--git-branch=" ]] && { export GIT_BRANCH="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--heap=" ]] && { export MAX_HEAP="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--port=" ]] && { export FABRIC_UI_PORT="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--profile=" ]] && { export PROFILE="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--project=" ]] && { export PROJECT_NAME="${arg#*=}"; continue; }
     set -- "$@" "$arg"

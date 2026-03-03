@@ -1,5 +1,5 @@
 # nginx-ingress-controller
-![Version: 1.3.6](https://img.shields.io/badge/Version-1.3.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.12.1](https://img.shields.io/badge/AppVersion-1.12.1-informational?style=flat-square)
+![Version: 1.3.8](https://img.shields.io/badge/Version-1.3.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.12.1](https://img.shields.io/badge/AppVersion-1.12.1-informational?style=flat-square)
 
 An example Nginx ingress controller deployment for Kubernetes. This Helm chart demonstrates how to deploy and configure an Nginx ingress controller to manage HTTP and HTTPS traffic routing to services within the cluster. Configured as a reference implementation for the K2view site.
 
@@ -45,7 +45,7 @@ Deploy K2view custom error page that will replace the 404 and 503 error pages of
 Deploy K2view custom error page that proxies error pages from S3/CloudFront. This version fetches error page content from a CloudFront distribution.
 >NOTE: To disable S3-hosted error pages, set `errorPageS3.enabled=false`
 
-### test-pod
+### test-deployment
 Test pod that returns the string 'SUCCESS' from `ingress-test.{{ .Values.domain }}`. Useful for verifying ingress configuration.
 >NOTE: To disable the test pod, set `ingressTest.enabled=false`
 
@@ -77,4 +77,18 @@ helm install nginx-ingress-controller/nginx-ingress-controller nginx-ingress-con
 #### Example
 ```bash
 helm install nginx-ingress-controller/nginx-ingress-controller nginx-ingress-controller --set tlsSecret.keyPath='secrets/key.pem',tlsSecret.certPath='secrets/cert.pem'
+```
+
+### Install from local chart
+1. Clone repo
+```bash
+git clone https://github.com/k2view/blueprints-dev.git
+```
+2. Install
+```bash
+helm install nginx-ingress-controller ./helm/ingress-nginx-k2v
+```
+#### Example
+```bash
+helm install nginx-ingress-controller ./helm/ingress-nginx-k2v --set provider='aws' --set aws.awsDomainCert='arn:aws:acm:us-east-1:123456789012:certificate/abcdefg-1234-5678-abcd-1234567890ab' --set aws.vpcCIDR='192.168.0.0/16' --set domain='mydomain.com'
 ```
