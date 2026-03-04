@@ -12,15 +12,38 @@ Commands:
   ingress upgrade             Upgrade Traefik image and start it (Should not be used if Traefik image was manually loaded)
   package check               Check for Fabric Web Studio available updates (requires curl)
 
-Options:
+Create Options:
   --compose=FILENAME        Allows user to use a custom Docker compose.yaml file
   --env=FILENAME            Allows user to use a custom Docker environments file
   --fabric-version=VERSION  Set the 'tag' of fabric-studio image
   --git-branch=NAME         Override value defined for GIT_BRANCH when creating a new Space
   --heap=SIZE               Set Fabric heap size
+  --port=PORTNUMBER         The host port where the Space should bind to. If not set (recommended), a non-persistent random port is used
   --profile=PROFILENAME     Use the desired Space Profile
   --project=PROJECTNAME     Name of Fabric project
+
+Upgrade Options:
+  --fabric-version=VERSION  Set the 'tag' of fabric-studio image
+  --heap=SIZE               Set Fabric heap size
+  --port=PORTNUMBER         The host port where the Space should bind to. If not set (recommended), a non-persistent random port is used
 "
+
+function csvFiles() {
+  local input
+  if [[ ! -t 0 ]]; then
+    input="$(cat)"
+  elif [[ -n "$1" ]]; then
+    input="$1"
+  fi
+
+  if [[ -z "$input" ]]; then
+    echo "${FUNCNAME[0]}: error: no input provided" >&2
+    return 1
+  fi
+
+  input="${input//,\//$'\n/'}"
+  echo "$input"
+}
 
 function k2spacePackageUpdate() {
   local version_file_remote="https://raw.githubusercontent.com/k2view/blueprints/refs/heads/main/Studio/Docker/.VERSION"
@@ -39,7 +62,7 @@ function k2spacePackageUpdate() {
       [[ "$version_remote" =~ ^[0-9]+[.][0-9]+[.][0-9]+$ ]] || return 3
 
       if [[ "$(printf "%s\n%s\n" "$version_remote" "$version_local" | sort -V | head -n 1)" == "$version_local" ]] && [[ "$version_remote" != "$version_local" ]]; then
-        echo "There is an update available for Fabric Web Studio! ($version_local -> $version_remote)"
+        echo "There is an update available for the Fabric Web Studio package! ($version_local -> $version_remote)" >&2
       fi
       ;;
   esac
@@ -89,6 +112,7 @@ function k2spaceStart() {
     [[ "$arg" =~ ^"--git-authorship=" ]] && { export GIT_AUTHORSHIP="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--git-branch=" ]] && { export GIT_BRANCH="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--heap=" ]] && { export MAX_HEAP="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--port=" ]] && { export FABRIC_UI_PORT="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--profile=" ]] && { export PROFILE="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--project=" ]] && { export PROJECT_NAME="${arg#*=}"; continue; }
     set -- "$@" "$arg"
@@ -147,6 +171,90 @@ function k2spaceStart() {
   k2spacePackageUpdate check
 }
 
+function k2spaceRecreate() {
+  local arg safety_bypass
+  for arg in "$@"; do
+    shift
+    [[ "$arg" =~ ^"--fabric-version=" ]] && { export FABRIC_VERSION="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--heap=" ]] && { local max_heap="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--port=" ]] && { export FABRIC_UI_PORT="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--safety-bypass" ]] && { safety_bypass="true"; continue; }
+    set -- "$@" "$arg"
+  done
+
+  local name="$1"
+
+  if [[ -n "$name" ]]; then
+    export COMPOSE_PROJECT_NAME="$name"
+  elif [[ -z "$COMPOSE_PROJECT_NAME" ]]; then
+    echo "Missing Space name." >&2
+    return 1
+  fi
+  local space_id="$(docker ps --all --filter label=k2viewspace --filter label=com.docker.compose.project="$COMPOSE_PROJECT_NAME" --quiet 2>/dev/null)"
+  [[ -z "$space_id" ]] && { echo "Space '$COMPOSE_PROJECT_NAME' not found." >&2; return 1; }
+
+  local space_working_dir="$(docker inspect --type=container "$space_id" --format '{{index .Config.Labels "com.docker.compose.project.working_dir"}}')"
+  if [[ "$space_working_dir" != "$self_path" ]]; then
+    echo "Space upgrade initiated from a working directory different than the original creation. It may result in unexpected behavior." >&2
+    echo "Space working directory: [$space_working_dir]." >&2
+    echo "Current working directory: [$self_path]." >&2
+    [[ "$safety_bypass" == "true" ]] || { echo "To proceed with the upgrade, rerun the command using the flag '--safety-bypass'." >&2; return 1; }
+  fi
+
+  local space_config_files="$(docker inspect --type=container "$space_id" --format '{{index .Config.Labels "com.docker.compose.project.config_files"}}')"
+  local compose
+  if [[ -f "$space_config_files" ]]; then
+    compose="$space_config_files"
+  else
+    [[ -f "$self_path/compose-$name.yaml" ]] && compose="$self_path/compose-$name.yaml" || compose="$self_path/compose.yaml"
+    echo "Warning: compose file '$space_config_files' previously used to create space '$COMPOSE_PROJECT_NAME' does not exist. Using '$compose' instead." >&2
+  fi
+
+  local space_env_files=( $(docker inspect --type=container "$space_id" --format '{{index .Config.Labels "com.docker.compose.project.environment_file"}}' | csvFiles) )
+  local env_file env_flag
+  for env_file in "${space_env_files[@]}"; do
+    if [[ -f "$env_file" ]]; then
+      env_flag="$env_flag --env-file $env_file"
+    else
+      echo "Warning: environment file '$env_file' previously used to create space '$COMPOSE_PROJECT_NAME' does not exist and will be ignored." >&2
+    fi
+  done
+
+  if [[ -z "$env_flag" ]]; then
+    echo "Warning: using the default .env file." >&2
+    [[ -f "$self_path/.env" ]] && env_flag="--env-file $self_path/.env"
+    [[ -f "$self_path/.env-$name" ]] && env_flag="$env_flag --env-file $self_path/.env-$name"
+  fi
+
+  export PROFILE=$(docker inspect --type=container "$space_id" --format '{{index .Config.Labels "space-profile"}}')
+  if [[ -z "$PROFILE" ]]; then
+    echo "Could not retrieve the space profile." >&2
+    return 1
+  elif [[ ! -f "$self_path/$PROFILE.config" ]]; then
+    echo "Profile '$PROFILE' not found, it may have been deleted." >&2
+    return 1
+  fi
+  local profile_flag="--profile $PROFILE"
+
+  local space_env_vars=$(docker inspect --type=container "$space_id" --format '{{range .Config.Env}}{{println .}}{{end}}')
+  (
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      export "$line"
+    done < <(printf "$space_env_vars")
+    [[ -n "$max_heap" ]] && export MAX_HEAP="$max_heap"
+
+    docker compose --project-name "$COMPOSE_PROJECT_NAME" --file "$compose" $env_flag $profile_flag up --detach
+  ) || local err=$?
+
+  if [[ -n "$err" ]]; then
+    echo "An error occurred during the space recreation." >&2
+    return $err
+  fi
+
+  k2spaceIngress start
+  k2spacePackageUpdate check
+}
+
 command="$1"
 shift
 case "$command" in
@@ -158,6 +266,9 @@ case "$command" in
     ;;
   destroy | rm | down)
     docker compose --project-name "$1" down
+    ;;
+  recreate | upgrade)
+    k2spaceRecreate "$@"
     ;;
   list)
     k2spaceList
