@@ -319,30 +319,6 @@ subjects:
   namespace: ingress-nginx
 ---
 apiVersion: v1
-data:
-  allow-snippet-annotations: "true"
-  use-forwarded-headers: "true"
-  {{- if eq .Values.provider "aws" }}
-  http-snippet: |
-    server {
-      listen 2443;
-      return 308 https://$host$request_uri;
-    }
-  proxy-real-ip-cidr: {{ .Values.aws.vpcCIDR }}
-  ssl-redirect: "false"
-  {{- else }}
-  force-ssl-redirect: "true"
-  {{- end }}
-  {{- if and (eq .Values.nginx.httpPort.enabled true) (ne .Values.provider "aws") }}
-  http-snippet: |
-    server {
-      listen 80;
-      return 308 https://$host$request_uri;
-    }
-  {{- end }}
-  {{- if .Values.errorPageS3.enabled }}
-  custom-http-errors: "503"
-  {{- end }}
 kind: ConfigMap
 metadata:
   name: ingress-nginx-controller
@@ -353,6 +329,31 @@ metadata:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/part-of: ingress-nginx
     app.kubernetes.io/version: {{ .Values.nginx.version }}
+data:
+  allow-snippet-annotations: "true"
+  annotations-risk-level: Critical
+  use-forwarded-headers: "true"
+  {{- if eq .Values.provider "aws" }}
+  proxy-real-ip-cidr: {{ .Values.aws.vpcCIDR }}
+  ssl-redirect: "false"
+  http-snippet: |
+    server {
+      listen 2443;
+      return 308 https://$host$request_uri;
+    }
+  {{- else }}
+  force-ssl-redirect: "true"
+  {{- if .Values.nginx.httpPort.enabled }}
+  http-snippet: |
+    server {
+      listen 80;
+      return 308 https://$host$request_uri;
+    }
+  {{- end }}
+  {{- end }}
+  {{- if .Values.errorPageS3.enabled }}
+  custom-http-errors: "503"
+  {{- end }}
 ---
 apiVersion: v1
 kind: Service
@@ -405,11 +406,19 @@ spec:
     protocol: TCP
     targetPort: http
   {{- end }}
+  {{- if eq .Values.provider "aws" }}
+  - appProtocol: https
+    name: https
+    port: 443
+    protocol: TCP
+    targetPort: http
+  {{- else }}
   - appProtocol: https
     name: https
     port: 443
     protocol: TCP
     targetPort: https
+  {{- end }}
   selector:
     app.kubernetes.io/component: controller
     app.kubernetes.io/instance: ingress-nginx
@@ -514,11 +523,6 @@ spec:
           timeoutSeconds: 1
         name: controller
         ports:
-        {{- if and .Values.nginx.httpPort.enabled (not (eq .Values.provider "aws")) }}
-        - containerPort: 80
-          name: http
-          protocol: TCP
-        {{- end }}
         {{- if eq .Values.provider "aws" }}
         - containerPort: 80
           name: http
@@ -526,11 +530,14 @@ spec:
         - containerPort: 2443
           name: tohttps
           protocol: TCP
-        {{- else }}
+        {{- else if .Values.nginx.httpPort.enabled }}
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        {{- end }}
         - containerPort: 443
           name: https
           protocol: TCP
-        {{- end }}
         - containerPort: 8443
           name: webhook
           protocol: TCP
@@ -549,7 +556,7 @@ spec:
             cpu: 100m
             memory: 90Mi
         securityContext:
-          {{- if eq .Values.provider "aws" }} # CHECK WITHOUT
+          {{- if eq .Values.provider "aws" }}
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
           runAsNonRoot: true
