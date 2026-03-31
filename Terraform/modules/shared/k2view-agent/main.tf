@@ -1,7 +1,7 @@
 resource "helm_release" "k2view_agent" {
   name        = "${var.namespace}"
   namespace   = "default"
-  repository  = "https://nexus.share.cloud.k2view.com/repository/k2view-agent/"
+  repository  = "https://helm.share.cloud.k2view.com/k2view-agent/"
   chart       = "k2view-agent"
 
   set {
@@ -105,6 +105,14 @@ resource "helm_release" "k2view_agent" {
     name  = "secrets.AZURE_SPACE_IDENTITY_CLIENT_ID"
     value = "${var.azure_space_identity_client_id}"
   }
+
+  values = var.helm_user_values_json != "" ? [
+    yamlencode({
+      secrets = {
+        HELM_USER_VALUES_JSON = var.helm_user_values_json
+      }
+    })
+  ] : []
 
   timeout           = 600
   force_update      = true

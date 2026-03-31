@@ -1,37 +1,38 @@
-<!-- BEGIN_TF_DOCS -->
+# Azure Storage Account Module
+Creates an Azure Storage account. The account name is derived from the cluster name (hyphens removed) with a `storageacc` suffix.
+
+## Usage
+```hcl
+module "storage_account" {
+  source = "./modules/azure/storage-account"
+
+  cluster_name        = "my-aks-cluster"
+  resource_group_name = "my-resource-group"
+  location            = "West Europe"
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+| azurerm | >= 3.0 |
 
-## Modules
-
-No modules.
+## Providers
+| Name | Version |
+|------|---------|
+| [azurerm](https://registry.terraform.io/providers/hashicorp/azurerm/latest) | >= 3.0 |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [azurerm_storage_account.storage_account](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_account_kind"></a> [account\_kind](#input\_account\_kind) | Storage Account Kind | `string` | `"StorageV2"` | no |
-| <a name="input_account_name"></a> [account\_name](#input\_account\_name) | Storage Account Name | `string` | `""` | no |
-| <a name="input_account_replication_type"></a> [account\_replication\_type](#input\_account\_replication\_type) | Storage Account Replication Type | `string` | `"LRS"` | no |
-| <a name="input_account_tier"></a> [account\_tier](#input\_account\_tier) | Storage Account Tier | `string` | `"Standard"` | no |
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | AKS name in Azure | `string` | `""` | no |
-| <a name="input_location"></a> [location](#input\_location) | Resources location in Azure | `string` | `"West Europe"` | no |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | RG name in Azure | `string` | `""` | no |
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+| cluster_name | AKS cluster name (used to derive the storage account name) | `string` | `""` | no |
+| resource_group_name | Azure resource group name | `string` | `""` | no |
+| location | Azure region for all resources | `string` | `"West Europe"` | no |
+| account_tier | Storage account performance tier (Standard or Premium) | `string` | `"Standard"` | no |
+| account_replication_type | Storage account replication type (e.g. LRS, GRS, ZRS) | `string` | `"LRS"` | no |
+| account_kind | Storage account kind (e.g. StorageV2, BlobStorage) | `string` | `"StorageV2"` | no |

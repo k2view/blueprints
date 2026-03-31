@@ -72,6 +72,6 @@ variable "prod_secondary_cidr_services" {
 # NAT
 variable "nat_subnet_cidr" {
   type        = string
-  description = "Primary CIDR range for a PROD subnet"
+  description = "CIDR range for the NAT subnet"
   default     = "10.130.0.0/20"
 }

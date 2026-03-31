@@ -1,36 +1,40 @@
-<!-- BEGIN_TF_DOCS -->
+# AWS ECR Module
+Creates an ECR repository using the `terraform-aws-modules/ecr/aws` module with a lifecycle policy that retains up to 300,000 tagged images.
+
+## Usage
+```hcl
+module "ecr" {
+  source = "./modules/aws/k8s/ecr"
+
+  repository_name                   = "my-app"
+  repository_read_write_access_arns = [module.irsa.iam_deployer_role_arn]
+  tags = {
+    Env = "prod"
+  }
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
-No providers.
+| Name | Version |
+|------|---------|
+| aws | >= 5.0 |
 
 ## Modules
-
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_ecr"></a> [ecr](#module\_ecr) | terraform-aws-modules/ecr/aws | n/a |
-
-## Resources
-
-No resources.
+| [ecr](https://registry.terraform.io/modules/terraform-aws-modules/ecr/aws/latest) | terraform-aws-modules/ecr/aws | n/a |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_repository_name"></a> [repository\_name](#input\_repository\_name) | The name of the ECR repository. | `string` | n/a | yes |
-| <a name="input_repository_read_write_access_arns"></a> [repository\_read\_write\_access\_arns](#input\_repository\_read\_write\_access\_arns) | A list of IAM ARNs that will have read and write access to the ECR repository. | `list(string)` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to add to the ECR repository. | `map(string)` | `{}` | no |
+| repository_name | ECR repository name | `string` | n/a | yes |
+| repository_read_write_access_arns | IAM ARNs granted read/write access to the repository | `list(string)` | n/a | yes |
+| tags | Tags to apply to the repository | `map(string)` | `{}` | no |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
-| <a name="output_repository_arn"></a> [repository\_arn](#output\_repository\_arn) | The ARN of the ECR repository |
-| <a name="output_repository_name"></a> [repository\_name](#output\_repository\_name) | The name of the ECR repository |
-| <a name="output_repository_registry_id"></a> [repository\_registry\_id](#output\_repository\_registry\_id) | The registry ID of the ECR repository |
-| <a name="output_repository_url"></a> [repository\_url](#output\_repository\_url) | The URL of the ECR repository |
-<!-- END_TF_DOCS -->
+| repository_url | ECR repository URL |
+| repository_arn | ECR repository ARN |
+| repository_name | ECR repository name |
+| repository_registry_id | ECR registry ID |
