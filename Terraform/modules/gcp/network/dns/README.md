@@ -1,34 +1,37 @@
-<!-- BEGIN_TF_DOCS -->
+# GCP Cloud DNS Module
+Creates a public Cloud DNS managed zone with DNSSEC enabled, and two A records (wildcard `*` and root `@`) pointing to a load balancer IP.
+
+## Usage
+```hcl
+module "dns" {
+  source = "./modules/gcp/network/dns"
+
+  project_id = "my-gcp-project"
+  name       = "my-cluster-dns"
+  domain     = "k2view.example.com"
+  lb_ip      = "1.2.3.4"
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
-No providers.
+| Name | Version |
+|------|---------|
+| google | >= 4.0 |
 
 ## Modules
-
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_cloud-dns"></a> [cloud-dns](#module\_cloud-dns) | terraform-google-modules/cloud-dns/google | 5.3.0 |
-
-## Resources
-
-No resources.
+| [cloud-dns](https://registry.terraform.io/modules/terraform-google-modules/cloud-dns/google/latest) | terraform-google-modules/cloud-dns/google | 5.3.0 |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_domain"></a> [domain](#input\_domain) | The domain will be used for ingress | `string` | n/a | yes |
-| <a name="input_lb_ip"></a> [lb\_ip](#input\_lb\_ip) | IP of Load Balancer that point to this cluster. | `string` | n/a | yes |
-| <a name="input_name"></a> [name](#input\_name) | The DNS Zone name | `string` | n/a | yes |
-| <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The project ID to host the network in | `string` | n/a | yes |
+| project_id | GCP project ID | `string` | n/a | yes |
+| domain | Domain name for the Cloud DNS public zone | `string` | n/a | yes |
+| name | Cloud DNS managed zone name | `string` | n/a | yes |
+| lb_ip | IP address of the load balancer to point DNS records at | `string` | n/a | yes |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
-| <a name="output_cloud_dns"></a> [cloud\_dns](#output\_cloud\_dns) | The cloud DNS for the cluster created |
-<!-- END_TF_DOCS -->
+| cloud_dns | Name of the Cloud DNS managed zone |

@@ -1,43 +1,52 @@
-<!-- BEGIN_TF_DOCS -->
+# GCP NAT Instance Module
+Creates a Compute Engine VM acting as a NAT gateway for private GKE nodes that need to reach specific IP ranges (e.g. an on-prem VPN endpoint). Traffic from GKE pods tagged `use-nat` is routed through this instance via a custom route.
+
+This is distinct from Cloud NAT — use this when you need traffic to egress from a static private IP (e.g. for IP whitelisting on the destination side).
+
+## Usage
+```hcl
+module "nat-instance" {
+  source = "./modules/gcp/nat-instance"
+
+  cluster_name = "my-cluster"
+  region       = "europe-west3"
+  vpc          = module.vpc.network_name
+  subnet       = "${var.cluster_name}-nat-subnet-01"
+  dest_range   = "192.168.1.0/24"
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
 | Name | Version |
 |------|---------|
-| <a name="provider_google"></a> [google](#provider\_google) | n/a |
+| google | >= 4.0 |
 
-## Modules
-
-No modules.
+## Providers
+| Name | Version |
+|------|---------|
+| [google](https://registry.terraform.io/providers/hashicorp/google/latest) | >= 4.0 |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [google_compute_address.nat_reserved_private_ip](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_address) | resource |
+| [google_compute_route.nat_instance_route](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_route) | resource |
 | [google_compute_firewall.nat_instance_firewall_traffic](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_firewall) | resource |
 | [google_compute_instance.nat_gateway](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_instance) | resource |
-| [google_compute_route.nat_instance_route](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_route) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the cluster | `string` | `""` | no |
-| <a name="input_dest_range"></a> [dest\_range](#input\_dest\_range) | Destination IP range | `string` | `""` | no |
-| <a name="input_instance_type"></a> [instance\_type](#input\_instance\_type) | The type of the NAT instance | `string` | `"e2-medium"` | no |
-| <a name="input_nat_instance_fw_ports"></a> [nat\_instance\_fw\_ports](#input\_nat\_instance\_fw\_ports) | Ports to open for a NAT instance | `list(string)` | <pre>[<br>  "5432"<br>]</pre> | no |
-| <a name="input_nat_instance_ingress_gke"></a> [nat\_instance\_ingress\_gke](#input\_nat\_instance\_ingress\_gke) | CIDR ranges of GKE pods to allow ingress to NAT instance | `list(string)` | <pre>[<br>  "10.176.0.0/14"<br>]</pre> | no |
-| <a name="input_region"></a> [region](#input\_region) | Region for reserved IP | `string` | `""` | no |
-| <a name="input_subnet"></a> [subnet](#input\_subnet) | The subnet to create the NAT instance in | `string` | `""` | no |
-| <a name="input_vpc"></a> [vpc](#input\_vpc) | VPC for the NAT instance | `string` | `""` | no |
+| cluster_name | GKE cluster name (used for resource naming) | `string` | `""` | no |
+| region | GCP region for the NAT instance | `string` | `""` | no |
+| vpc | VPC network name for the NAT instance | `string` | `""` | no |
+| subnet | Subnet name to deploy the NAT instance into | `string` | `""` | no |
+| dest_range | Destination CIDR range to route through the NAT instance | `string` | `""` | no |
+| instance_type | GCE machine type for the NAT instance | `string` | `"e2-medium"` | no |
+| nat_instance_fw_ports | TCP ports to allow from GKE pods to the NAT instance | `list(string)` | `["5432"]` | no |
+| nat_instance_ingress_gke | CIDR ranges of GKE pods allowed to reach the NAT instance | `list(string)` | `["10.176.0.0/14"]` | no |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
-| <a name="output_nat_reserved_ip"></a> [nat\_reserved\_ip](#output\_nat\_reserved\_ip) | NAT instance reserved IP |
-<!-- END_TF_DOCS -->
+| nat_reserved_ip | Internal IP of the NAT instance (use for VPN or firewall rules on the destination side) |

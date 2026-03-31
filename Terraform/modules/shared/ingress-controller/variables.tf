@@ -1,83 +1,83 @@
 variable "cloud_provider" {
   type        = string
-  description = "The name of the cloud provider."
+  description = "Cloud provider identifier (e.g. 'aws', 'gcp', 'azure'). Passed to the Helm chart as the 'provider' value."
   default     = ""
 }
 
 variable "domain" {
   type        = string
-  description = "the domain will be used for ingress"
+  description = "Base domain used for ingress routing (e.g. 'example.com')."
 }
 
 # SSL cert
 variable "keyPath" {
   type        = string
-  description = "Path to the TLS key file."
-  default = ""
+  description = "Filesystem path to the TLS private key file. Mutually exclusive with keyString/keyb64String."
+  default     = ""
 }
 
 variable "certPath" {
   type        = string
-  description = "Path to the TLS cert file."
-  default = ""
+  description = "Filesystem path to the TLS certificate file. Mutually exclusive with certString/certb64String."
+  default     = ""
 }
 
 variable "keyString" {
   type        = string
-  description = "The TLS key as a string."
-  default = ""
+  description = "TLS private key as a plain-text string. Mutually exclusive with keyPath/keyb64String."
+  default     = ""
 }
 
 variable "certString" {
   type        = string
-  description = "The TLS cert as a string."
-  default = ""
+  description = "TLS certificate as a plain-text string. Mutually exclusive with certPath/certb64String."
+  default     = ""
 }
 
 variable "keyb64String" {
   type        = string
-  description = "The TLS key string in base 64."
-  default = ""
+  description = "TLS private key encoded as a base64 string. Mutually exclusive with keyPath/keyString."
+  default     = ""
 }
 
 variable "certb64String" {
   type        = string
-  description = "The TLS cert string in base 64."
-  default = ""
+  description = "TLS certificate encoded as a base64 string. Mutually exclusive with certPath/certString."
+  default     = ""
 }
 
 variable "delay_command" {
   type        = string
-  description = "The command for delay, the cammand depend on the env the terraform runed on."
-  default     = "sleep 60" #"sleep 60" for linux, for windows is "powershell -Command Start-Sleep -Seconds 60"
+  description = "Shell command used to wait for the ingress controller LoadBalancer to become ready. Use 'sleep 60' on Linux/macOS or 'powershell -Command Start-Sleep -Seconds 60' on Windows."
+  default     = "sleep 60"
 }
 
 variable "enable_private_lb" {
   type        = bool
-  description = "Flag to enable or disable private load balancer IP"
+  description = "When true, the ingress controller LoadBalancer is created with a private (internal) IP instead of a public one."
   default     = false
 }
 
 variable "vpc_cidr" {
   type        = string
-  description = "CIDR range of the network"
-  default     = ""  
+  description = "VPC CIDR block passed to the Helm chart for AWS NLB source-range whitelisting (aws.vpc_cidr). AWS only."
+  default     = ""
 }
 
 variable "aws_domain_cert_arn" {
   type        = string
-  description = "The ARN of the AWS domain certificate."
+  description = "ARN of the AWS ACM certificate to attach to the ingress controller LoadBalancer (aws.awsDomainCert). AWS only."
   default     = ""
 }
 
 variable "tls_enabled" {
   type        = bool
-  description = "Flag to enable or disable TLS"
+  description = "When true, the Helm chart creates a TLS secret (tlsSecret.enabled) and configures HTTPS on the ingress controller."
   default     = true
 }
 
 variable "default_ssl_certificate" {
   type        = bool
-  description = "Flag to enable or disable default SSL certificate"
+  description = "When true, the ingress controller uses the provisioned TLS secret as the default SSL certificate for all ingress resources."
   default     = true
 }

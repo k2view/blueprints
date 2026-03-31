@@ -1,36 +1,36 @@
 variable "cluster_name" {
     type = string
-    description = "The name of the K8S cluster"
+    description = "AKS cluster name"
 }
 
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Azure resource group name"
 }
 
 variable "location" {
   type        = string
-  description = "Resources location in Azure"
+  description = "Azure region for all resources"
   default     = "West Europe"
 }
 
 variable "aks_principal_id" {
     type = string
-    description = "Principal ID of the K8S cluster"
+    description = "Principal ID of the AKS cluster's managed identity"
 }
 
 variable "subnet_id" {
     type = string
-    description = "Virtual network subnet ID"
+    description = "Subnet ID for the AKS cluster"
 }
 
 variable "kubernetes_oidc_issuer_url" {
     type = string
-    description = "K8S OIDC URL"
+    description = "OIDC issuer URL of the AKS cluster (used for workload identity federation)"
 }
 
 variable "k2view_agent_namespace" {
     type = string
-    description = "K2view agent namespace name"
+    description = "Kubernetes namespace for the K2view agent"
     default = "k2view-agent"
 }

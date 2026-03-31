@@ -5,8 +5,10 @@ output "name" {
 
 output "nat_gateway_id" {
     value = azurerm_nat_gateway.aks_nat_gateway[0].id
+    description = "Resource ID of the NAT gateway"
 }
 
 output "route_table_id" {
     value = var.create_route_table ? azurerm_route_table.route_table[0].id : ""
+    description = "Resource ID of the route table (empty string if not created)"
 }
