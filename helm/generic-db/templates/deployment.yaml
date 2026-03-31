@@ -1,4 +1,5 @@
 {{ $namespace := default dict .Values.namespace }}
+{{ $serviceAccount := default dict .Values.serviceAccount }}
 {{ $affinity := default dict .Values.affinity -}}
 {{ $repoSecret := default dict .Values.container.image.repoSecret -}}
 {{ $resource_allocation := default dict .Values.container.resource_allocation}}
@@ -73,6 +74,9 @@ spec:
       {{- if $repoSecret.enabled }}
       imagePullSecrets:
         - name: {{ $repoSecret.name }}
+      {{- end }}
+      {{- if eq (toString $serviceAccount.automountServiceAccountToken) "false" }}
+      automountServiceAccountToken: false
       {{- end }}
       {{- if or (eq $affinity.type "affinity") (eq $affinity.type "anti-affinity") }}
       affinity:
