@@ -1,21 +1,30 @@
-<!-- BEGIN_TF_DOCS -->
+# AWS EBS Storage Class Module
+Creates an IAM policy for the EBS CSI driver, attaches it to the node group role, and deploys an encrypted EBS storage class via Helm.
+
+## Usage
+```hcl
+module "ebs" {
+  source = "./modules/aws/k8s/storage-classes/ebs"
+
+  cluster_name        = "my-eks-cluster"
+  node_group_iam_role = module.eks.node_group_role_arn
+  encrypted           = true
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
-| <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
+| aws | >= 5.0 |
+| helm | >= 2.0 |
 
-## Modules
-
-No modules.
+## Providers
+| Name | Version |
+|------|---------|
+| [aws](https://registry.terraform.io/providers/hashicorp/aws/latest) | >= 5.0 |
+| [helm](https://registry.terraform.io/providers/hashicorp/helm/latest) | >= 2.0 |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [aws_iam_policy.ebs_csi_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
@@ -24,14 +33,8 @@ No modules.
 | [aws_iam_role.node_group_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_role) | data source |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | cluster name | `string` | n/a | yes |
-| <a name="input_encrypted"></a> [encrypted](#input\_encrypted) | Flag to enable or disable EFS module | `bool` | `true` | no |
-| <a name="input_node_group_iam_role"></a> [node\_group\_iam\_role](#input\_node\_group\_iam\_role) | Flag to enable or disable EFS module | `string` | n/a | yes |
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+| cluster_name | EKS cluster name | `string` | n/a | yes |
+| node_group_iam_role | IAM role name of the EKS node group | `string` | n/a | yes |
+| encrypted | Whether to encrypt EBS volumes | `bool` | `true` | no |

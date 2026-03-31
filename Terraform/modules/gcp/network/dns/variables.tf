@@ -1,19 +1,19 @@
 variable "project_id" {
   type        = string
-  description = "The project ID to host the network in"
+  description = "GCP project ID"
 }
 
 variable "domain" {
   type        = string
-  description = "The domain will be used for ingress"
+  description = "Domain name for the Cloud DNS public zone"
 }
 
 variable "name" {
   type        = string
-  description = "The DNS Zone name"
+  description = "Cloud DNS managed zone name"
 }
 
 variable "lb_ip" {
   type        = string
-  description = "IP of Load Balancer that point to this cluster."
+  description = "IP address of the load balancer to point DNS records at"
 }

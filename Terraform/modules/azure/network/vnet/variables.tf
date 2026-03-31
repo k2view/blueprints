@@ -11,41 +11,41 @@ variable "virtual_network_address_space" {
 
 variable "location" {
   type        = string
-  description = "Resources location in Azure"
+  description = "Azure region for all resources"
   default     = "West Europe"
 }
 
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Azure resource group name"
 }
 
 variable "create_nat_gateway" {
   type        = bool
-  description = "Create NAT gateway."
+  description = "Whether to create a NAT gateway for outbound traffic"
   default     = true
 }
 
 variable "create_route_table" {
   type        = bool
-  description = "Create route table as a gateway."
+  description = "Whether to create a route table for user-defined routing"
   default     = false
 }
 
 variable "route_table_address_prefix" {
   type        = string
-  description = "Route table address prefix."
+  description = "Destination CIDR for the outbound route (e.g. 0.0.0.0/0)"
   default     = "0.0.0.0/0"
 }
 
 variable "route_table_next_hop_ip" {
   type        = string
-  description = "IP address of the next hop in the routing table."
+  description = "Next hop IP address for user-defined routing (required when create_route_table is true)"
   default     = ""
 }
 
 variable "tags" {
   type        = map
-  description = "Tags value"
+  description = "Tags to apply to all resources"
   default     = {}
 }

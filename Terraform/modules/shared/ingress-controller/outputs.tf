@@ -10,4 +10,5 @@ output "nginx_lb_ip" {
 
 output "lb_dns_name" {
   value = data.kubernetes_service.nginx_controller_svc.status.0.load_balancer.0.ingress.0.hostname
+  description = "The DNS name of the load balancer for the Nginx ingress controller, if available."
 }

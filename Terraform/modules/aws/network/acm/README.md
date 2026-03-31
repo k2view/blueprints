@@ -1,27 +1,12 @@
-<!-- BEGIN_TF_DOCS -->
+# AWS ACM Module
+Provisions an ACM certificate using the `terraform-aws-modules/acm/aws` module (~> 4.0).
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
-No providers.
+| Name | Version |
+|------|---------|
+| aws | >= 5.0 |
 
 ## Modules
-
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_acm"></a> [acm](#module\_acm) | terraform-aws-modules/acm/aws | ~> 4.0 |
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+| [acm](https://registry.terraform.io/modules/terraform-aws-modules/acm/aws/latest) | terraform-aws-modules/acm/aws | ~> 4.0 |

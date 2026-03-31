@@ -6,7 +6,7 @@ module "acm" {
 
   # Set the primary domain name for the SSL/TLS certificate
   domain_name  = "my-domain.com"
-  zone_id      = "Z2ES7B9AZ6SHAE"
+  zone_id      = "Z....AE"
 
   validation_method = "DNS"
 
