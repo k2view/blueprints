@@ -32,8 +32,6 @@ The `generic-db` Helm chart is a reference example of a unified and configurable
 |-----|------|---------|-------------|
 | `create_secrets` | bool | `true` | Whether to create default secrets |
 | `secrets` | array | `[]` | List of custom secrets to create |
-| `secrets.annotations` | array | `[]` | Resource-specific annotations for secret |
-| `secrets.labels` | array | `[]` | Resource-specific labels for secret |
 
 ### Storage Configuration
 | Key | Type | Default | Description |
