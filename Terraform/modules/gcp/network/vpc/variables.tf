@@ -40,13 +40,13 @@ variable "secondary_cidr_services" {
 
 variable "nat_subnet_cidr" {
   type        = string
-  description = "Primary CIDR range for a PROD subnet"
+  description = "CIDR range for the NAT subnet"
   default     = "10.133.0.0/26"
 }
 
 variable "gcp_console_access_cidr" {
   type        = string
-  description = "GCP CIDR range for accessing "
+  description = "GCP Cloud Shell CIDR range allowed for SSH access to the NAT instance"
   default     = "35.235.240.0/20"
 }
 

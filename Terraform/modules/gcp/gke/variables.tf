@@ -1,87 +1,87 @@
 variable "project_id" {
   type        = string
-  description = "The project ID to host the network in"
+  description = "GCP project ID"
 }
 
 variable "region" {
   type        = string
-  description = "The GCP region"
+  description = "GCP region for the cluster"
   default     = "europe-west3"
 }
 
 variable "cluster_name" {
   type        = string
-  description = "The name of the GKE cluster"
+  description = "GKE cluster name"
 }
 
 variable "regional" {
   type        = bool
-  description = "A boolean flag to control whether GKE cluster is regional or zonal"
+  description = "Whether the cluster is regional (true) or zonal (false)"
   default     = true
 }
 
 variable "network_name" {
   type        = string
-  description = "The name of the network"
+  description = "VPC network name to deploy the cluster into"
   default     = ""
 }
 
 variable "subnet_name" {
   type        = string
-  description = "The name of the network"
+  description = "Subnet name to deploy the cluster into"
   default     = ""
 }
 
 variable "kubernetes_version" {
   type        = string
-  description = "Kubernetes version of the GKE cluster"
-  default     = "1.28"
+  description = "Kubernetes version for the GKE cluster"
+  default     = "1.34"
 }
 
 variable "machine_type" {
   type        = string
-  description = "The GCP VM type for cluster workers"
+  description = "GCE machine type for worker nodes"
   default     = "e2-highmem-4"
 }
 
 variable "min_node" {
   type        = number
-  description = "The minimum workers up"
+  description = "Minimum number of worker nodes per zone"
   default     = 1
 }
 
 variable "max_node" {
   type        = number
-  description = "The maximum workers up"
+  description = "Maximum number of worker nodes per zone"
   default     = 3
 }
 
 variable "initial_node_count" {
   type        = number
-  description = "The initial workers up"
+  description = "Initial number of worker nodes per zone"
   default     = 1
 }
 
 variable "disk_size_gb" {
   type        = number
-  description = "The disk size for cluster workers"
+  description = "Boot disk size in GB for worker nodes"
   default     = 500
 }
 
 variable "disk_type" {
   type        = string
-  description = "The disk type for cluster workers"
+  description = "Boot disk type for worker nodes (e.g. pd-standard, pd-ssd)"
   default     = "pd-standard"
 }
 
 variable "storage_class_type" {
   type        = string
-  description = "The type of the storage class"
+  description = "GCP persistent disk type for the default storage class (e.g. pd-balanced, pd-ssd)"
   default     = "pd-balanced"
 }
 
 variable "zones" {
   type        = list(string)
-  description = "Zones for GKE master and worker nodes"
+  description = "Zone suffixes for GKE nodes (e.g. [\"a\", \"b\"] → europe-west3-a, europe-west3-b)"
   default     = ["a", "b"]
 }

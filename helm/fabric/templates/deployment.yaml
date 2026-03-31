@@ -75,6 +75,9 @@ spec:
           {{- else if $serviceAccount.create | default false }}
           serviceAccountName: {{ $serviceAccountName }}-sa
           {{- end }}
+          {{- if eq (toString $serviceAccount.automountServiceAccountToken) "false" }}
+          automountServiceAccountToken: false
+          {{- end }}
           {{- if or (eq $affinity.type "affinity") (eq $affinity.type "anti-affinity") }}
           affinity:
             {{- if eq $affinity.type "affinity" }}

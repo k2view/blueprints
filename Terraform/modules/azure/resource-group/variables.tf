@@ -1,22 +1,22 @@
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Azure resource group name"
 }
 
 variable "create_resource_group" {
   type        = bool
-  description = "Create RG name in Azure"
+  description = "Whether to create the resource group (set to false to use an existing one)"
   default     = true
 }
 
 variable "location" {
   type        = string
-  description = "Resources location in Azure"
+  description = "Azure region for all resources"
   default     = "West Europe"
 }
 
 variable "tags" {
   type        = map
-  description = "Tags value"
+  description = "Tags to apply to all resources"
   default     = { Env = "Dev", Owner = "k2view", Project = "k2vDev" }
 }

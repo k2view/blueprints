@@ -1,6 +1,6 @@
 resource "azurerm_kubernetes_cluster" "aks_cluster" {
   name                    = var.cluster_name
-  sku_tier                = "Standard"
+  sku_tier                = var.sku_tier
   location                = var.location
   resource_group_name     = var.resource_group_name
   dns_prefix              = var.cluster_name
@@ -12,7 +12,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     node_count           = var.system_node_count
     vm_size              = var.vm_sku # "Standard_D8s_v3"
     type                 = "VirtualMachineScaleSets"
-    zones                = [1,]
+    zones                = var.zones
     max_count            = var.max_size
     min_count            = var.min_size
     auto_scaling_enabled = true

@@ -1,20 +1,30 @@
-<!-- BEGIN_TF_DOCS -->
+# Azure Subnet Module
+Creates an Azure subnet within an existing VNet and associates it with a NAT gateway and optionally a route table.
+
+## Usage
+```hcl
+module "subnet" {
+  source = "./modules/azure/network/subnet"
+
+  prefix_name             = "myCluster"
+  resource_group_name     = "my-resource-group"
+  vnet_name               = module.vnet.name
+  subnet_address_prefixes = "10.240.0.0/16"
+  nat_gateway_id          = module.vnet.nat_gateway_id
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+| azurerm | >= 3.0 |
 
-## Modules
-
-No modules.
+## Providers
+| Name | Version |
+|------|---------|
+| [azurerm](https://registry.terraform.io/providers/hashicorp/azurerm/latest) | >= 3.0 |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [azurerm_subnet.aks_subnet](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) | resource |
@@ -22,20 +32,17 @@ No modules.
 | [azurerm_subnet_route_table_association.subnet_route_table_assoc](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_route_table_association) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_create_route_table"></a> [create\_route\_table](#input\_create\_route\_table) | Create route table as a gateway. | `bool` | `false` | no |
-| <a name="input_nat_gateway_id"></a> [nat\_gateway\_id](#input\_nat\_gateway\_id) | NAT Gateway ID | `string` | `""` | no |
-| <a name="input_prefix_name"></a> [prefix\_name](#input\_prefix\_name) | Prefix for network names | `string` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | RG name in Azure | `string` | n/a | yes |
-| <a name="input_route_table_id"></a> [route\_table\_id](#input\_route\_table\_id) | Route Table ID | `string` | `""` | no |
-| <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes) | Virtual network subnet address prefixes CIDR | `string` | `"10.240.0.0/16"` | no |
-| <a name="input_vnet_name"></a> [vnet\_name](#input\_vnet\_name) | Virtual Network Name | `string` | n/a | yes |
+| prefix_name | Prefix applied to all network resource names | `string` | n/a | yes |
+| resource_group_name | Azure resource group name | `string` | n/a | yes |
+| vnet_name | Name of the virtual network to create the subnet in | `string` | n/a | yes |
+| subnet_address_prefixes | Subnet address space in CIDR notation | `string` | `"10.240.0.0/16"` | no |
+| nat_gateway_id | Resource ID of the NAT gateway to associate with the subnet | `string` | `""` | no |
+| create_route_table | Whether to associate a route table with the subnet | `bool` | `false` | no |
+| route_table_id | Resource ID of the route table to associate with the subnet | `string` | `""` | no |
 
 ## Outputs
-
 | Name | Description |
 |------|-------------|
-| <a name="output_subnet_id"></a> [subnet\_id](#output\_subnet\_id) | n/a |
-<!-- END_TF_DOCS -->
+| subnet_id | Resource ID of the created subnet |

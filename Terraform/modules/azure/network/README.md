@@ -1,25 +1,9 @@
-<!-- BEGIN_TF_DOCS -->
-## Requirements
+# Azure Network Modules
+Collection of Terraform modules for provisioning Azure networking resources for AKS clusters.
 
-No requirements.
-
-## Providers
-
-No providers.
-
-## Modules
-
-No modules.
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+| Module | Description |
+|--------|-------------|
+| [private-network](./private-network/) | Full network stack: VNet, subnet, NAT gateway, and optional route table |
+| [vnet](./vnet/) | Virtual network with NAT gateway and optional route table (no subnet) |
+| [subnet](./subnet/) | Subnet within an existing VNet, with NAT gateway and route table associations |
+| [dns](./dns/) | Public DNS zone with wildcard and root A records |
