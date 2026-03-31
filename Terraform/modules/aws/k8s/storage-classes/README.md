@@ -1,25 +1,7 @@
-<!-- BEGIN_TF_DOCS -->
-## Requirements
+# AWS Storage Classes
+Terraform modules for provisioning Kubernetes storage classes on EKS.
 
-No requirements.
-
-## Providers
-
-No providers.
-
-## Modules
-
-No modules.
-
-## Resources
-
-No resources.
-
-## Inputs
-
-No inputs.
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+| Module | Description |
+|--------|-------------|
+| [ebs](./ebs/) | EBS gp3 storage class with CSI driver IAM policy |
+| [efs](./efs/) | EFS file system with CSI driver, IAM role, and storage classes for fabric, Cassandra, and PostgreSQL |

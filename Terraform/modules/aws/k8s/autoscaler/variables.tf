@@ -1,12 +1,14 @@
 variable "cluster_name" {
   type        = string
+  description = "EKS cluster name"
 }
 
 variable "region" {
   type        = string
+  description = "AWS region where the EKS cluster is deployed"
 }
 
 variable "role" {
-  description = "The ARN of the IAM role to attach the policy to"
+  description = "IAM role name to attach the cluster autoscaler policy to"
   type        = string
 }
