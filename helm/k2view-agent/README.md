@@ -25,13 +25,6 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | namespace.create | bool | `true` | Create new namespace for agent. |
 | container.securityContext | bool | `true` | Enable security context for the container (supported only for k2view-agent version 2.11 and above). |
 | container.image.url | string | `"docker.share.cloud.k2view.com/k2view/k2v-agent:2.11"` | URL for the K2view agent Docker image. |
-| container.image.pullPolicy | string | `"IfNotPresent"` | Image pull policy for the container. |
-| container.image.addDockerRegistry | bool | `false` | Set true if you want to pull image from external repo, set false if your Kubernetes already have access to the repo. |
-| container.image.dockerRegistrySecret | string | `"registry-secret"` | Name of the repository secret for private registry. |
-| container.resources.requests.cpu | string | `"0.1"` | Agent container CPU requests. |
-| container.resources.requests.memory | string | `"128Mi"` | Agent container memory requests. |
-| container.resources.limits.cpu | string | `"0.4"` | Agent container CPU limit. |
-| container.resources.limits.memory | string | `"256Mi"` | Agent container memory limit. |
 | container.affinity.type | string | `"none"` | Affinity type: "affinity", "anti-affinity", or "none". |
 | container.affinity.label.name | string | `"topology.kubernetes.io/zone"` | Node label name for affinity rules. |
 | container.affinity.label.value | string | `"region-a"` | Node label value for affinity rules. |
@@ -43,12 +36,6 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | secrets.REGION | string | `""` | Cloud region. |
 | secrets.SPACE_SA_ARN | string | `""` | For AWS only, IAM role ARN attached to the Kubernetes fabric namespace service account. |
 | secrets.PROJECT | string | `""` | GCP project. |
-| secrets.GCP_CONF_FILE | string | `""` | GCP service account json (in case used service account access mode). |
-| secrets.AGENT_PROXY_HOST | string | `""` | The proxy host used for outbound connectivity, if required. |
-| secrets.AGENT_PROXY_PORT | string | `""` | The proxy port used for outbound connectivity, if required. |
-| secrets_from_file | object | `{}` | Configuration for secrets loaded from files. |
-| secrets_from_file.TLS_KEY_PATH | string | `""` | Path to TLS private key file (will be base64 encoded twice). |
-| secrets_from_file.TLS_CERT_PATH | string | `""` | Path to TLS certificate file (will be base64 encoded twice). |
 | externalSecrets | list | `[]` | List of secrets to point environment variables to, used for secrets that not deployed by this helm, list of {secretName, key, varName}. |
 | serviceAccount.name | string | `"k2view-agent"` | Service account name for agent. |
 | serviceAccount.create | bool | `true` | Controls the creation of Kubernetes RBAC resources for the agent. When `true`, creates ServiceAccount, ClusterRole, ClusterRoleBinding, and a Secret containing the service account token. The agent pod automatically uses the kubeToken environment variable from this secret. When `false`, no RBAC resources are created and you must manually provide the `kubeToken` secret for the agent. |
@@ -57,6 +44,7 @@ Below is a table detailing the various configurable parameters for the K2view ag
 | serviceAccount.arn | string | `""` | For AWS only, deployer IAM role ARN, attached to Kubernetes agent namespace service account. |
 | serviceAccount.gcp_service_account_name | string | `""` | For GCP only, service account name. |
 | serviceAccount.project_id | string | `""` | For GCP only, project id. |
+| serviceAccount.azure_client_id | string | `""` | For Azure only, client ID of the managed identity. |
 | serviceAccount.role.rules | list | See values.yaml | List of rules for Cluster role. |
 | customCACerts | object |  | A map of custom CA certificate files to be added to the trust store. Keys are used filenames (e.g., `company-rootca-1.crt`), and values are the certificate contents in PEM format. |
 
@@ -132,37 +120,38 @@ This chart requires a ServiceAccount with the following Kubernetes RBAC permissi
 #### Space Creation & Deletion
 Required to create or delete a space (namespace) and its associated resources.
 
-| Resources                                                                 | Verbs                             |
-|---------------------------------------------------------------------------|-----------------------------------|
-| `namespaces`, `services`, `persistentvolumeclaims`, `secrets`, `serviceaccounts`, `ingresses`, `networkpolicies` | `create`, `delete`, `get`, `list` |
-| `horizontalpodautoscalers`                                               | `create`, `delete`, `get`, `list`, `patch` |
+| Resources | Verbs |
+|-----------|-------|
+| `namespaces`, `services`, `persistentvolumeclaims` | `create`, `delete`, `get`, `list` |
+| `configmaps`, `secrets`, `serviceaccounts` | `create`, `delete`, `get`, `list`, `patch` |
+| `deployments`, `statefulsets` | `create`, `delete`, `get`, `list`, `patch` |
+| `ingresses`, `networkpolicies` | `create`, `delete`, `get` |
+| `ciliumnetworkpolicies` | `create`, `delete`, `get`, `list` |
+| `horizontalpodautoscalers` | `create`, `delete`, `get`, `list`, `patch` |
 
 #### Project Deployment
 Required to deploy Fabric project using Kubernetes Jobs.
 
-| Resources              | Verbs                             |
-|------------------------|-----------------------------------|
-| `jobs`, `jobs/status`  | `create`, `delete`, `get`, `list` |
+| Resources | Verbs |
+|-----------|-------|
+| `jobs`, `jobs/status` | `create`, `delete`, `get`, `list` |
 
-#### Cloud orchestrator Operations
+#### Cloud Orchestrator Operations
 Required for environment management and inspection.
 
-| Resources                                                                 | Verbs                  |
-|---------------------------------------------------------------------------|------------------------|
-| `pods`, `pods/log`                                                        | `delete`, `get`, `list`|
-| `nodes`                                                                   | `get`, `list`          |
-| `events`                                                                  | `list`                 |
-| `storageclasses`                                                          | `get`, `list`          |
-| `namespaces`, `services`, `persistentvolumeclaims`                        | `get`, `list`          |
-| `configmaps`, `secrets`, `serviceaccounts`                                | `get`, `list`, `patch` |
-| `deployments`, `statefulsets`                                             | `get`, `list`, `patch` |
+| Resources | Verbs |
+|-----------|-------|
+| `pods`, `pods/log` | `delete`, `get`, `list` |
+| `nodes` | `get`, `list` |
+| `events` | `list` |
+| `storageclasses` | `get`, `list` |
 
 #### Central Monitoring Integration (K2View Sites Only)
 Required to manage custom monitoring resources.
 
-| Resources       | Verbs                |
-|-----------------|----------------------|
-| `podmonitors`   | `create`, `delete`   |
+| Resources | Verbs |
+|-----------|-------|
+| `podmonitors` | `create`, `delete` |
 
 
 ## Installation
@@ -175,24 +164,24 @@ cd blueprints/helm/k2view-agent/
 
 2. Install
 ```bash
-helm install k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
+helm install k2view-agent . --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID"
 ```
 
 ### Helm
 #### Install
 1. Add repo
 ```bash
-helm repo add k2view-agent https://nexus.share.cloud.k2view.com/repository/k2view-agent
+helm repo add k2view-agent https://helm.share.cloud.k2view.com/k2view-agent/
 ```
 
 2. Install
 ```bash
-helm install k2view-agent/k2view-agent k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" .
+helm install k2view-agent k2view-agent/k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID"
 ```
 
 #### Upgrade
 ```bash
-helm upgrade k2view-agent/k2view-agent k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" --set container.image.url="docker.share.cloud.k2view.com/k2view/k2v-agent:VERSION" .
+helm upgrade k2view-agent k2view-agent/k2view-agent --set secrets.K2_MAILBOX_ID="MY-MAILBOX-ID" --set container.image.url="docker.share.cloud.k2view.com/k2view/k2v-agent:VERSION"
 ```
 
 ## Additional Resources

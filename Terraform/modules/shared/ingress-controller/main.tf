@@ -1,7 +1,7 @@
 resource "helm_release" "ingress-nginx" {
   name    = "ingress-nginx-controller"
   namespace   = "default"
-  repository  = "https://nexus.share.cloud.k2view.com/repository/nginx-ingress-controller/"
+  repository  = "https://helm.share.cloud.k2view.com/nginx-ingress-controller/"
   chart   = "nginx-ingress-controller"
 
   set {
