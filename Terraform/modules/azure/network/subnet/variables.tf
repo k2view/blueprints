@@ -5,34 +5,34 @@ variable "prefix_name" {
 
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Azure resource group name"
 }
 
 variable "vnet_name" {
   type        = string
-  description = "Virtual Network Name"
+  description = "Name of the virtual network to create the subnet in"
 }
 
 variable "subnet_address_prefixes" {
   type        = string
-  description = "Virtual network subnet address prefixes CIDR"
+  description = "Subnet address space in CIDR notation"
   default     = "10.240.0.0/16"
 }
 
 variable "nat_gateway_id" {
   type        = string
-  description = "NAT Gateway ID"
+  description = "Resource ID of the NAT gateway to associate with the subnet"
   default     = ""
 }
 
 variable "create_route_table" {
   type        = bool
-  description = "Create route table as a gateway."
+  description = "Whether to associate a route table with the subnet"
   default     = false
 }
 
 variable "route_table_id" {
   type        = string
-  description = "Route Table ID"
+  description = "Resource ID of the route table to associate with the subnet"
   default     = ""
 }

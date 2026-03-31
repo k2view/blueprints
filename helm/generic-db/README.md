@@ -1,5 +1,5 @@
 # generic-db
-![Version: 1.1.8](https://img.shields.io/badge/Version-1.1.8-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 1.1.9](https://img.shields.io/badge/Version-1.1.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 Example Helm chart that deploys a generic database, such as PostgreSQL, Cassandra, or Neo4j, on Kubernetes.
 
@@ -14,6 +14,7 @@ The `generic-db` Helm chart is a reference example of a unified and configurable
 | `namespace.name` | string | `""` | Name of the Kubernetes namespace (defaults to release name) |
 | `annotations` | array | `[]` | Global annotations applied to all resources |
 | `labels` | array | `[]` | Global labels applied to all resources |
+| `serviceAccount.automountServiceAccountToken` | bool | `""` | Set to `false` to explicitly disable automounting the service account token. When not set, Kubernetes defaults to `true` |
 
 ### Container Configuration
 | Key | Type | Default | Description |
@@ -32,8 +33,6 @@ The `generic-db` Helm chart is a reference example of a unified and configurable
 |-----|------|---------|-------------|
 | `create_secrets` | bool | `true` | Whether to create default secrets |
 | `secrets` | array | `[]` | List of custom secrets to create |
-| `secrets.annotations` | array | `[]` | Resource-specific annotations for secret |
-| `secrets.labels` | array | `[]` | Resource-specific labels for secret |
 
 ### Storage Configuration
 | Key | Type | Default | Description |

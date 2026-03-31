@@ -1,32 +1,33 @@
-<!-- BEGIN_TF_DOCS -->
+# GCP Storage Class Module
+Deploys a GCP Persistent Disk storage class to a GKE cluster via Helm.
+
+## Usage
+```hcl
+module "storage-class" {
+  source = "./modules/gcp/storage-class"
+
+  region             = "europe-west3"
+  storage_class_type = "pd-balanced"
+}
+```
+
 ## Requirements
-
-No requirements.
-
-## Providers
-
 | Name | Version |
 |------|---------|
-| <a name="provider_helm"></a> [helm](#provider\_helm) | n/a |
+| helm | >= 2.0 |
 
-## Modules
-
-No modules.
+## Providers
+| Name | Version |
+|------|---------|
+| [helm](https://registry.terraform.io/providers/hashicorp/helm/latest) | >= 2.0 |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [helm_release.gcp-pd-storage-class](https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_region"></a> [region](#input\_region) | The GCP region | `string` | `"europe-west3"` | no |
-| <a name="input_storage_class_type"></a> [storage\_class\_type](#input\_storage\_class\_type) | The type of the storage class | `string` | `"pd-balanced"` | no |
-
-## Outputs
-
-No outputs.
-<!-- END_TF_DOCS -->
+| region | GCP region for the storage class | `string` | `"europe-west3"` | no |
+| storage_class_type | GCP persistent disk type (e.g. pd-balanced, pd-ssd, pd-standard) | `string` | `"pd-balanced"` | no |

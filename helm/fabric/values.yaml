@@ -23,7 +23,7 @@ deploy:
 
 # ServiceAccount settings (IAM integration)
 serviceAccount:
-  create: true  # Create new ServiceAccount if true
+  create: true  # Create new ServiceAccount if true, else use existing one
   name: ""      # Existing ServiceAccount name if create is false
   provider: ""  # aws | gcp | azure
   arn: ""       # AWS IAM Role ARN

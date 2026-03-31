@@ -3,10 +3,11 @@ variable "eks_cluster_name" {
   description = "The name of the EKS cluster."
 
 }
+
 variable "eks_cluster_version" {
   type        = string
   description = "The version of the EKS cluster."
-  default     = "1.30"
+  default     = "1.34"
 }
 
 variable "eks_cluster_endpoint_public_access" {
@@ -107,33 +108,39 @@ variable "authentication_mode" {
 }
 
 variable "capacity_type" {
-  type    = string
-  default = "ON_DEMAND"
+  type        = string
+  description = "Node group capacity type (ON_DEMAND or SPOT)"
+  default     = "ON_DEMAND"
 }
 
 variable "disk_size" {
-  type    = number
-  default = 100
+  type        = number
+  description = "Root EBS volume size in GB for worker nodes"
+  default     = 100
 }
 
 variable "disk_type" {
-  type    = string
-  default = "gp3"
+  type        = string
+  description = "Root EBS volume type for worker nodes (e.g. gp3, io1)"
+  default     = "gp3"
 }
 
 variable "disk_iops" {
-  type    = number
-  default = 3000
+  type        = number
+  description = "IOPS for the root EBS volume (applicable for io1/gp3)"
+  default     = 3000
 }
 
 variable "disk_throughput" {
-  type    = number
-  default = 125
+  type        = number
+  description = "Throughput in MB/s for the root EBS volume (gp3 only)"
+  default     = 125
 }
 
 variable "disk_encryption_enabled" {
-  type    = bool
-  default = true
+  type        = bool
+  description = "Whether to encrypt root EBS volumes"
+  default     = true
 }
 variable "custom_kms_key_arn" {
   description = "The ARN of the KMS key to use for EBS encryption. If not provided, the default EBS encryption key will be used."

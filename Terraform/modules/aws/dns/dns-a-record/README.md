@@ -1,40 +1,38 @@
-<!-- BEGIN_TF_DOCS -->
-## Providers
+# AWS DNS A Record Module
+Creates two Route 53 A records (alias) pointing to a Network Load Balancer: one for the exact domain and one wildcard (`*.domain`).
 
+## Usage
+```hcl
+module "dns-a-record" {
+  source = "./modules/aws/dns/dns-a-record"
+
+  domain       = "k2view.example.com"
+  zone_id      = module.dns-hosted-zone.hz_zone_id
+  nlb_dns_name = module.ingress-controller.lb_dns_name
+  nlb_zone_id  = data.aws_lb.nginx-nlb.zone_id
+}
+```
+
+## Requirements
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| aws | >= 5.0 |
+
+## Providers
+| Name | Version |
+|------|---------|
+| [aws](https://registry.terraform.io/providers/hashicorp/aws/latest) | >= 5.0 |
 
 ## Resources
-
 | Name | Type |
 |------|------|
 | [aws_route53_record.record_to_nlb](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.record_to_nlb_wildCard](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 
 ## Inputs
-
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_domain"></a> [domain](#input\_domain) | Subdomain for rout53. | `string` | n/a | yes |
-| <a name="input_nlb_dns_name"></a> [nlb\_dns\_name](#input\_nlb\_dns\_name) | nlb dns name. | `string` | n/a | yes |
-| <a name="input_nlb_zone_id"></a> [nlb\_zone_id](#input\_nlb\_zone_id) | hosted zone id to create a record on | `string` | n/a | yes |
-| <a name="input_zone_id"></a> [zone\_id](#input\_zone_id) | hosted zone id to create a record on | `string` | n/a | yes |
-
-## Usage
-
-To use the `dns-a-record` module within a parent module, include the following configuration:
-
-```hcl
-module "dns-a-record" {
-  depends_on   = [data.aws_lb.nginx-nlb]
-  source       = "../modules/aws/dns/dns-a-record"
-  count        = var.domain != "" ? 1 : 0
-  domain       = var.domain
-  zone_id      = module.dns-hosted-zone[0].hz_zone_id
-  nlb_dns_name = module.ingress-controller.lb_dns_name
-  nlb_zone_id  = data.aws_lb.nginx-nlb.zone_id
-}
-```
-Make sure to replace the source path with the correct relative path to the dns-a-record module and provide the necessary variables (domain, zone_id, nlb_dns_name, and nlb_zone_id).
-<!-- END_TF_DOCS -->
+| domain | Domain name for the Route 53 A record | `string` | n/a | yes |
+| zone_id | Route 53 hosted zone ID where the records will be created | `string` | n/a | yes |
+| nlb_dns_name | DNS name of the Network Load Balancer to alias | `string` | n/a | yes |
+| nlb_zone_id | Hosted zone ID of the Network Load Balancer (used for alias routing) | `string` | n/a | yes |
