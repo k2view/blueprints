@@ -124,6 +124,7 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `serviceAccount.project_id` | string | `""` | GCP project ID |
 | `serviceAccount.cluster_name` | string | `""` | Cluster name |
 | `serviceAccount.azure_client_id` | string | `""` | Azure Managed Identity client ID |
+| `serviceAccount.automountServiceAccountToken` | bool | `""` | Set to `false` to explicitly disable automounting the service account token. When not set, Kubernetes defaults to `true` |
 | `serviceAccount.annotations` | array | `[]` | Resource-specific annotations for service account |
 | `container.replicas` | int | `1` | Number of Fabric pods |
 | `container.annotationsList` | list | `[{{name: description, value: Fabric on Kubernetes}}]` | List of pod annotations |
