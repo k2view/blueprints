@@ -177,7 +177,7 @@ mountSecret:
 mountSecretB64enc:
     name: mount-b64-secrets
     enabled: false # true for mount the secret on fabric pod, false for mount only on init container
-    mountPath: /opt/apps/fabric/config-secrets
+    mountPath: /opt/apps/fabric/mount-b64-secrets
     data:
       placeholder: ''
 
@@ -189,7 +189,7 @@ secretsList:
       PROJECT_ID: ''
       PROJECT_NAME: ''
       SPACE_NAME: ''
-      MAX_HEAP: '10Gi'
+      MAX_HEAP: '10G'
 
 
 # Init Secrets Environment Variables Settings

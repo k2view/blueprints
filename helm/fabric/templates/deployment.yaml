@@ -1,4 +1,3 @@
-{{ $namespace := default dict .Values.namespace }}
 {{ $deploy := default dict .Values.deploy }}
 {{ $type := default "StatefulSet" $deploy.type }}
 {{ $global := default dict .Values.global }}
@@ -7,7 +6,7 @@
 {{ $global_annotations := default (list) $global.annotations }}
 {{ $annotations := default (list) .Values.annotations }}
 {{ $serviceAccount := default dict .Values.serviceAccount }}
-{{ $serviceAccountName := default .Release.Name (default $namespace.name $serviceAccount.name) }}
+{{ $serviceAccountName := default (include "fabric.namespace" .) $serviceAccount.name }}
 {{ $storage := default dict .Values.storage }}
 {{ $container := default dict .Values.container }}
 {{ $container_labels := default (list) $container.labels }}
@@ -30,7 +29,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: fabric-deployment
-  namespace: {{ default .Release.Name $namespace.name }}
+  namespace: {{ include "fabric.namespace" . }}
   labels: &id001
     app: fabric
     {{- range $label := $labels }}
@@ -119,7 +118,7 @@ spec:
                 cpu: {{ $requests.cpu | default "1" }}
             env:
             - name: NAMESPACE
-              value: {{ default .Release.Name $namespace.name }}
+              value: {{ include "fabric.namespace" . }}
             # common secrets
             {{- range $secret := $secretsList }}
             {{- range $key, $value := $secret.data }}
@@ -181,7 +180,7 @@ spec:
                 cpu: {{ $requests.cpu | default "1" }}
             env:
             - name: NAMESPACE
-              value: {{ default .Release.Name $namespace.name }}
+              value: {{ include "fabric.namespace" . }}
             {{- range $secret := $secretsList }}
             {{- range $key, $value := $secret.data }}
             {{- if not (empty $value) }}

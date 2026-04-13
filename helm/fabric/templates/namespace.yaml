@@ -10,7 +10,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: {{ default .Release.Name $namespace.name }}
+  name: {{ include "fabric.namespace" . }}
   labels:
     app: fabric
     {{- range $label := $labels }}
@@ -19,7 +19,7 @@ metadata:
     {{- range $label := $global_labels }}
     {{ $label.name }}: {{ $label.value }}
     {{- end }}
-    subdomain: {{ default .Release.Name $namespace.name }}
+    subdomain: {{ include "fabric.namespace" . }}
   {{- if or $global_annotations $namespace_annotations $annotations }}
   annotations:
     {{- range $annotation := $global_annotations }}
