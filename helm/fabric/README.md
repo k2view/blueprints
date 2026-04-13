@@ -1,11 +1,10 @@
 # Fabric Helm Chart
-![Version: 1.2.32](https://img.shields.io/badge/Version-1.2.32-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
+![Version: 1.2.33](https://img.shields.io/badge/Version-1.2.33-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
 
 ## Overview
-The Fabric Helm chart provides a robust, production-ready deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, security, and ease of use, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments, and is maintained with best practices for reliability and scalability.
+The Fabric Helm chart provides a deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments.
 
 ## Table of Contents
-- [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [1. Add the Helm Repository (Remote Installation)](#1-add-the-helm-repository-remote-installation)
@@ -31,77 +30,64 @@ The Fabric Helm chart provides a robust, production-ready deployment of the Fabr
 - [Support](#support)
 
 
-
-## Features
-- **Configurable Deployments:** Easily customize replicas, resources, and environment variables.
-- **Production-Ready Defaults:** Secure and scalable out-of-the-box settings.
-- **Global Labels and Annotations:** Apply consistent labels and annotations across all Kubernetes resources for better organization, monitoring, and compliance.
-- **Support for Ingress:** Integrate with popular ingress controllers for external access, including:
-  - **NGINX Ingress Controller** (default, fully supported)
-  - **AWS ALB Ingress Controller** (annotation changes may be required).
-  - **Azure Application Gateway Ingress Controller (AGIC)** (annotation changes may be required)
-  - **GCE Ingress Controller** (annotation changes may be required)
-  
-  > Note: Some ingress controllers may require minor changes to annotations or configuration. Refer to the documentation of your chosen ingress controller for details.
-- **Persistent Storage:** Optional persistent volume claims for data durability.
-- **Customizable Service Exposure:** Choose between ClusterIP, NodePort, or LoadBalancer.
-- **Health Checks:** Liveness, readiness and startup probes for robust operation.
-- **Resource Management:** Fine-grained control over CPU and memory requests/limits.
-- **Secrets Management:** Integrate with Kubernetes secrets for sensitive data.
-- **Extensible:** Easily override or extend with your own values files.
-
 ## Prerequisites
-- Kubernetes 1.27+
+- Kubernetes 1.30+
 - Helm 3.0+
 - Ingress controller (e.g., NGINX)
 
 ## Installation
-### 1. Add the Helm Repository (Remote Installation)
 
+> **Recommended:** Review the [values.yaml](values.yaml) file and use a custom values file (`-f my-values.yaml`) for your installation. While individual parameters can be passed via `--set`, using a values file provides better visibility and reproducibility.
+> **Recommended:** parameters include `namespace.name`, `container.image.url`, and `storage.class`. Ensure these are set either in your values file or via `--set` flags.
+
+### 1. Add the Helm Repository
 ```sh
-helm repo add fabric https://nexus.share.cloud.k2view.com/repository/fabric/
+helm repo add fabric https://helm.share.cloud.k2view.com/fabric/
 helm repo update
 ```
 
-### 2. Install the Chart from Remote Repository
+### 2. Install the Chart
 
+**Using a values file (recommended):**
 ```sh
+# From remote repository
 helm install SPACE_NAME fabric/fabric \
   --namespace SPACE_NAME \
+  -f my-values.yaml \
   --create-namespace
-```
 
-### 3. Install the Chart Locally (After Cloning the Repo)
-
-If you have cloned this repository, you can install the chart directly from the local directory:
-
-```sh
-cd helm/charts/fabric
+# From local clone
 helm install SPACE_NAME . \
   --namespace SPACE_NAME \
+  -f my-values.yaml \
   --create-namespace
 ```
 
-### 4. Custom Installation
-You can override default values using a custom `values.yaml` file:
-
+**Using `--set` flags (quick start):**
 ```sh
-# For remote installation
-helm install SPACE_NAME fabric/fabric -f my-values.yaml
-# For local installation
-helm install SPACE_NAME . -f my-values.yaml
+# From remote repository
+helm install SPACE_NAME fabric/fabric \
+  --namespace SPACE_NAME \
+  --set container.image.url=YOUR_IMAGE_URL \
+  --set storage.class=YOUR_STORAGE_CLASS \
+  --create-namespace
+
+# From local clone
+helm install SPACE_NAME . \
+  --namespace SPACE_NAME \
+  --set container.image.url=YOUR_IMAGE_URL \
+  --set storage.class=YOUR_STORAGE_CLASS \
+  --create-namespace
 ```
 
 ## Upgrading
 To upgrade an existing release:
-
 ```sh
 helm upgrade SPACE_NAME fabric/fabric -f my-values.yaml
 ```
 
 ## Uninstallation
 To uninstall the release:
-
 ```sh
 helm uninstall SPACE_NAME
 ```
@@ -205,6 +191,8 @@ Use this mode for development environments or when running Fabric Studio. This m
 - `container.replicas: 1`
 - `storage.pvc.enabled: true`
 
+> **Note:** The studio deployment is designed for single-instance use and does not support multiple replicas or high availability. For production deployments, use the StatefulSet configuration instead.
+
 #### 2. StatefulSet (Recommended for Production/Server)
 Use this mode for staging or production environments, or when running Fabric Server. This mode is designed for stateful workloads and high availability.
 
@@ -279,6 +267,7 @@ scaling:
 > **Note:**
 > - HPA requires resource requests and limits to be set for CPU in your container configuration.
 > - The chart will automatically create the necessary Kubernetes HPA resource when enabled.
+> - Autoscaling it possible for Fabric but may not be suitable for all workloads, please evaluate based on your specific use case and load patterns.
 
 ## Ingress
 To enable ingress, set `ingress.enabled: true` and configure the hostname:
