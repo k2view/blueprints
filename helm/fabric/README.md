@@ -1,5 +1,5 @@
 # Fabric Helm Chart
-![Version: 1.2.33](https://img.shields.io/badge/Version-1.2.33-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
+![Version: 1.2.34](https://img.shields.io/badge/Version-1.2.34-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
 
 ## Overview
 The Fabric Helm chart provides a deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments.
@@ -7,6 +7,7 @@ The Fabric Helm chart provides a deployment of the Fabric application on Kuberne
 ## Table of Contents
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
+  - [Namespace Resolution](#namespace-resolution)
   - [1. Add the Helm Repository (Remote Installation)](#1-add-the-helm-repository-remote-installation)
   - [2. Install the Chart from Remote Repository](#2-install-the-chart-from-remote-repository)
   - [3. Install the Chart Locally (After Cloning the Repo)](#3-install-the-chart-locally-after-cloning-the-repo)
@@ -38,7 +39,18 @@ The Fabric Helm chart provides a deployment of the Fabric application on Kuberne
 ## Installation
 
 > **Recommended:** Review the [values.yaml](values.yaml) file and use a custom values file (`-f my-values.yaml`) for your installation. While individual parameters can be passed via `--set`, using a values file provides better visibility and reproducibility.
-> **Recommended:** parameters include `namespace.name`, `container.image.url`, and `storage.class`. Ensure these are set either in your values file or via `--set` flags.
+> **Required:** `container.image.url` and `storage.class` must always be set. `namespace.name` should be set in your values file — see [Namespace Resolution](#namespace-resolution) below.
+
+### Namespace Resolution
+The chart resolves the target namespace using the following priority order:
+
+| Priority | Source | Example |
+|----------|--------|---------|
+| 1 (highest) | `namespace.name` in values | `namespace.name: my-space` |
+| 2 | `--namespace` flag or `HELM_NAMESPACE` env var | `helm install ... --namespace my-space` |
+| 3 (fallback) | Release name | `helm install my-space ...` |
+
+**Recommendation:** Set `namespace.name` explicitly in your values file. This ensures consistent behavior regardless of how or where the chart is installed (CI pipelines, operators, or direct `helm` commands).
 
 ### 1. Add the Helm Repository
 ```sh
@@ -100,7 +112,7 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `labels` | array | `[]` | Global labels applied to all resources |
 | `annotations` | array | `[]` | Global annotations applied to all resources |
 | `namespace.create` | bool | `false` | Whether to create the namespace |
-| `namespace.name` | string | `"space-tenant"` | Namespace to deploy into |
+| `namespace.name` | string | `""` | Target namespace. When set, takes priority over `--namespace` flag. Falls back to `--namespace`, then release name. |
 | `namespace.annotations` | array | `[]` | Resource-specific annotations for namespace |
 | `deploy.type` | string | `Deployment` | Deployment type (`Deployment` or `StatefulSet`) |
 | `serviceAccount.create` | bool | `true` | Create a new service account |

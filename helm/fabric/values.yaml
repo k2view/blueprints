@@ -10,10 +10,14 @@
 #     value: "K2view Fabric Data Product Platform"
 
 
-# Namespace to deploy Fabric into
+# Namespace to deploy Fabric into.
+# Resolution priority:
+#   1. namespace.name (this field) — takes highest priority when set
+#   2. --namespace flag (or HELM_NAMESPACE env var) — used when namespace.name is empty
+#   3. Release name — fallback when neither of the above is set
 namespace:
   create: false  # Create namespace if true
-  name: "space-tenant"
+  name: ""       # Target namespace name. When set, this always takes priority over --namespace flag.
 
 
 # Deployment type: Deployment (dev) or StatefulSet (prod)
