@@ -1,0 +1,93 @@
+{{ $namespace := default dict .Values.namespace }}
+{{ $global := default dict .Values.global }}
+{{ $global_labels := default (list) $global.labels }}
+{{ $labels := default (list) .Values.labels }}
+{{ $global_annotations := default (list) $global.annotations }}
+{{ $annotations := default (list) .Values.annotations }}
+{{ $openshift := .Values.openshift | default false }}
+{{ $route := default dict .Values.route }}
+{{ $ingress := default dict .Values.ingress }}
+{{ $tls := default dict $route.tls }}
+{{ $service := default dict .Values.service }}
+
+{{/* Compute host: use route.host if set, otherwise fall back to ingress host/subdomain logic */}}
+{{ $host := $route.host }}
+{{- if not $host }}
+  {{- $host = $ingress.host | default "" }}
+  {{- if and (kindIs "string" $ingress.subdomain) $ingress.subdomain }}
+    {{- $host = printf "%s.%s" $ingress.subdomain $host }}
+  {{- else if and (kindIs "bool" $ingress.subdomain) $ingress.subdomain }}
+    {{- $subdomain := default $.Release.Name $namespace.name }}
+    {{- $host = printf "%s.%s" $subdomain $host }}
+  {{- end }}
+{{- end }}
+
+{{/* Compute path: use route.path if set, otherwise fall back to ingress path logic */}}
+{{ $path := $route.path }}
+{{- if not $path }}
+  {{- if kindIs "string" $ingress.path }}
+    {{- $path = printf "/%s" $ingress.path }}
+  {{- else if and (kindIs "bool" $ingress.path) $ingress.path }}
+    {{- $path = printf "/%s" (default $.Release.Name $namespace.name) }}
+  {{- end }}
+{{- end }}
+
+{{- if and $openshift ($route.enabled | default true) }}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: fabric-route
+  namespace: {{ default .Release.Name $namespace.name }}
+  labels:
+    app: fabric
+    {{- range $label := $labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+    {{- range $label := $global_labels }}
+    {{ $label.name }}: {{ $label.value }}
+    {{- end }}
+  {{- if or $global_annotations $annotations }}
+  annotations:
+    {{- range $annotation := $global_annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+    {{- range $annotation := $annotations }}
+    {{ $annotation.key }}: {{ $annotation.value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  {{- if $host }}
+  host: {{ $host }}
+  {{- end }}
+  {{- if $path }}
+  path: {{ $path }}
+  {{- end }}
+  to:
+    kind: Service
+    name: fabric-service
+    weight: 100
+  port:
+    targetPort: fabric-port
+  {{- if $tls.enabled | default true }}
+  tls:
+    termination: {{ $tls.termination | default "edge" }}
+    insecureEdgeTerminationPolicy: {{ $tls.insecureEdgeTerminationPolicy | default "Redirect" }}
+    {{- if $tls.certificate }}
+    certificate: |
+{{ $tls.certificate | indent 6 }}
+    {{- end }}
+    {{- if $tls.key }}
+    key: |
+{{ $tls.key | indent 6 }}
+    {{- end }}
+    {{- if $tls.caCertificate }}
+    caCertificate: |
+{{ $tls.caCertificate | indent 6 }}
+    {{- end }}
+    {{- if $tls.destinationCACertificate }}
+    destinationCACertificate: |
+{{ $tls.destinationCACertificate | indent 6 }}
+    {{- end }}
+  {{- end }}
+  wildcardPolicy: {{ $route.wildcardPolicy | default "None" }}
+{{- end }}

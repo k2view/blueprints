@@ -1,3 +1,5 @@
+# Platform toggle: set to true when deploying on OpenShift
+openshift: false
 
 # Global labels for all Fabric resources
 # labels:
@@ -65,6 +67,8 @@ service:
 storage:
   pvc:
     enabled: true  # Create PVC if true, else use ephemeral
+  emptyDir:
+    sizeLimit: 10Gi  # Used for fabric-storage when pvc.enabled is false
   securityContext: true
   class: managed
   allocated_amount: 10Gi
@@ -123,6 +127,21 @@ ingress:
         value: "900"
       - key: nginx.ingress.kubernetes.io/ssl-redirect
         value: "false"
+
+# OpenShift Route Settings (used when openshift: true, replaces Ingress)
+route:
+  enabled: true
+  host: ""  # Leave empty to fall back to ingress.host logic, or set FQDN
+  path: ""
+  tls:
+    enabled: true
+    termination: edge           # edge | passthrough | reencrypt
+    insecureEdgeTerminationPolicy: Redirect  # Allow | Redirect | None
+    certificate: ""
+    key: ""
+    caCertificate: ""
+    destinationCACertificate: ""  # Only for reencrypt
+  wildcardPolicy: None
 
 # Mounting Secrets Settings
 # These settings control how secrets are mounted into the Fabric pods.
