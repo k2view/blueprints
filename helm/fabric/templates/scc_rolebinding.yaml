@@ -1,0 +1,21 @@
+{{ $openshift := .Values.openshift | default false }}
+{{ $serviceAccount := default dict .Values.serviceAccount }}
+{{ $serviceAccountName := default (include "fabric.namespace" .) $serviceAccount.name }}
+
+{{- if $openshift }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fabric-anyuid-scc
+  namespace: {{ include "fabric.namespace" . }}
+  labels:
+    app: fabric
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:openshift:scc:anyuid
+subjects:
+  - kind: ServiceAccount
+    name: {{ if ne $serviceAccount.name "" }}{{ $serviceAccountName }}{{ else }}{{ $serviceAccountName }}-sa{{ end }}
+    namespace: {{ include "fabric.namespace" . }}
+{{- end }}

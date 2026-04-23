@@ -1,0 +1,140 @@
+
+openshift: true
+
+namespace:
+  name: "fabric-ocp"
+  create: true
+
+deploy:
+  type: StatefulSet
+
+serviceAccount:
+  create: true
+  name: ""
+  provider: ""
+
+container:
+  replicas: 2
+  annotationsList:
+  - name: description
+    value: Fabric on OpenShift
+  resource_allocation:
+    limits:
+      memory: 8Gi
+      cpu: '2'
+    requests:
+      memory: 2Gi
+      cpu: '0.4'
+  image:
+    url: "docker.share.cloud.k2view.com/fabric:latest"
+    repoSecret:
+      name: "registry-secret"
+      enabled: false
+
+service:
+  listening_port: 3213
+
+storage:
+  pvc:
+    enabled: false
+  securityContext: true
+  class: gp3-csi
+  allocated_amount: 10Gi
+
+scaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPU: 90
+
+networkPolicy:
+  egress:
+    enabled: false
+  ingress:
+    enabled: true
+    allowedNamespaces:
+      kubernetes.io/metadata.name: openshift-monitoring
+    allowedPods:
+      app.kubernetes.io/instance: observability
+
+ingress:
+  enabled: true
+  host: fabric.apps.ocp-cluster.example.com
+  path: false
+  subdomain: false
+  tlsSecret:
+    enabled: false
+
+route:
+  enabled: true
+  host: fabric.apps.ocp-cluster.example.com
+  path: ""
+  tls:
+    enabled: true
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+    certificate: ""
+    key: ""
+    caCertificate: ""
+    destinationCACertificate: ""
+  wildcardPolicy: None
+
+mountSecret:
+    name: config-secrets
+    enabled: false
+    mountPath: /opt/apps/fabric/config-secrets
+    data:
+      config: |
+        [fabric]
+        SERVER_AUTHENTICATOR=fabric
+        OVERRIDE_API_SCHEMA=HTTPS
+        OVERRIDE_API_PORT=443
+
+        [fabricdb]
+        MDB_DEFAULT_CACHE_PATH=/opt/apps/fabric/tmp/fdb_cache
+
+        [system_db]
+        SYSTEM_DB_TYPE=POSTGRESQL
+        SYSTEM_DB_HOST=postgres-service
+        SYSTEM_DB_USER=postgres
+        SYSTEM_DB_PASSWORD=postgres
+        SYSTEM_DB_PORT=5432
+        SYSTEM_DB_DATABASE=postgres
+
+        [default_pubsub]
+        TYPE=MEMORY
+
+        [common_area_pubsub]
+        TYPE=MEMORY
+      cp_files: ''
+
+mountSecretB64enc:
+    name: mount-b64-secrets
+    enabled: false
+    mountPath: /opt/apps/fabric/config-secrets
+    data:
+      placeholder: ''
+
+secretsList:
+  - name: common-env-secrets
+    data:
+      PROJECT_ID: ''
+      PROJECT_NAME: ''
+      SPACE_NAME: 'fabric-ocp'
+
+initSecretsList:
+  - name: config-init-secrets
+    data:
+      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
+      COPY_FILES: '/opt/apps/fabric/config-secrets/cp_files'
+      GIT_BRANCH: ''
+      GIT_PATH_IN_REPO: ''
+      GIT_REPO: ''
+      GIT_TOKEN: ''
+      START_FABRIC: 'false'
+
+affinity:
+  type: none
+  label:
+    name: topology.kubernetes.io/zone
+    value: region-a

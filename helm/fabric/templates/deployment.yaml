@@ -8,6 +8,8 @@
 {{ $serviceAccount := default dict .Values.serviceAccount }}
 {{ $serviceAccountName := default (include "fabric.namespace" .) $serviceAccount.name }}
 {{ $storage := default dict .Values.storage }}
+{{ $pvc := default dict $storage.pvc }}
+{{ $emptyDir := default dict $storage.emptyDir }}
 {{ $container := default dict .Values.container }}
 {{ $container_labels := default (list) $container.labels }}
 {{ $resource_annotations := default (list) $container.annotations }}
@@ -23,6 +25,7 @@
 {{ $livenessProbe := default dict $container.livenessProbe }}
 {{ $readinessProbe := default dict $container.readinessProbe }}
 {{ $startupProbe := default dict $container.startupProbe }}
+{{ $openshift := .Values.openshift | default false }}
 
 {{ if eq $type "Deployment" }}
 apiVersion: apps/v1
@@ -117,6 +120,8 @@ spec:
                 memory: {{ $requests.memory | default "4Gi" }}
                 cpu: {{ $requests.cpu | default "1" }}
             env:
+            - name: HOME
+              value: /opt/apps/fabric
             - name: NAMESPACE
               value: {{ include "fabric.namespace" . }}
             # common secrets
@@ -179,6 +184,8 @@ spec:
                 memory: {{ $requests.memory | default "4Gi" }}
                 cpu: {{ $requests.cpu | default "1" }}
             env:
+            - name: HOME
+              value: /opt/apps/fabric
             - name: NAMESPACE
               value: {{ include "fabric.namespace" . }}
             {{- range $secret := $secretsList }}
@@ -238,8 +245,13 @@ spec:
           {{- end }}
           volumes:
           - name: fabric-storage
+            {{- if ne (toString $pvc.enabled) "false" }}
             persistentVolumeClaim:
               claimName: fabric-claim
+            {{- else }}
+            emptyDir:
+              sizeLimit: {{ $emptyDir.sizeLimit | default "10Gi" }}
+            {{- end }}
           - name: fabric-storage-private
             emptyDir:
               sizeLimit: 10Gi

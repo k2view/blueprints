@@ -6,6 +6,7 @@
 {{ $networkPolicy := default dict .Values.networkPolicy }}
 {{ $ingress := default dict $networkPolicy.ingress }}
 {{ $resource_annotations := default (list) $networkPolicy.annotations }}
+{{ $openshift := .Values.openshift | default false }}
 
 {{ if $ingress.enabled | default false }}
 apiVersion: networking.k8s.io/v1
@@ -90,4 +91,13 @@ spec:
         - podSelector:
             matchLabels:
               job-name: fabric-deployer
+    {{- if $openshift }}
+    - ports:
+        - protocol: TCP
+          port: 3213
+      from:
+        - namespaceSelector:
+            matchLabels:
+              network.openshift.io/policy-group: ingress
+    {{- end }}
 {{ end }}
