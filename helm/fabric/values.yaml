@@ -67,8 +67,7 @@ service:
 
 # Storage settings
 storage:
-  pvc:
-    enabled: true  # Create PVC if true, else use ephemeral
+  emptyDir: false  # When true, uses emptyDir instead of volumeClaimTemplates (data is ephemeral), effective only for statefulset deployment type
   securityContext: true
   class: managed
   allocated_amount: 10Gi

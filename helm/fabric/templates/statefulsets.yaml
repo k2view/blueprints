@@ -59,6 +59,7 @@ spec:
     selector:
       matchLabels:
         app: fabric
+    {{- if not .Values.storage.emptyDir }}
     volumeClaimTemplates:
     - metadata:
         name: fabric-storage-private
@@ -70,6 +71,7 @@ spec:
         resources:
           requests:
             storage: {{ default "10Gi" $allocated_amount }}
+    {{- end }}
     template:
         metadata:
           labels: *id001
@@ -253,6 +255,11 @@ spec:
           - name: {{ $mountSecretB64enc.name }}
             secret:
               secretName: {{ $mountSecretB64enc.name }}
+          {{- end }}
+          {{- if .Values.storage.emptyDir }}
+          - name: fabric-storage-private
+            emptyDir:
+              sizeLimit: {{ default "10Gi" $allocated_amount }}
           {{- end }}
     updateStrategy:
       type: RollingUpdate
