@@ -1,5 +1,5 @@
 # Fabric Helm Chart
-![Version: 1.2.34](https://img.shields.io/badge/Version-1.2.34-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
+![Version: 1.2.35](https://img.shields.io/badge/Version-1.2.35-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
 
 ## Overview
 The Fabric Helm chart provides a deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments.
@@ -149,10 +149,11 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `container.startupProbe.timeoutSeconds` | int | `5` | Maximum time in seconds for startup probe execution to fail due to timeout. |
 | `container.startupProbe.successThreshold` | int | `1` | How many successful attempts before setting the pod to started. |
 | `container.startupProbe.failureThreshold` | int | `20` | How many failed attempts before setting the pod to failed to start. |
-| `storage.pvc.enabled` | bool | `true` | Enable persistent volume claim |
+| `storage.pvc.enabled` | bool | `false` | Create the shared PVC (`fabric-claim`). Always created for Deployment regardless of this value; opt-in for StatefulSet |
+| `storage.emptyDir` | bool | `false` | StatefulSet only. When `true`, replaces `volumeClaimTemplates` with an ephemeral `emptyDir` volume. Data is lost on pod restart. `storage.class` is ignored |
 | `storage.securityContext` | bool | `true` | Enable pod security context |
-| `storage.class` | string | `managed` | Storage class name |
-| `storage.allocated_amount` | string | `10Gi` | PVC size |
+| `storage.class` | string | `managed` | Storage class name (ignored when `storage.emptyDir: true`) |
+| `storage.allocated_amount` | string | `10Gi` | Storage size. Applied to the PVC for Deployment, to `volumeClaimTemplates` for StatefulSet, or to `emptyDir.sizeLimit` when `storage.emptyDir: true` |
 | `storage.annotations` | array | `[]` | Resource-specific annotations for PVC |
 | `service.annotations` | array | `[]` | Resource-specific annotations for service |
 | `networkPolicy.annotations` | array | `[]` | Resource-specific annotations for network policy |
@@ -201,21 +202,24 @@ Use this mode for development environments or when running Fabric Studio. This m
 **Recommended configuration:**
 - `deploy.type: Deployment`
 - `container.replicas: 1`
-- `storage.pvc.enabled: true`
 
-> **Note:** The studio deployment is designed for single-instance use and does not support multiple replicas or high availability. For production deployments, use the StatefulSet configuration instead.
+> **Note:** Fabric Studio is a single-node application and does not support multiple replicas or high availability. Setting `container.replicas` above `1` is not supported and will result in undefined behavior. For production deployments, use the StatefulSet configuration instead.
 
 #### 2. StatefulSet (Recommended for Production/Server)
 Use this mode for staging or production environments, or when running Fabric Server. This mode is designed for stateful workloads and high availability.
 
 **Recommended configuration:**
 - `deploy.type: StatefulSet`
-- `storage.pvc.enabled: false` (shared PVC is not recommended for multiple replicas)
 - Set `container.replicas` to the desired number of server instances
 
-> **Note:**
-> - For most production scenarios, use StatefulSet with persistent storage managed outside the pod (e.g., cloud-native databases, object storage).
-> - Only use a shared PVC (`storage.pvc.enabled: true`) if your storage class supports multi-attach and your use case requires it.
+**Storage options for StatefulSet:**
+
+| Scenario | Configuration | Notes |
+|----------|--------------|-------|
+| Persistent (default) | `storage.class: <class>`, `storage.allocated_amount: <size>` | Each pod gets its own PVC via `volumeClaimTemplates` |
+| Ephemeral | `storage.emptyDir: true`, `storage.allocated_amount: <size>` | Uses `emptyDir`; data lost on pod restart. `storage.class` is ignored |
+
+> **Note:** `storage.pvc.enabled` has no effect on StatefulSet storage — it only controls whether the shared `fabric-claim` PVC (used by Deployment) is created.
 
 
 ### Fabric Application Configuration
@@ -239,6 +243,16 @@ SYSTEM_DB_HOST=/opt/apps/fabric/workspace/internal_db
 ```
 
 > **Tip:** See the default `values.yaml` for more configuration examples and comments. Changes to this section will be reflected in the Fabric application's runtime configuration under `/opt/apps/fabric/workspace/config/config.ini`.
+
+#### Path-Based Routing
+When using path-based ingress routing (e.g., `domain/space-tenant`), Fabric must be configured to ignore the first segment of the URL path so that it does not interfere with LB-level routing. Set `PATH_BASE_ROUTING` under the `[fabric]` section:
+
+```ini
+[fabric]
+PATH_BASE_ROUTING=true
+```
+
+> **Note:** Without this setting, Fabric will treat the path prefix as part of the API route and requests will fail.
 
 
 ## RBAC
@@ -425,19 +439,36 @@ spec:
 
 
 ## Storage (Persistence)
-To enable persistent storage, configure the following:
+
+Storage behavior differs between deployment types:
+
+### Deployment (`deploy.type: Deployment`)
+Always uses a shared PVC named `fabric-claim`. Control whether it is created with `storage.pvc.enabled` (default `true`):
 
 ```yaml
 storage:
-  pvc:
-    enabled: true
   class: managed
   allocated_amount: 20Gi
-  securityContext: true
 ```
 
-> **Note:**
-> Enabling `pvc.enabled: true` will create a shared PersistentVolumeClaim (PVC) for the deployment. In multi-node or highly available setups, this is generally not recommended when running more than one replica, as most storage classes do not support multi-node (ReadWriteMany) access and most use cases do not require shared storage. For most deployments with `replica` count above 1, set `pvc.enabled: false` unless you have a specific need and your storage class supports multi-attach.
+### StatefulSet (`deploy.type: StatefulSet`)
+By default, each pod gets its own PVC via `volumeClaimTemplates`:
+
+```yaml
+storage:
+  class: managed
+  allocated_amount: 20Gi
+```
+
+To use ephemeral storage instead (data lost on pod restart):
+
+```yaml
+storage:
+  emptyDir: true
+  allocated_amount: 20Gi  # sets emptyDir.sizeLimit; storage.class is ignored
+```
+
+> **Note:** `storage.pvc.enabled` does not affect StatefulSet pod storage — it only controls creation of the shared `fabric-claim` PVC used by the Deployment.
 
 ## Environment Variables
 You can set environment variables for fabric by adding them under secretsList.data in values.yaml:

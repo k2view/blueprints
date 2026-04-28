@@ -1,3 +1,5 @@
+{{ $deploy := default dict .Values.deploy }}
+{{ $type := default "StatefulSet" $deploy.type }}
 {{ $global := default dict .Values.global }}
 {{ $global_labels := default (list) $global.labels }}
 {{ $labels := default (list) .Values.labels }}
@@ -8,7 +10,7 @@
 {{ $resource_annotations := default (list) $storage.annotations }}
 {{ $allocated_amount := default $storage.allocated_amount $storage.alocated_amount }} {{- /* for backward compatibility, fix spelling error */ -}}
 
-{{ if $pvc.enabled | default true }}
+{{ if or (eq $type "Deployment") (eq (toString $pvc.enabled) "true") }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
