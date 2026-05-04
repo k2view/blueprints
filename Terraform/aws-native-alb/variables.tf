@@ -125,43 +125,10 @@ variable "desired_size" {
   default     = 1
 }
 
-# Robusta agent
-variable "deploy_robusta" {
-  type        = bool
-  description = "A boolean flag to control whether to install Robusta agent"
-  default     = false
-}
-
-# CertGuardian agent
-variable "deploy_CertGuardian" {
-  type        = bool
-  description = "A boolean flag to control whether to install CertGuardian agent"
-  default     = false
-}
 variable "deploy_autoscaler" {
   type        = bool
   description = "A boolean flag to control whether to install cluster autoscaler agent"
   default     = true
-}
-
-# Grafana agent
-variable "deploy_grafana_agent" {
-  type        = bool
-  description = "A boolean flag to control whether to install grafana agent"
-  default     = false
-}
-
-variable "grafana_agent_token" {
-  type        = string
-  description = "An Access Policy token is required for Grafana Agent to send metrics and logs to Grafana Cloud"
-  default     = ""
-}
-
-#Robusta
-variable "robusta_signing_key" {
-  type        = string
-  description = "Robusta signing key"
-  default     = ""
 }
 
 # K2view agent
@@ -206,22 +173,9 @@ variable "aws_secret_access_key" {
   description = "AWS secret access"
 }
 
-
-variable "argocd_token" {
-  type        = string
-  description = "The ArgoCD authentication token"
-  default     = ""
-}
-
 # DNS
 variable "same_account_parent_hz" {
   description = "Set to true if the parent hosted zone is in the same AWS account as this module"
-  type        = bool
-  default     = false
-}
-
-variable "cilium_enabled" {
-  description = "Use Cilium instead of AWS VPC CNI"
   type        = bool
   default     = false
 }
