@@ -528,6 +528,21 @@ To stop a Fabric space use:
 ./k2space.sh stop spacename
 ```
 
+**Upgrading a Space**
+
+You can upgrade the Studio version or Space parameters with the following command:
+
+```bash
+./k2space.sh upgrade [OPTIONS] spacename
+```
+
+Note: The upgrade command allow the following flags:
+
+| Option            | Description                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| --heap=           | Allows you to override the default 4GB allocated heap size   |
+| --fabric-version= | Allows you to override the Fabric version specified in the .env file |
+
 **Destroying a Space**
 Delete the Fabric Space "spacename". 
 
