@@ -67,6 +67,16 @@ To build new spaces with ALB, update the `k2view-agent` deployment to set the `H
 
 Reference: `helm/k2view-agent/README.md` (see `HELM_USER_VALUES_JSON`).
 
+## Migrating Existing Ingress Rules (NGINX -> ALB)
+If you are migrating from NGINX to ALB, use the following script to update the ingress rules:
+```bash
+python3 update_fabric_ingress_to_alb.py --certificate-arn "arn:aws:acm:eu-central-1:XXXXXXXXXXXXX:certificate/AAAA-BBBB-CCCC-***" --wait
+```
+
+Requirements:
+- `kubernetes` Python library installed
+- A valid kubeconfig for the target cluster
+
 
 ## References
 - `https://docs.aws.amazon.com/eks/latest/userguide/lbc-helm.html`
