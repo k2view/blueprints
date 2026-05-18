@@ -102,6 +102,29 @@ function k2spaceIngress() {
   esac
 }
 
+function k2spaceValidateEndpoints() {
+  local project="$1"
+  echo "Validating endpoints for space '$project'..."
+  local containers=()
+  while IFS= read -r line; do
+    containers+=("$line")
+  done < <(docker ps --filter "label=com.docker.compose.project=$project" --format "{{.Names}}")
+  local all_ok=true
+  for c in "${containers[@]}"; do
+    local health
+    health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "$c" 2>/dev/null)
+    if [[ "$health" == "healthy" || "$health" == "no-healthcheck" ]]; then
+      echo "  [OK] $c: $health"
+    else
+      echo "  [FAIL] $c: $health -- check logs with: docker logs $c" >&2
+      all_ok=false
+    fi
+  done
+  if [[ "$all_ok" != "true" ]]; then
+    echo "One or more containers failed endpoint validation. See above for details." >&2
+  fi
+}
+
 function k2spaceStart() {
   local arg compose env
   for arg in "$@"; do
@@ -168,6 +191,7 @@ function k2spaceStart() {
   fi
 
   k2spaceIngress start
+  k2spaceValidateEndpoints "$COMPOSE_PROJECT_NAME"
   k2spacePackageUpdate check
 }
 
