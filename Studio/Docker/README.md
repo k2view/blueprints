@@ -4,18 +4,18 @@ This **README** describes the **Docker Compose** container runtime used to host 
 ## Table of Contents
 
 1. [Documentation](#documentation)
-2. [About K2view Fabric Web Studio](#about-k2view-fabric-web-studio)
-3. [What's New](#whats-new)
-4. [The Components](#the-components)
-5. [Prerequisites](#prerequisites)
-6. [What's in this Package](#whats-in-this-package)
-7. [Things to Configure](#things-to-configure)
-8. [Proxy Configuration](#proxy-configuration)
-9. [Things to Know](#things-to-know)
-10. [Installation](#installation)
-11. [Operating and Managing Fabric Web Studio for Docker Compose](#operating-and-managing-fabric-web-studio-for-docker-compose)
-12. [Reference Information](#reference-information)
-13. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
+1. [About K2view Fabric Web Studio](#about-k2view-fabric-web-studio)
+1. [What's New](#whats-new)
+1. [The Components](#the-components)
+1. [Prerequisites](#prerequisites)
+1. [What's in this Package](#whats-in-this-package)
+1. [Things to Configure](#things-to-configure)
+1. [Proxy Configuration](#proxy-configuration)
+1. [Things to Know](#things-to-know)
+1. [Installation](#installation)
+1. [Operating and Managing Fabric Web Studio for Docker Compose](#operating-and-managing-fabric-web-studio-for-docker-compose)
+1. [Reference Information](#reference-information)
+1. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
 
 ## Documentation
 
@@ -550,10 +550,6 @@ Use:
 
 After creating your first Space, you will need to wait for Fabric to come up. Unless it's up, you may get a 404 error if Traefik hasn't yet processed its new ingress rules, which may take a few seconds. Otherwise, you might get a 502 error if Traefik is ready but Fabric is not yet ready. Give it some time.
 
-```bash
-docker compose -f k2vingress-compose.yaml restart
-```
-
 **Starting a Space**
 
 To start a Fabric space use: 
@@ -584,6 +580,25 @@ Note: The upgrade command allow the following flags:
 | ----------------- | ------------------------------------------------------------ |
 | --heap=           | Allows you to override the default 4GB allocated heap size   |
 | --fabric-version= | Allows you to override the Fabric version specified in the .env file |
+
+**Diagnosing a Space**
+
+You can check the Space's health by running:
+
+```bash
+./k2space.sh check [OPTIONS] spacename
+```
+
+Along with the Space's health, this command also checks for the diagnostic of the ingress components. If any error is found in any subcomponent, ingress or supporting containers, and the flag --save is set, it will capture the logs of the problematic cotnainer. If the problem is with Studio, rather than capturing its container logs, it will copy files k2fabric.log and k2studio.err along with some other useful information. Those generated files can be provided to a K2view agent, where it will be used to determine the cause of issue.
+
+Note: The check command allow the following flags:
+
+| Option            | Description                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| --save[=always]   | Use this flag to control if the diagnostic results should be saved. If you run without a value (or --save=true), it will only save if the diagnostic tool finds an error. Use --save=always to override this behavior |
+| --package={tar|zip} | Creates an easy-to-share package in the desired format (requires the appropriate packages to be installed) |
+| --path= | Destination folder to save the diagnostic files. Note: a subdir inside the specified path will be created as followed: (...path)/diagnostic-SPACENAME-TIMESTAMP/ and if flag is omitted, this subdirectory will be created nested to the k2space.sh script |
+| --add-file=   | Additional file to be copied to the diagnostic output directory. This flag can be used multiple times, allowing several files to be copied |
 
 **Destroying a Space**
 Delete the Fabric Space "spacename". 
@@ -616,6 +631,12 @@ To restart Traefik (e.g., after configuring your TLS certificates), run the comm
 ./k2space.sh ingress restart
 ```
 > __Note:__ This command not only restarts Traefik, but it actually completely recreates it
+
+#### Diagnosing Traefik
+Use this tool to find useful information if you are having issues when accessing your Space by running the command below:
+
+```bash
+./k2space.sh ingress check
 
 #### Upgrading Traefik
 Forces Traefik's image to be updated. This may cause Spaces to be temporarily unreachable while Traefik reload.

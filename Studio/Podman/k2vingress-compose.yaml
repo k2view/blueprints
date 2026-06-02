@@ -22,6 +22,8 @@ services:
       interval: 15s
       timeout: 5s
       retries: 8
+    labels:
+      - "k2v-ingress"
     security_opt:
       - "label=type:container_runtime_t"
 
@@ -39,11 +41,14 @@ services:
       - ${INGRESS_HTTP_PORT}:80
       - ${INGRESS_HTTPS_PORT}:443
       - ${INGRESS_API_PORT}:8080
+    environment:
+      INGRESS_HTTPS_PORT: ${INGRESS_HTTPS_PORT}
     volumes:
       - ./ssl-certs/:/etc/certs/:Z
       - ./tls-config.yaml:/etc/traefik/dynamic/tls-config.yaml:Z
     command:
       - "--api.insecure=true"
+      - "--ping=true"
       - "--providers.file.filename=/etc/traefik/dynamic/tls-config.yaml"
       - "--providers.docker=true"
       - "--providers.docker.endpoint=tcp://socat:2375"
