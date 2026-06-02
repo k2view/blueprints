@@ -10,11 +10,12 @@ This **README** describes the **Docker Compose** container runtime used to host 
 5. [Prerequisites](#prerequisites)
 6. [What's in this Package](#whats-in-this-package)
 7. [Things to Configure](#things-to-configure)
-8. [Things to Know](#things-to-know)
-9. [Installation](#installation)
-10. [Operating and Managing Fabric Web Studio for Docker Compose](#operating-and-managing-fabric-web-studio-for-docker-compose)
-11. [Reference Information](#reference-information)
-12. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
+8. [Proxy Configuration](#proxy-configuration)
+9. [Things to Know](#things-to-know)
+10. [Installation](#installation)
+11. [Operating and Managing Fabric Web Studio for Docker Compose](#operating-and-managing-fabric-web-studio-for-docker-compose)
+12. [Reference Information](#reference-information)
+13. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
 
 ## Documentation
 
@@ -114,6 +115,47 @@ Refer to the "Docker Image Offline Package Download" section below for instructi
 1. Git Configuration - This is described in Step 5 - Configuring Git and TLS
 2. TLS Certificate and Private Key Configuration - Optional because Traefik uses its own self-signed TLS certificate for HTTPS connections by default.  One is created for you by default for the machine.  To provide your own, please refer to Step 5. 
 
+
+## Proxy Configuration
+
+In environments where a forward proxy is configured on the host (e.g., air-gapped deployments with whitelisted outbound access), Docker can automatically inject proxy environment variables into all containers. This can cause internal container-to-container traffic to be misrouted through the proxy, breaking the deployment.
+
+### How Proxy Handling Works
+
+The Docker Compose setup is designed to prevent unintended proxy inheritance:
+
+- **`cassandra`, `postgres`, and `init-fabric`** services have no proxy-related environment variables defined. They communicate only on the internal Docker network and do not require outbound access.
+- **`fabric`** is the only service that may need outbound access (e.g., connecting to external databases or APIs). It receives proxy settings passed from the host OS using the standard lowercase-first fallback pattern:
+
+  ```yaml
+  http_proxy: "${http_proxy:-$HTTP_PROXY}"
+  https_proxy: "${https_proxy:-$HTTPS_PROXY}"
+  no_proxy: "${no_proxy:-$NO_PROXY}"
+  ```
+
+  If the host has `http_proxy` set, that value is used. If only `HTTP_PROXY` is set, that is the fallback. If neither is set, the container receives an empty value, which is equivalent to no proxy.
+
+### Configuring Proxy for Fabric
+
+Set the proxy variables on the host before running `k2space.sh`. No changes to `.env` or `compose.yaml` are required.
+
+```bash
+export http_proxy="http://proxy.example.com:3128"
+export https_proxy="http://proxy.example.com:3128"
+export no_proxy="localhost,127.0.0.1,.internal.example.com"
+./k2space.sh create spacename
+```
+
+> **Note:** Lowercase variable names (`http_proxy`, `https_proxy`, `no_proxy`) take precedence over their uppercase equivalents in most Linux tools and runtimes. It is recommended to set both forms if your environment requires it.
+
+### Disabling Proxy for Fabric
+
+If Fabric should not use any proxy (e.g., all external sources are directly reachable), simply ensure the proxy variables are unset on the host before running `k2space.sh`:
+
+```bash
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY
+./k2space.sh create spacename
+```
 
 ## Things to Know
 1. Default administrator credentials are
@@ -527,6 +569,21 @@ To stop a Fabric space use:
 ```bash
 ./k2space.sh stop spacename
 ```
+
+**Upgrading a Space**
+
+You can upgrade the Studio version or Space parameters with the following command:
+
+```bash
+./k2space.sh upgrade [OPTIONS] spacename
+```
+
+Note: The upgrade command allow the following flags:
+
+| Option            | Description                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| --heap=           | Allows you to override the default 4GB allocated heap size   |
+| --fabric-version= | Allows you to override the Fabric version specified in the .env file |
 
 **Destroying a Space**
 Delete the Fabric Space "spacename". 
