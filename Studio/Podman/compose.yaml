@@ -18,6 +18,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 8
+    stop_grace_period: 90s
 
   postgres:
     container_name: ${COMPOSE_PROJECT_NAME}-postgres
@@ -77,6 +78,9 @@ services:
       MAX_HEAP: "${MAX_HEAP}"
       INI_CONFIG_UPDATE_FILE: "${INI_CONFIG_UPDATE_FILE}"
       CLOUD_LINK: "https://cloud.k2view.com"
+      http_proxy: "${http_proxy:-$HTTP_PROXY}"
+      https_proxy: "${https_proxy:-$HTTPS_PROXY}"
+      no_proxy: "${no_proxy:-$NO_PROXY}"
     volumes:
       - ./common.config:/opt/apps/fabric/common.config:ro,Z
       - ./${PROFILE}.config:/opt/apps/fabric/profile.config:ro,Z

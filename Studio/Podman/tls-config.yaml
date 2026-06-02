@@ -3,7 +3,7 @@ http:
     web-to-websecure:
       redirectScheme:
         scheme: https
-        port: "443"
+        port: '{{ env "INGRESS_HTTPS_PORT" }}'
         permanent: true
 
 tls:

@@ -4,18 +4,19 @@ This **README** describes how to use **Podman Compose** container runtime to hos
 ## Table of Contents
 
 1. [Documentation](#documentation)
-2. [About K2view Fabric Web Studio](#about-k2view-fabric-web-studio)
-3. [What's New](#whats-new)
-4. [The Components](#the-components)
-5. [Prerequisites](#prerequisites)
-6. [What's in this Package](#whats-in-this-package)
-7. [Things to Configure](#things-to-configure)
-8. [Things to Know](#things-to-know)
-9. [Installation](#installation)
-10. [Operating and Managing Fabric Web Studio](#operating-and-managing-fabric-web-studio)
-11. [Reference Information](#reference-information)
-12. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
-13. [Podman Command Reference for Enterprise Linux Environments](#podman-command-reference-for-enterprise-linux-environments)
+1. [About K2view Fabric Web Studio](#about-k2view-fabric-web-studio)
+1. [What's New](#whats-new)
+1. [The Components](#the-components)
+1. [Prerequisites](#prerequisites)
+1. [What's in this Package](#whats-in-this-package)
+1. [Things to Configure](#things-to-configure)
+1. [Proxy Configuration](#proxy-configuration)
+1. [Things to Know](#things-to-know)
+1. [Installation](#installation)
+1. [Operating and Managing Fabric Web Studio](#operating-and-managing-fabric-web-studio)
+1. [Reference Information](#reference-information)
+1. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
+1. [Podman Command Reference for Enterprise Linux Environments](#podman-command-reference-for-enterprise-linux-environments)
 
 ## Documentation
 
@@ -144,6 +145,47 @@ Refer to the "Podman Offline Package Download" section below for instructions on
 1. Git Configuration - This is described in Step 4 - Configuring Git and TLS
 2. TLS Certificate and Private Key Configuration - Optional because Traefik uses its own self-signed TLS certificate for HTTPS connections by default.  One is created for you by default for the machine.  To provide your own, please refer to Step 4. 
 
+
+## Proxy Configuration
+
+In environments where a forward proxy is configured on the host (e.g., air-gapped deployments with whitelisted outbound access), Docker can automatically inject proxy environment variables into all containers. This can cause internal container-to-container traffic to be misrouted through the proxy, breaking the deployment.
+
+### How Proxy Handling Works
+
+The Docker Compose setup is designed to prevent unintended proxy inheritance:
+
+- **`cassandra`, `postgres`, and `init-fabric`** services have no proxy-related environment variables defined. They communicate only on the internal Docker network and do not require outbound access.
+- **`fabric`** is the only service that may need outbound access (e.g., connecting to external databases or APIs). It receives proxy settings passed from the host OS using the standard lowercase-first fallback pattern:
+
+  ```yaml
+  http_proxy: "${http_proxy:-$HTTP_PROXY}"
+  https_proxy: "${https_proxy:-$HTTPS_PROXY}"
+  no_proxy: "${no_proxy:-$NO_PROXY}"
+  ```
+
+  If the host has `http_proxy` set, that value is used. If only `HTTP_PROXY` is set, that is the fallback. If neither is set, the container receives an empty value, which is equivalent to no proxy.
+
+### Configuring Proxy for Fabric
+
+Set the proxy variables on the host before running `k2space.sh`. No changes to `.env` or `compose.yaml` are required.
+
+```bash
+export http_proxy="http://proxy.example.com:3128"
+export https_proxy="http://proxy.example.com:3128"
+export no_proxy="localhost,127.0.0.1,.internal.example.com"
+./k2space.sh create spacename
+```
+
+> **Note:** Lowercase variable names (`http_proxy`, `https_proxy`, `no_proxy`) take precedence over their uppercase equivalents in most Linux tools and runtimes. It is recommended to set both forms if your environment requires it.
+
+### Disabling Proxy for Fabric
+
+If Fabric should not use any proxy (e.g., all external sources are directly reachable), simply ensure the proxy variables are unset on the host before running `k2space.sh`:
+
+```bash
+unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY
+./k2space.sh create spacename
+```
 
 ## Things to Know
 1. Default administrator credentials are
@@ -551,6 +593,25 @@ Note: The upgrade command allow the following flags:
 | --heap=           | Allows you to override the default 4GB allocated heap size   |
 | --fabric-version= | Allows you to override the Fabric version specified in the .env file |
 
+**Diagnosing a Space**
+
+You can check the Space's health by running:
+
+```bash
+./k2space.sh check [OPTIONS] spacename
+```
+
+Along with the Space's health, this command also checks for the diagnostic of the ingress components. If any error is found in any subcomponent, ingress or supporting containers, and the flag --save is set, it will capture the logs of the problematic cotnainer. If the problem is with Studio, rather than capturing its container logs, it will copy files k2fabric.log and k2studio.err along with some other useful information. Those generated files can be provided to a K2view agent, where it will be used to determine the cause of issue.
+
+Note: The check command allow the following flags:
+
+| Option            | Description                                                  |
+| ----------------- | ------------------------------------------------------------ |
+| --save[=always]   | Use this flag to control if the diagnostic results should be saved. If you run without a value (or --save=true), it will only save if the diagnostic tool finds an error. Use --save=always to override this behavior |
+| --package={tar|zip} | Creates an easy-to-share package in the desired format (requires the appropriate packages to be installed) |
+| --path= | Destination folder to save the diagnostic files. Note: a subdir inside the specified path will be created as followed: (...path)/diagnostic-SPACENAME-TIMESTAMP/ and if flag is omitted, this subdirectory will be created nested to the k2space.sh script |
+| --add-file=   | Additional file to be copied to the diagnostic output directory. This flag can be used multiple times, allowing several files to be copied |
+
 **Destroying a Space**
 Delete the Fabric Space "spacename". 
 
@@ -582,6 +643,12 @@ To restart Traefik (e.g., after configuring your TLS certificates), run the comm
 ./k2space.sh ingress restart
 ```
 > __Note:__ This command not only restarts Traefik, but it actually completely recreates it
+
+#### Diagnosing Traefik
+Use this tool to find useful information if you are having issues when accessing your Space by running the command below:
+
+```bash
+./k2space.sh ingress check
 
 #### Upgrading Traefik
 Forces Traefik's image to be updated. This may cause Spaces to be temporarily unreachable while Traefik reload.
