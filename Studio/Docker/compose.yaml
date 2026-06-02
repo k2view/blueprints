@@ -83,6 +83,9 @@ services:
       MAX_HEAP:
       INI_CONFIG_UPDATE_FILE:
       CLOUD_LINK: "https://cloud.k2view.com"
+      http_proxy: "${http_proxy:-$HTTP_PROXY}"
+      https_proxy: "${https_proxy:-$HTTPS_PROXY}"
+      no_proxy: "${no_proxy:-$NO_PROXY}"
     volumes:
       - ./common.config:/opt/apps/fabric/common.config:ro
       - ./${PROFILE}.config:/opt/apps/fabric/profile.config:ro

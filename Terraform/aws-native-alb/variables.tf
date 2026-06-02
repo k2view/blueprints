@@ -125,11 +125,14 @@ variable "desired_size" {
   default     = 1
 }
 
+
 variable "deploy_autoscaler" {
   type        = bool
   description = "A boolean flag to control whether to install cluster autoscaler agent"
   default     = true
 }
+
+
 
 # K2view agent
 variable "mailbox_id" {
