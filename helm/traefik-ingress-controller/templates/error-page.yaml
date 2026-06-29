@@ -1,0 +1,110 @@
+{{- if .Values.errorPage.enabled }}
+{{- $domainRegexp := .Values.domain | required "domain is required when errorPage.enabled=true" | replace "." "\\." }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-errors
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "traefik-ingress-controller.labels" . | nindent 4 }}
+data:
+  default.conf: |
+    server {
+        listen 80;
+
+        location / {
+            error_page 404 =404 /404.html;
+            error_page 503 =503 /404.html;
+            return 404;
+        }
+
+        location = /404.html {
+            proxy_pass {{ .Values.errorPage.cloudfrontUrl }};
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik-errors
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "traefik-ingress-controller.labels" . | nindent 4 }}
+    app.kubernetes.io/component: error-page
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: error-page
+  template:
+    metadata:
+      labels:
+        {{- include "traefik-ingress-controller.labels" . | nindent 8 }}
+        app.kubernetes.io/component: error-page
+    spec:
+      # Exposed catch-all workload: ship no usable Kubernetes credentials so a
+      # compromise of this pod yields no API access (replaces nginx restricted-sa).
+      automountServiceAccountToken: false
+      containers:
+      - name: error-server
+        image: nginx:alpine
+        securityContext:
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - name: custom-error-pages
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        resources:
+          limits:
+            memory: 128Mi
+            cpu: '0.2'
+      volumes:
+      - name: custom-error-pages
+        configMap:
+          name: traefik-errors
+          items:
+          - key: default.conf
+            path: default.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-errors
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "traefik-ingress-controller.labels" . | nindent 4 }}
+    app.kubernetes.io/component: error-page
+spec:
+  selector:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: error-page
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-errors
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "traefik-ingress-controller.labels" . | nindent 4 }}
+    app.kubernetes.io/component: error-page
+spec:
+  entryPoints:
+    {{- toYaml .Values.errorPage.entryPoints | nindent 4 }}
+  routes:
+  - match: HostRegexp(`^.+\.{{ $domainRegexp }}$`)
+    kind: Rule
+    # Lowest priority: real space routers (default priority = rule length) always
+    # win; only hosts with no matching route fall through to the error page.
+    priority: 1
+    services:
+    - name: traefik-errors
+      port: 80
+  {{- if .Values.errorPage.tls.enabled }}
+  tls: {}
+  {{- end }}
+{{- end }}

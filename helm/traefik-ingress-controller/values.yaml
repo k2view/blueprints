@@ -1,0 +1,102 @@
+# Common values validated across AKS, EKS, and GKE.
+#
+# Provider-specific overlays:
+#   AWS:   -f values.yaml -f values-aws.yaml --set-string 'traefik.service.annotations.service\.beta\.kubernetes\.io/aws-load-balancer-ssl-cert=arn:...'
+#   GCP:   -f values.yaml -f values-gcp.yaml
+#   Azure: -f values.yaml -f values-azure.yaml
+
+fullnameOverride: ""
+nameOverride: ""
+
+# Wildcard domain for the cluster. Used to build the catch-all error-page route
+# (e.g. "*.site.cloud.k2view.com").
+domain: "site.cloud.k2view.com"
+
+# Custom error page for unknown spaces/hosts.
+#
+# A small nginx pod proxies to a CloudFront-hosted page, exposed through a
+# lowest-priority catch-all Traefik IngressRoute. Real space routers (default
+# priority = rule length) always win; only hosts with no matching route hit it.
+# This replaces the nginx-ingress wildcard "nginx-errors" ingress.
+errorPage:
+  enabled: true
+  # CloudFront URL serving the rendered 404 page.
+  cloudfrontUrl: "https://dn37e3zom5xe1.cloudfront.net/index.html"
+  # Entrypoint(s) the catch-all route listens on. Defaults to the
+  # Traefik-terminated TLS case (AKS/GKE). AWS terminates TLS at the NLB and
+  # overrides this to [web] with tls.enabled=false.
+  entryPoints:
+    - websecure
+  tls:
+    # When true, the route serves TLS using the default TLSStore wildcard cert.
+    enabled: true
+
+global:
+  internalLoadBalancer:
+    # Provider overlays convert this flag into the cloud-specific Service
+    # annotation for an internal/private LoadBalancer.
+    enabled: false
+
+tls:
+  # For AKS/GKE, create this secret outside Helm or set create=true and provide
+  # tls.crt/tls.key through a secure values mechanism.
+  secretName: traefik-wildcard-tls
+  create: false
+  crt: ""
+  key: ""
+
+tlsStore:
+  enabled: true
+  name: default
+
+traefik:
+  deployment:
+    enabled: true
+    replicas: 1
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  ingressClass:
+    enabled: true
+    isDefaultClass: false
+    name: traefik
+
+  providers:
+    kubernetesIngress:
+      enabled: true
+      ingressClass: traefik
+      publishedService:
+        enabled: true
+    kubernetesCRD:
+      enabled: true
+
+  service:
+    enabled: true
+    type: LoadBalancer
+    annotations: {}
+
+  ports:
+    web:
+      exposedPort: 80
+      expose:
+        default: true
+
+    websecure:
+      exposedPort: 443
+      expose:
+        default: true
+
+  logs:
+    general:
+      level: INFO
+
+  additionalArguments:
+    - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+    - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    - "--entrypoints.web.http.redirections.entrypoint.permanent=true"

@@ -1,0 +1,12 @@
+{{- if .Values.tlsStore.enabled }}
+apiVersion: traefik.io/v1alpha1
+kind: TLSStore
+metadata:
+  name: {{ default "default" .Values.tlsStore.name | quote }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "traefik-ingress-controller.labels" . | nindent 4 }}
+spec:
+  defaultCertificate:
+    secretName: {{ required "tls.secretName is required when tlsStore.enabled=true" .Values.tls.secretName | quote }}
+{{- end }}

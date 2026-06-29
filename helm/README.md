@@ -23,3 +23,4 @@ If the prerequisites are not met and the Kubernetes cluster is not built, please
 4. [generic-db](generic-db/): Contains Helm charts for generic database deployments like PostgreSQL on Kubernetes..
 5. [ingress-nginx-k2v](ingress-nginx-k2v/): Includes Helm charts for Ingress NGINX K2V deployments.
 6. [k2view-agent](k2view-agent/): Contains Helm charts for K2VIEW Agent deployments.
+7. [traefik-ingress-controller](traefik-ingress-controller/): Contains the Helm chart for the Traefik ingress controller deployment.
