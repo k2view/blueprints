@@ -124,7 +124,10 @@ locals {
         "s3:PutObject",
 				"s3:GetObject",
 				"s3:DeleteObject",
-				"s3:ListBucket"
+				"s3:ListBucket",
+				"s3:PutBucketTagging",
+				"s3:GetBucketTagging",
+				"s3:DeleteBucketTagging"
       ],
       Resource = [
         "arn:aws:s3:::*/*",
