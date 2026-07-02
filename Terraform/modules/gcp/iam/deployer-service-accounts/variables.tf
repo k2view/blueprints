@@ -16,7 +16,7 @@ variable "k2view_agent_namespace" {
 variable "space_roles" {
   description = "List of roles to assign to the space service account"
   type        = list(string)
-  default     = ["roles/storage.objectUser", "roles/cloudsql.client", "roles/iam.workloadIdentityUser", "roles/secretmanager.secretAccessor"]
+  default     = ["roles/storage.objectUser", "roles/storage.bucketViewer", "roles/cloudsql.client", "roles/iam.workloadIdentityUser", "roles/secretmanager.secretAccessor"]
 }
 
 variable "deployer_permissions" {
