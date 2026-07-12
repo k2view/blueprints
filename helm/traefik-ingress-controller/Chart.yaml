@@ -1,0 +1,11 @@
+apiVersion: v2
+name: traefik-ingress-controller
+description: Traefik ingress controller packaging for K2view clusters.
+type: application
+version: 0.2.2
+appVersion: "3.7.1"
+kubeVersion: ">=1.25.0-0"
+dependencies:
+  - name: traefik
+    version: 40.2.0
+    repository: https://traefik.github.io/charts

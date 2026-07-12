@@ -1,0 +1,10 @@
+# GKE-specific Service configuration. Apply after the common values file.
+#
+# Set global.internalLoadBalancer.enabled=true to create an internal GKE
+# passthrough Network Load Balancer.
+
+traefik:
+  service:
+    annotations:
+      cloud.google.com/l4-rbs: "enabled"
+      '{{ ternary "networking.gke.io/load-balancer-type" "k2view.io/internal-load-balancer" .Values.global.internalLoadBalancer.enabled }}': '{{ ternary "Internal" "disabled" .Values.global.internalLoadBalancer.enabled }}'

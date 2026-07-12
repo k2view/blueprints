@@ -1,0 +1,14 @@
+Traefik has been installed through the traefik-ingress-controller wrapper chart.
+
+Release namespace: {{ .Release.Namespace }}
+Ingress class: {{ .Values.traefik.ingressClass.name }}
+
+Check the controller:
+  kubectl -n {{ .Release.Namespace }} get pods,svc
+
+{{- if .Values.tlsStore.enabled }}
+TLSStore default certificate secret:
+  {{ .Values.tls.secretName }}
+{{- else }}
+TLSStore creation is disabled.
+{{- end }}

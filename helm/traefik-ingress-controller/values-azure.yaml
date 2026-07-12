@@ -1,0 +1,11 @@
+# AKS currently uses the common Kubernetes LoadBalancer and Traefik-side TLS
+# configuration. Keep this overlay as the Azure entry point for future
+# provider-specific annotations.
+#
+# Set global.internalLoadBalancer.enabled=true to create an internal Azure
+# Load Balancer.
+
+traefik:
+  service:
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-internal: '{{ ternary "true" "false" .Values.global.internalLoadBalancer.enabled }}'
