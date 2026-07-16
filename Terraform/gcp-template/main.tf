@@ -13,7 +13,7 @@ module "iam-deployer-service-accounts" {
   cluster_name           = var.cluster_name
   project_id             = var.project_id
   k2view_agent_namespace = var.k2view_agent_namespace
-  space_roles            = ["roles/storage.objectUser", "roles/storage.bucketViewer", "roles/cloudsql.client"]
+  space_roles            = ["roles/storage.objectUser", "roles/storage.bucketViewer", "roles/storage.objectAdmin", "roles/cloudsql.client"]
 }
 
 # NAT Instance

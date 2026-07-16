@@ -2,7 +2,7 @@
 Creates two GCP service accounts for K2view workloads and binds them to Kubernetes service accounts via Workload Identity:
 
 - **Deployer SA** — runs the K2view Cloud Deployer. Gets a custom IAM role with permissions to manage GCS, AlloyDB, Cloud SQL, and IAM service accounts.
-- **Space SA** — used by K2view spaces. Gets predefined roles: `storage.objectUser`, `storage.bucketViewer`, `cloudsql.client`, `iam.workloadIdentityUser`, `secretmanager.secretAccessor`.
+- **Space SA** — used by K2view spaces. Gets predefined roles: `storage.objectUser`, `storage.bucketViewer`, `storage.objectAdmin`, `cloudsql.client`, `iam.workloadIdentityUser`, `secretmanager.secretAccessor`.
 
 ## Usage
 ```hcl
@@ -41,5 +41,5 @@ module "deployer-service-accounts" {
 | project_id | GCP project ID | `string` | n/a | yes |
 | cluster_name | GKE cluster name | `string` | n/a | yes |
 | k2view_agent_namespace | Kubernetes namespace for the K2view agent | `string` | n/a | yes |
-| space_roles | IAM roles to assign to the space service account | `list(string)` | `[storage.objectUser, storage.bucketViewer, cloudsql.client, iam.workloadIdentityUser, secretmanager.secretAccessor]` | no |
+| space_roles | IAM roles to assign to the space service account | `list(string)` | `[storage.objectUser, storage.bucketViewer, storage.objectAdmin, cloudsql.client, iam.workloadIdentityUser, secretmanager.secretAccessor]` | no |
 | deployer_permissions | IAM permissions for the deployer custom role | `list(string)` | `[GCS, IAM SA, AlloyDB, Cloud SQL permissions]` | no |
