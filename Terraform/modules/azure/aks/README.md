@@ -47,7 +47,6 @@ module "aks" {
 | <a name="input_max_size"></a> [max\_size](#input\_max\_size) | Maximum number of nodes the autoscaler can scale up to. | `number` | `3` | no |
 | <a name="input_outbound_type"></a> [outbound\_type](#input\_outbound\_type) | Outbound routing type. Options: `loadBalancer` (AKS default), `userAssignedNATGateway`, `userDefinedRouting`. | `string` | `"userAssignedNATGateway"` | no |
 | <a name="input_private_cluster_enabled"></a> [private\_cluster\_enabled](#input\_private\_cluster\_enabled) | When true, the API server is only reachable from within the VNet. | `bool` | `false` | no |
-| <a name="input_kubeconfig_file_path"></a> [kubeconfig\_file\_path](#input\_kubeconfig\_file\_path) | Local path to write the kubeconfig file. Leave empty to skip. | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources. | `map(any)` | `{"Env":"Dev","Owner":"owner_name","Project":"k2v_cloud"}` | no |
 
 ## Outputs

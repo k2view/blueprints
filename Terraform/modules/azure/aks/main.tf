@@ -47,6 +47,7 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
 }
 
 resource "azurerm_role_assignment" "role_acrpull" {
+  count                            = var.acr_id != "" ? 1 : 0
   scope                            = var.acr_id
   role_definition_name             = "AcrPull"
   principal_id                     = azurerm_kubernetes_cluster.aks_cluster.kubelet_identity[0].object_id

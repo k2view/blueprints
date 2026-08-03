@@ -71,10 +71,10 @@ variable "subnet_id" {
   default     = ""
 }
 
-# Cluster
+# ACR
 variable "create_acr" {
   type        = bool
-  description = "Create ACR in Azure"
+  description = "Whether to create a new Azure Container Registry. When both create_acr and use_existing_acr are false, no ACR is created and the AKS cluster is not granted AcrPull access."
   default     = true
 }
 
@@ -84,6 +84,25 @@ variable "acr_name" {
   default     = ""
 }
 
+variable "use_existing_acr" {
+  description = "If true, reference an existing ACR; if false, create a new one."
+  type        = bool
+  default     = false
+}
+
+variable "existing_acr_name" {
+  description = "The name of the existing ACR to use when 'use_existing_acr' is true."
+  type        = string
+  default     = null
+}
+
+variable "existing_acr_resource_group" {
+  description = "The resource group of the existing ACR."
+  type        = string
+  default     = null
+}
+
+# Cluster
 variable "cluster_name" {
   type        = string
   description = "AKS name in Azure"
@@ -93,7 +112,7 @@ variable "cluster_name" {
 variable "kubernetes_version" {
   type        = string
   description = "Kubernetes version."
-  default     = "1.32"
+  default     = "1.34"
 }
 
 variable "outbound_type" {
@@ -126,16 +145,17 @@ variable "max_size" {
   default     = 3
 }
 
-variable "kubeconfig_file_path" {
-  type        = string
-  description = "Path for kubeconfig file"
-  default     = ""
-}
-
 variable "private_cluster_enabled" {
   type        = bool
   description = "hould this Kubernetes Cluster have its API server only exposed on internal IP addresses?"
   default     = false # If set to true modules that deploy helm to the cluster will fail (like AKS_ingress and AKS_k2v_agent) and will be needed be deployed manually
+}
+
+# Storage
+variable "storage_account_name" {
+  type        = string
+  description = "Storage account name. If empty, derived from cluster_name (hyphens removed) with a 'storageacc' suffix. Must be 3-24 lowercase alphanumeric characters and globally unique."
+  default     = ""
 }
 
 # Ingress

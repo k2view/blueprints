@@ -7,18 +7,30 @@ module "resource-group" {
 }
 
 module "private-network" {
-  source = "../modules/azure/network/private-network"
-  location = var.location
-  prefix_name = var.prefix_name
-  resource_group_name = module.resource-group[0].resource-group-name
+  source                        = "../modules/azure/network/private-network"
+  location                      = var.location
+  prefix_name                   = var.prefix_name
+  resource_group_name           = module.resource-group[0].resource-group-name
+  create_network                = var.create_network
+  virtual_network_address_space = var.virtual_network_address_space
+  subnet_address_prefixes       = var.subnet_address_prefixes
+  subnet_id                     = var.subnet_id
+  create_nat_gateway            = var.create_nat_gateway
+  create_route_table            = var.create_route_table
+  route_table_next_hop_ip       = var.route_table_next_hop_ip
+  tags                          = var.tags
 }
 
 module "acr" {
-  source              = "../modules/azure/acr"
-  acr_name            = "${var.prefix_name}SharedAcr"
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  tags                = var.tags
+  source                      = "../modules/azure/acr"
+  create_acr                  = var.create_acr
+  acr_name                    = var.acr_name != "" ? var.acr_name : "${var.prefix_name}SharedAcr"
+  resource_group_name         = var.resource_group_name
+  location                    = var.location
+  tags                        = var.tags
+  use_existing_acr            = var.use_existing_acr
+  existing_acr_name           = var.existing_acr_name
+  existing_acr_resource_group = var.existing_acr_resource_group
 }
 
 module "aks" {
@@ -28,7 +40,7 @@ module "aks" {
   location                = var.location
   resource_group_name     = module.resource-group[0].resource-group-name
   private_cluster_enabled = var.private_cluster_enabled
-  kubernetes_version      = "1.30"
+  kubernetes_version      = var.kubernetes_version
   system_node_count       = var.system_node_count
   vm_sku                  = var.vm_sku
   max_size                = var.max_size
@@ -94,4 +106,5 @@ module "storage-account" {
   resource_group_name = var.resource_group_name
   location            = var.location
   cluster_name        = var.cluster_name
+  account_name        = var.storage_account_name
 }

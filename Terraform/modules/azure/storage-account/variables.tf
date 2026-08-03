@@ -12,7 +12,7 @@ variable "location" {
 
 variable "account_name" {
   type        = string
-  description = "Storage account name"
+  description = "Storage account name. If empty, derived from cluster_name (hyphens removed) with a 'storageacc' suffix. Must be 3-24 lowercase alphanumeric characters and globally unique."
   default     = ""
 }
 

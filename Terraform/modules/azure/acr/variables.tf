@@ -1,11 +1,17 @@
 variable "resource_group_name" {
   type        = string
-  description = "RG name in Azure"
+  description = "Resource group name in Azure."
   default     = ""
 }
 
+variable "create_acr" {
+  description = "If true, create a new ACR. If false and use_existing_acr is also false, no ACR is created and the module returns an empty id/name."
+  type        = bool
+  default     = true
+}
+
 variable "use_existing_acr" {
-  description = "If true, use an existing ACR; if false, create a new one."
+  description = "If true, reference an existing ACR; if false, create a new one."
   type        = bool
   default     = false
 }
@@ -24,13 +30,13 @@ variable "existing_acr_resource_group" {
 
 variable "location" {
   type        = string
-  description = "Resources location in Azure"
+  description = "Resources location in Azure."
   default     = "West Europe"
 }
 
 variable "acr_name" {
   type        = string
-  description = "The name of ACR (only lowercase letters)"
+  description = "The name of the ACR (only lowercase letters). If empty, a random suffix is used."
   default     = ""
 }
 
@@ -42,12 +48,7 @@ variable "acr_admin_enabled" {
 
 variable "tags" {
   type        = map
-  description = "Tags value"
+  description = "Tags to apply to resources."
   default     = {}
   #tags={ Env = “Dev”, Owner = “k2view”, Project = "k2vDev" }
 }
-
-# variable "principal_id" {
-#   type        = string
-#   description = "The kubelet identity id"
-# }

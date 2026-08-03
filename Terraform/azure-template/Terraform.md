@@ -61,7 +61,7 @@
 | <a name="input_client_id"></a> [client\_id](#input\_client\_id) | Provider | `string` | n/a | yes |
 | <a name="input_client_secret"></a> [client\_secret](#input\_client\_secret) | n/a | `string` | n/a | yes |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | AKS name in Azure | `string` | `""` | no |
-| <a name="input_create_acr"></a> [create\_acr](#input\_create\_acr) | Create ACR in Azure | `bool` | `true` | no |
+| <a name="input_create_acr"></a> [create\_acr](#input\_create\_acr) | Whether to create a new Azure Container Registry. When both create\_acr and use\_existing\_acr are false, no ACR is created and the AKS cluster is not granted AcrPull access. | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Create DNS zone in Azure that point all the trafic to the LB | `bool` | `true` | no |
 | <a name="input_create_nat_gateway"></a> [create\_nat\_gateway](#input\_create\_nat\_gateway) | Create NAT gateway. | `bool` | `true` | no |
 | <a name="input_create_network"></a> [create\_network](#input\_create\_network) | Create Vnet for the AKS cluster | `bool` | `true` | no |
@@ -70,12 +70,13 @@
 | <a name="input_delay_command"></a> [delay\_command](#input\_delay\_command) | The command for delay (depend on the env). | `string` | `"sleep 60"` | no |
 | <a name="input_deploy_ingress"></a> [deploy\_ingress](#input\_deploy\_ingress) | Deploy nginx ingress in the cluster | `bool` | `true` | no |
 | <a name="input_domain"></a> [domain](#input\_domain) | The domain will be used for ingress | `string` | n/a | yes |
+| <a name="input_existing_acr_name"></a> [existing\_acr\_name](#input\_existing\_acr\_name) | The name of the existing ACR to use when 'use\_existing\_acr' is true. | `string` | `null` | no |
+| <a name="input_existing_acr_resource_group"></a> [existing\_acr\_resource\_group](#input\_existing\_acr\_resource\_group) | The resource group of the existing ACR. | `string` | `null` | no |
 | <a name="input_ingress_controller_cert_b64"></a> [ingress\_controller\_cert\_b64](#input\_ingress\_controller\_cert\_b64) | Ingress Controller TLS certificate base64 encoded | `string` | `""` | no |
 | <a name="input_ingress_controller_enable_private_lb"></a> [ingress\_controller\_enable\_private\_lb](#input\_ingress\_controller\_enable\_private\_lb) | Flag to enable or disable private load balancer IP | `bool` | `false` | no |
 | <a name="input_ingress_controller_key_b64"></a> [ingress\_controller\_key\_b64](#input\_ingress\_controller\_key\_b64) | Ingress Controller TLS key base64 encoded | `string` | `""` | no |
 | <a name="input_k2view_agent_namespace"></a> [k2view\_agent\_namespace](#input\_k2view\_agent\_namespace) | The name of K2view agent namespace | `string` | `"k2view-agent"` | no |
-| <a name="input_kubeconfig_file_path"></a> [kubeconfig\_file\_path](#input\_kubeconfig\_file\_path) | Path for kubeconfig file | `string` | `""` | no |
-| <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version. | `string` | `"1.30"` | no |
+| <a name="input_kubernetes_version"></a> [kubernetes\_version](#input\_kubernetes\_version) | Kubernetes version. | `string` | `"1.34"` | no |
 | <a name="input_lb_ip"></a> [lb\_ip](#input\_lb\_ip) | LB IP for the DNS to point to | `string` | `""` | no |
 | <a name="input_location"></a> [location](#input\_location) | Resources location in Azure | `string` | `"West Europe"` | no |
 | <a name="input_mailbox_id"></a> [mailbox\_id](#input\_mailbox\_id) | k2view cloud mailbox ID. | `string` | `""` | no |
@@ -87,11 +88,13 @@
 | <a name="input_private_cluster_enabled"></a> [private\_cluster\_enabled](#input\_private\_cluster\_enabled) | hould this Kubernetes Cluster have its API server only exposed on internal IP addresses? | `bool` | `false` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | RG name in Azure | `string` | n/a | yes |
 | <a name="input_route_table_next_hop_ip"></a> [route\_table\_next\_hop\_ip](#input\_route\_table\_next\_hop\_ip) | IP address of the next hop in the routing table. | `string` | `""` | no |
+| <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Storage account name. If empty, derived from cluster\_name (hyphens removed) with a 'storageacc' suffix. Must be 3-24 lowercase alphanumeric characters and globally unique. | `string` | `""` | no |
 | <a name="input_subnet_address_prefixes"></a> [subnet\_address\_prefixes](#input\_subnet\_address\_prefixes) | Virtual network subnet address prefixes CIDR | `string` | `"10.240.0.0/16"` | no |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | Virtual network subnet ID for existing Vnet | `string` | `""` | no |
 | <a name="input_subscription_id"></a> [subscription\_id](#input\_subscription\_id) | n/a | `string` | n/a | yes |
 | <a name="input_system_node_count"></a> [system\_node\_count](#input\_system\_node\_count) | Number of AKS worker nodes (min\_size <= system\_node\_count <= max\_size). | `number` | `1` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags value | `map(any)` | <pre>{<br>  "Env": "Dev",<br>  "Owner": "k2view",<br>  "Project": "k2vDev"<br>}</pre> | no |
 | <a name="input_tenant_id"></a> [tenant\_id](#input\_tenant\_id) | n/a | `string` | n/a | yes |
+| <a name="input_use_existing_acr"></a> [use\_existing\_acr](#input\_use\_existing\_acr) | If true, reference an existing ACR; if false, create a new one. | `bool` | `false` | no |
 | <a name="input_virtual_network_address_space"></a> [virtual\_network\_address\_space](#input\_virtual\_network\_address\_space) | Virtual network address space CIDR | `string` | `"10.0.0.0/8"` | no |
 | <a name="input_vm_sku"></a> [vm\_sku](#input\_vm\_sku) | VM sku | `string` | `"Standard_D8s_v3"` | no |

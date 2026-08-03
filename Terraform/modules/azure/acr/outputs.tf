@@ -1,13 +1,9 @@
-# output "acr_admin_password" {
-#   value = data.azurerm_container_registry.acr.admin_password
-#   description = "The admin password for the ACR."
-#   sensitive = true
-# }
-
 output "acr_name" {
-  value = var.use_existing_acr ? data.azurerm_container_registry.existing_acr[0].name : azurerm_container_registry.acr[0].name
+  description = "The name of the ACR (created or existing). Empty when no ACR is managed (create_acr and use_existing_acr both false)."
+  value       = try(concat(azurerm_container_registry.acr[*].name, data.azurerm_container_registry.existing_acr[*].name)[0], "")
 }
 
 output "acr_id" {
-  value = var.use_existing_acr ? data.azurerm_container_registry.existing_acr[0].id : azurerm_container_registry.acr[0].id
+  description = "The resource ID of the ACR (created or existing). Empty when no ACR is managed (create_acr and use_existing_acr both false)."
+  value       = try(concat(azurerm_container_registry.acr[*].id, data.azurerm_container_registry.existing_acr[*].id)[0], "")
 }
