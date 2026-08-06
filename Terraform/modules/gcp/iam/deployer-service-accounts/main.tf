@@ -48,3 +48,21 @@ resource "google_project_iam_member" "space_roles" {
   role       = each.value
   member     = "serviceAccount:${google_service_account.space_service_account.email}"
 }
+
+# Custom role for additional permissions not covered by the predefined space_roles
+resource "google_project_iam_custom_role" "space_custom_role" {
+  count       = length(var.space_permissions) > 0 ? 1 : 0
+  role_id     = "${local.cluster_name_underscore}_space_role"
+  title       = "Space Custom Role"
+  description = "Custom role with additional permissions for the space service account"
+  permissions = var.space_permissions
+  project     = var.project_id
+}
+
+resource "google_project_iam_member" "space_custom_role_binding" {
+  count      = length(var.space_permissions) > 0 ? 1 : 0
+  depends_on = [google_service_account.space_service_account, google_project_iam_custom_role.space_custom_role]
+  project    = var.project_id
+  role       = "projects/${var.project_id}/roles/${local.cluster_name_underscore}_space_role"
+  member     = "serviceAccount:${google_service_account.space_service_account.email}"
+}

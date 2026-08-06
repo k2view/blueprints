@@ -19,6 +19,12 @@ variable "space_roles" {
   default     = ["roles/storage.objectUser", "roles/storage.bucketViewer", "roles/storage.objectAdmin", "roles/cloudsql.client", "roles/iam.workloadIdentityUser", "roles/secretmanager.secretAccessor"]
 }
 
+variable "space_permissions" {
+  description = "List of additional permissions for the space service account, not covered by the predefined roles in space_roles"
+  type        = list(string)
+  default     = ["storage.buckets.update"]
+}
+
 variable "deployer_permissions" {
   description = "List of permissions for the deployer role"
   type        = list(string)
