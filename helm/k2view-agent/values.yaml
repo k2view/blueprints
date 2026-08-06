@@ -23,11 +23,29 @@ secrets:
   kubeInterface: "https://kubernetes.default.svc" # Kubernetes API interface, need to be accessible from the agent.
   #kubeToken: "" # If serviceAccount.create is false, this secret must be provided as secret or externalSecrets
   CLOUD: "" # Cloud provider: GCP|AWS|AZURE
-  REGION: "" # Cloud region: us-east-1, us-west-1, eu-west-1, etc.
-  # AWS parameters
-  SPACE_SA_ARN: "" # AWS IAM role ARN for Fabric spaces, used for access to cloud resources by the Fabric spaces.
-  # GCP parameters
-  PROJECT: "" # GCP project ID (example: k2view-gcp-project)
+  #REGION: "" # Cloud region: us-east-1, us-west-1, eu-west-1, etc.
+  ## AWS parameters
+  #SPACE_SA_ARN: "" # AWS IAM role ARN for Fabric spaces, used for access to cloud resources by the Fabric spaces.
+  #AWS_KEYSPACE_USER: "" # AWS Keyspace username (if using AWS Keyspace as a data source).
+  #AWS_KEYSPACE_PASSWORD: "" # AWS Keyspace password (if using AWS Keyspace as a data source).
+  ## GCP parameters
+  #PROJECT: "" # GCP project ID (example: k2view-gcp-project)
+  #GCP_CONF_FILE: "" # GCP service account JSON content (base64 encoded) for programmatic access to GCP resources.
+  ## Azure parameters
+  #NETWORK_NAME: "" # Name of the virtual network (VNet/VPC) where the cluster is deployed.
+  #AZURE_CLIENT_ID: "" # Azure client ID (example: 12345678
+  #AZURE_SUBSCRIPTION_ID: "" # Azure subscription ID where resources are provisioned.
+  #AZURE_RESOURCE_GROUP_NAME: "" # Azure resource group name where K2view resources are deployed.
+  #AZURE_SPACE_IDENTITY_TENANT_ID: "" # Azure tenant ID associated with the managed identity used by K2view spaces.
+  #AZURE_SPACE_IDENTITY_OBJECT_ID: "" # Azure object ID of the managed identity used by K2view spaces.
+  #AZURE_SPACE_IDENTITY_CLIENT_ID: "" # Azure client ID of the managed identity used by K2view spaces.
+  #AZURE_OIDC_ISSUER_URL: "" # OIDC issuer URL for AKS workload identity federation.
+  #SUBNET_NAME: "" # Name of the subnet where the K2view agent is deployed.
+  #APPGW_USE_PRIVATE_IP: "" # Set to "true" if the Azure Application Gateway should use a private IP address.
+  #APPGW_SSL_CERTIFICATE_NAME: "" # Name of the SSL certificate configured for the Azure Application Gateway.
+  ## Cloud deployer parameters
+  #USE_DEFAULT_HELM: "true" # Set to "false" to disable the default embedded Helm chart and enable external chart sources (Git repository or URL).
+  #HELM_USER_VALUES_JSON: "" # JSON string with user-defined Helm values, overriding the default space template values during deployment.
 
 # External secrets referenced to existing secrets in the namespace
 externalSecrets:
