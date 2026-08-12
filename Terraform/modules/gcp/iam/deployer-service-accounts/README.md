@@ -2,7 +2,7 @@
 Creates two GCP service accounts for K2view workloads and binds them to Kubernetes service accounts via Workload Identity:
 
 - **Deployer SA** — runs the K2view Cloud Deployer. Gets a custom IAM role with permissions to manage GCS, AlloyDB, Cloud SQL, and IAM service accounts.
-- **Space SA** — used by K2view spaces. Gets predefined roles: `storage.objectUser`, `storage.bucketViewer`, `storage.objectAdmin`, `cloudsql.client`, `iam.workloadIdentityUser`, `secretmanager.secretAccessor`.
+- **Space SA** — used by K2view spaces. Gets predefined roles: `storage.objectUser`, `storage.bucketViewer`, `storage.objectAdmin`, `cloudsql.client`, `iam.workloadIdentityUser`, `secretmanager.secretAccessor`, plus a custom role for additional permissions not covered by those (e.g. `storage.buckets.update`).
 
 ## Usage
 ```hcl
@@ -33,6 +33,8 @@ module "deployer-service-accounts" {
 | [google_project_iam_custom_role.deployer_custom_role](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
 | [google_project_iam_member.deployer_custom_role_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
 | [google_project_iam_member.space_roles](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
+| [google_project_iam_custom_role.space_custom_role](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_custom_role) | resource |
+| [google_project_iam_member.space_custom_role_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
 | [google_service_account_iam_member.deployer_workload_identity_binding](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/service_account_iam_member) | resource |
 
 ## Inputs
@@ -42,4 +44,5 @@ module "deployer-service-accounts" {
 | cluster_name | GKE cluster name | `string` | n/a | yes |
 | k2view_agent_namespace | Kubernetes namespace for the K2view agent | `string` | n/a | yes |
 | space_roles | IAM roles to assign to the space service account | `list(string)` | `[storage.objectUser, storage.bucketViewer, storage.objectAdmin, cloudsql.client, iam.workloadIdentityUser, secretmanager.secretAccessor]` | no |
+| space_permissions | Additional IAM permissions for the space service account, not covered by space_roles | `list(string)` | `[storage.buckets.update]` | no |
 | deployer_permissions | IAM permissions for the deployer custom role | `list(string)` | `[GCS, IAM SA, AlloyDB, Cloud SQL permissions]` | no |
