@@ -105,7 +105,7 @@ Refer to the "Docker Image Offline Package Download" section below for instructi
 1. README.md - This document
 2. K2space.sh - A Bash shell script used to create, list, and destroy spaces defined by Web Studio profiles. This script is used to start Fabric and the embedded Traefik reverse proxy. It can allocate additional heap space if required and override the default Fabric version specified in the .env file.
 3. .env file - define various Fabric and Git parameters
-1. .env-tdmspace - a sample file with a set of parameters that will override the default configuration defined in the .env file that will apply to a Space named "tdmspace"
+1. .env-tdm-sample-space - a sample file with a set of parameters that will override the default configuration defined in the .env file that will apply to a Space named "tdm-sample-space"
 4. common.config file - define various Fabric and runtime configurations
 5. Studio_*.config files - the Fabric Profiles to choose from
 6. YAML files are used to configure the Fabric and Traefik services. You can use the tls-config.yaml file to configure the TLS certificate and private key. 
