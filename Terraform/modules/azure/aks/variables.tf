@@ -68,12 +68,6 @@ variable "max_size" {
   default     = 3
 }
 
-variable "kubeconfig_file_path" {
-  type        = string
-  description = "Local filesystem path where the kubeconfig file will be written after cluster creation. Leave empty to skip writing the file."
-  default     = ""
-}
-
 variable "private_cluster_enabled" {
   type        = bool
   description = "When true, the AKS API server is only reachable from within the VNet (private cluster). Note: Helm-based modules (ingress controller, k2view-agent) cannot reach a private API server and must be deployed separately."

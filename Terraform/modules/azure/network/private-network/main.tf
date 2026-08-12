@@ -45,7 +45,7 @@ resource "azurerm_nat_gateway_public_ip_association" "aks_nat_gateway_ip_associa
 }
 
 resource "azurerm_subnet_nat_gateway_association" "aks_nat_gateway_association" {
-  count               = var.create_nat_gateway ? 1 : 0
+  count               = var.create_nat_gateway && var.create_network ? 1 : 0
   subnet_id           = var.subnet_id != "" ? var.subnet_id : azurerm_subnet.aks_subnet[0].id
   nat_gateway_id      = azurerm_nat_gateway.aks_nat_gateway[0].id
 }
@@ -70,7 +70,7 @@ resource "azurerm_route" "outbound_route" {
 }
 
 resource "azurerm_subnet_route_table_association" "subnet_route_table_assoc" {
-  count               = var.create_route_table ? 1 : 0
+  count               = var.create_route_table && var.create_network ? 1 : 0
   subnet_id           = var.subnet_id != "" ? var.subnet_id : azurerm_subnet.aks_subnet[0].id
   route_table_id      = azurerm_route_table.route_table[0].id
 }

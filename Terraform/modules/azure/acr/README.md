@@ -5,7 +5,7 @@ This module creates a new Azure Container Registry or references an existing one
 ### Create a new ACR
 ```hcl
 module "acr" {
-  source              = "../modules/acr"
+  source              = "../modules/azure/acr"
   resource_group_name = var.resource_group_name
   location            = var.location
   tags                = var.tags
@@ -17,12 +17,14 @@ module "acr" {
 ### Use an existing ACR
 ```hcl
 module "acr" {
-  source                      = "../modules/acr"
+  source                      = "../modules/azure/acr"
   use_existing_acr            = true
   existing_acr_name           = var.existing_acr_name
   existing_acr_resource_group = var.existing_acr_resource_group
 }
 ```
+
+> **Note:** When `use_existing_acr = true`, both `existing_acr_name` and `existing_acr_resource_group` are required, and the ACR must already exist at plan time.
 
 ## Providers
 | Name | Version |
@@ -42,6 +44,7 @@ module "acr" {
 |------|-------------|------|---------|:--------:|
 | <a name="input_acr_admin_enabled"></a> [acr\_admin\_enabled](#input\_acr\_admin\_enabled) | Enable ACR admin user to push images. | `bool` | `true` | no |
 | <a name="input_acr_name"></a> [acr\_name](#input\_acr\_name) | The name of the ACR (only lowercase letters). If empty, a random suffix is used. | `string` | `""` | no |
+| <a name="input_create_acr"></a> [create\_acr](#input\_create\_acr) | If true, create a new ACR. If false and use\_existing\_acr is also false, no ACR is created and the module returns an empty id/name. | `bool` | `true` | no |
 | <a name="input_existing_acr_name"></a> [existing\_acr\_name](#input\_existing\_acr\_name) | The name of the existing ACR to use when `use_existing_acr` is true. | `string` | `null` | no |
 | <a name="input_existing_acr_resource_group"></a> [existing\_acr\_resource\_group](#input\_existing\_acr\_resource\_group) | The resource group of the existing ACR. | `string` | `null` | no |
 | <a name="input_location"></a> [location](#input\_location) | Resources location in Azure. | `string` | `"West Europe"` | no |
@@ -52,5 +55,5 @@ module "acr" {
 ## Outputs
 | Name | Description |
 |------|-------------|
-| <a name="output_acr_id"></a> [acr\_id](#output\_acr\_id) | The resource ID of the ACR. |
-| <a name="output_acr_name"></a> [acr\_name](#output\_acr\_name) | The name of the ACR. |
+| <a name="output_acr_id"></a> [acr\_id](#output\_acr\_id) | The resource ID of the ACR (created or existing, depending on use\_existing\_acr). |
+| <a name="output_acr_name"></a> [acr\_name](#output\_acr\_name) | The name of the ACR (created or existing, depending on use\_existing\_acr). |

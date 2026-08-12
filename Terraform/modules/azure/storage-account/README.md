@@ -1,5 +1,5 @@
 # Azure Storage Account Module
-Creates an Azure Storage account. The account name is derived from the cluster name (hyphens removed) with a `storageacc` suffix.
+Creates an Azure Storage account. By default the account name is derived from the cluster name (hyphens removed) with a `storageacc` suffix; set `account_name` to override it.
 
 ## Usage
 ```hcl
@@ -30,6 +30,7 @@ module "storage_account" {
 ## Inputs
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| account_name | Storage account name. If empty, derived from cluster_name (hyphens removed) with a `storageacc` suffix. Must be 3-24 lowercase alphanumeric characters and globally unique. | `string` | `""` | no |
 | cluster_name | AKS cluster name (used to derive the storage account name) | `string` | `""` | no |
 | resource_group_name | Azure resource group name | `string` | `""` | no |
 | location | Azure region for all resources | `string` | `"West Europe"` | no |

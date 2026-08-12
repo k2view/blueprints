@@ -1,6 +1,6 @@
 locals {
   sanitized_cluster_name = replace(var.cluster_name, "-", "")
-  storage_account_name   = "${local.sanitized_cluster_name}storageacc"
+  storage_account_name   = var.account_name != "" ? var.account_name : "${local.sanitized_cluster_name}storageacc"
 }
 
 resource "azurerm_storage_account" "storage_account" {
