@@ -147,7 +147,7 @@ variable "max_size" {
 
 variable "private_cluster_enabled" {
   type        = bool
-  description = "hould this Kubernetes Cluster have its API server only exposed on internal IP addresses?"
+  description = "Should this Kubernetes Cluster have its API server only exposed on internal IP addresses?"
   default     = false # If set to true modules that deploy helm to the cluster will fail (like AKS_ingress and AKS_k2v_agent) and will be needed be deployed manually
 }
 
