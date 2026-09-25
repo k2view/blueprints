@@ -168,7 +168,8 @@ spec:
             - containerPort: 3213
             - containerPort: 7170
             - containerPort: 7070
-            - containerPort: 9100          
+            - containerPort: 9100
+            - containerPort: 5009
             securityContext:
               allowPrivilegeEscalation: false
             resources:

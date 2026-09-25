@@ -1,5 +1,5 @@
 # Fabric Helm Chart
-![Version: 1.2.35](https://img.shields.io/badge/Version-1.2.35-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
+![Version: 1.2.40](https://img.shields.io/badge/Version-1.2.40-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
 
 ## Overview
 The Fabric Helm chart provides a deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments.
