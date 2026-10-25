@@ -1,1 +1,7 @@
 /Studio/**/upgrade
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
