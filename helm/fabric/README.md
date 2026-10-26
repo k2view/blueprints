@@ -1,5 +1,5 @@
 # Fabric Helm Chart
-![Version: 1.2.40](https://img.shields.io/badge/Version-1.2.40-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.3](https://img.shields.io/badge/AppVersion-8.3-informational?style=flat-square)
+![Version: 1.2.41](https://img.shields.io/badge/Version-1.2.41-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 8.5](https://img.shields.io/badge/AppVersion-8.5-informational?style=flat-square)
 
 ## Overview
 The Fabric Helm chart provides a deployment of the Fabric application on Kubernetes clusters. This chart is designed for flexibility, supporting a wide range of configuration options to suit enterprise and cloud-native environments. It is suitable for both development and production deployments.
@@ -8,10 +8,8 @@ The Fabric Helm chart provides a deployment of the Fabric application on Kuberne
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [Namespace Resolution](#namespace-resolution)
-  - [1. Add the Helm Repository (Remote Installation)](#1-add-the-helm-repository-remote-installation)
-  - [2. Install the Chart from Remote Repository](#2-install-the-chart-from-remote-repository)
-  - [3. Install the Chart Locally (After Cloning the Repo)](#3-install-the-chart-locally-after-cloning-the-repo)
-  - [4. Custom Installation](#4-custom-installation)
+  - [1. Add the Helm Repository](#1-add-the-helm-repository)
+  - [2. Install the Chart](#2-install-the-chart)
 - [Upgrading](#upgrading)
 - [Uninstallation](#uninstallation)
 - [Configuration](#configuration)
@@ -19,6 +17,12 @@ The Fabric Helm chart provides a deployment of the Fabric application on Kuberne
     - [1. Deployment (Recommended for Development/Studio)](#1-deployment-recommended-for-developmentstudio)
     - [2. StatefulSet (Recommended for Production/Server)](#2-statefulset-recommended-for-productionserver)
   - [Fabric Application Configuration](#fabric-application-configuration)
+- [Pod Initialization (init-fabric)](#pod-initialization-init-fabric)
+  - [Environment Variables: secretsList and initSecretsList](#environment-variables-secretslist-and-initsecretslist)
+  - [Mounted Secrets: mountSecret and mountSecretB64enc](#mounted-secrets-mountsecret-and-mountsecretb64enc)
+  - [Copying Files](#copying-files)
+  - [SAML Certificates (idp_cert)](#saml-certificates-idp_cert)
+  - [Certificates and Keys](#certificates-and-keys)
 - [RBAC](#rbac)
 - [Horizontal Pod Autoscaling (HPA)](#horizontal-pod-autoscaling-hpa)
 - [Ingress](#ingress)
@@ -122,10 +126,10 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `serviceAccount.project_id` | string | `""` | GCP project ID |
 | `serviceAccount.cluster_name` | string | `""` | Cluster name |
 | `serviceAccount.azure_client_id` | string | `""` | Azure Managed Identity client ID |
-| `serviceAccount.automountServiceAccountToken` | bool | `""` | Set to `false` to explicitly disable automounting the service account token. When not set, Kubernetes defaults to `true` |
+| `serviceAccount.automountServiceAccountToken` | bool | not set | Set to `false` to explicitly disable automounting the service account token. When not set, Kubernetes defaults to `true` |
 | `serviceAccount.annotations` | array | `[]` | Resource-specific annotations for service account |
 | `container.replicas` | int | `1` | Number of Fabric pods |
-| `container.annotationsList` | list | `[{{name: description, value: Fabric on Kubernetes}}]` | List of pod annotations |
+| `container.annotationsList` | list | `[{name: description, value: Fabric on Kubernetes}]` | List of pod annotations |
 | `container.annotations` | array | `[]` | Resource-specific annotations for deployment/statefulset |
 | `container.resource_allocation.limits.memory` | string | `8Gi` | Memory limit |
 | `container.resource_allocation.limits.cpu` | string | `2` | CPU limit |
@@ -177,16 +181,16 @@ The following table lists the main configurable parameters of the Fabric chart a
 | `ingress.cert_manager.cluster_issuer` | string | `""` | cert-manager ClusterIssuer name |
 | `ingress.custom_annotations.enabled` | bool | `false` | Enable custom ingress annotations |
 | `ingress.custom_annotations.annotations` | list | See `values.yaml` | Custom ingress annotations |
-| `mountSecret.enabled` | bool | `false` | Mount decoded secret to pod |
+| `mountSecret.enabled` | bool | `false` | Also mount the secret on the Fabric container. The `init-fabric` container always mounts it. See [Mounted Secrets](#mounted-secrets-mountsecret-and-mountsecretb64enc) |
 | `mountSecret.name` | string | `config-secrets` | Name of the secret to mount |
 | `mountSecret.mountPath` | string | `/opt/apps/fabric/config-secrets` | Path to mount the secret |
-| `mountSecret.data` | object | See `values.yaml` | Data to mount as secret (see config, cp_files, idp_cert) |
-| `mountSecretB64enc.enabled` | bool | `false` | Mount base64-encoded secret to pod |
+| `mountSecret.data` | object | See `values.yaml` | Files to mount, as plain text: one file per key. Built-in keys: `config`, `cp_files`, `idp_cert` |
+| `mountSecretB64enc.enabled` | bool | `false` | Also mount the secret on the Fabric container. The `init-fabric` container always mounts it |
 | `mountSecretB64enc.name` | string | `mount-b64-secrets` | Name of the base64 secret to mount |
-| `mountSecretB64enc.mountPath` | string | `/opt/apps/fabric/config-secrets` | Path to mount the base64 secret |
-| `mountSecretB64enc.data` | object | See `values.yaml` | Data to mount as base64 secret |
-| `secretsList` | list | `[]` | List of additional secrets (see structure in values.yaml) |
-| `initSecretsList` | list | `[]` | List of init container secrets (see structure in values.yaml) |
+| `mountSecretB64enc.mountPath` | string | `/opt/apps/fabric/mount-b64-secrets` | Path to mount the base64 secret |
+| `mountSecretB64enc.data` | object | See `values.yaml` | Files to mount, values already base64-encoded (for binary files) |
+| `secretsList` | list | See `values.yaml` | Secrets whose keys become environment variables in both containers. See [Environment Variables](#environment-variables-secretslist-and-initsecretslist) |
+| `initSecretsList` | list | See `values.yaml` | Secrets whose keys become environment variables in the `init-fabric` container only |
 | `affinity.type` | string | `none` | Pod affinity/anti-affinity/none |
 | `affinity.label.name` | string | `topology.kubernetes.io/zone` | Affinity label name |
 | `affinity.label.value` | string | `region-a` | Affinity label value |
@@ -197,7 +201,7 @@ The following table lists the main configurable parameters of the Fabric chart a
 The Fabric Helm Chart supports two deployment types, each suited for different environments and use cases:
 
 #### 1. Deployment (Recommended for Development/Studio)
-Use this mode for development environments or when running Fabric Studio. This mode is stateless and works __only__ in a __single-replica__ setup.
+Use this mode for development environments or when running Fabric Studio. It uses one shared PVC and works only in a single-replica setup.
 
 **Recommended configuration:**
 - `deploy.type: Deployment`
@@ -254,6 +258,165 @@ PATH_BASE_ROUTING=true
 
 > **Note:** Without this setting, Fabric will treat the path prefix as part of the API route and requests will fail.
 
+## Pod Initialization (init-fabric)
+Every Fabric pod (Deployment and StatefulSet) starts with an init container named `init-fabric`. It runs the same image entrypoint as the Fabric container, with `START_FABRIC=false`. It prepares the workspace volume (`/opt/apps/fabric/workspace`) and exits, and then the Fabric container starts on the same workspace.
+
+The init container:
+- Merges `mountSecret.data.config` into `workspace/config/config.ini`
+- Copies the files listed in `cp_files` (see [Copying Files](#copying-files-cp_files))
+- Adds certificates and keys to the truststore and keystore (see [SAML Certificates](#saml-certificates-idp_cert) and [Certificates and Keys](#certificates-and-keys))
+- Clones and builds the project when `GIT_REPO` is set
+
+It runs on every pod start, so a change to the values takes effect after `helm upgrade` restarts the pods. The Studio image is an exception for some settings, see the [Studio first start](#supported-variables) note.
+
+What each container gets:
+
+| | `init-fabric` | `fabric` |
+|---|---|---|
+| Workspace volume (`/opt/apps/fabric/workspace`) | always | always |
+| `mountSecret` files | always | only when `mountSecret.enabled: true` |
+| `mountSecretB64enc` files | always | only when `mountSecretB64enc.enabled: true` |
+| `secretsList` environment variables | always | always |
+| `initSecretsList` environment variables | always | never |
+
+### Environment Variables: secretsList and initSecretsList
+Both lists create Kubernetes Secrets. Each key under `data` becomes an environment variable with the same name. Keys with an empty value are skipped.
+
+- `secretsList`: for variables Fabric needs at runtime, such as `MAX_HEAP`. They are set in both containers.
+- `initSecretsList`: for variables that are only needed to prepare the workspace, such as `CONFIG_UPDATE_FILE`, `COPY_FILES`, `IDP_CERT_PATH`, `GIT_REPO` and `GIT_TOKEN`. They are set in the init container only, so they are not visible in the running Fabric container.
+
+When the same key is in both lists, the init container uses the value from `initSecretsList`.
+
+```yaml
+secretsList:
+  - name: common-env-secrets
+    data:
+      MAX_HEAP: '10G'
+
+initSecretsList:
+  - name: config-init-secrets
+    data:
+      CONFIG_UPDATE_FILE: '/opt/apps/fabric/config-secrets/config'
+      COPY_FILES: '/opt/apps/fabric/config-secrets/cp_files'
+      START_FABRIC: 'false'
+```
+
+> **Note:** Keep `START_FABRIC: 'false'` in `initSecretsList`, so Fabric does not start inside the init container.
+
+### Mounted Secrets: mountSecret and mountSecretB64enc
+Both create a Kubernetes Secret and mount it as a folder: each key under `data` becomes a file `<mountPath>/<key>`. Keys with an empty value are skipped, so no file is created.
+
+| | `mountSecret` | `mountSecretB64enc` |
+|---|---|---|
+| Value in `values.yaml` | Plain text, the chart encodes it | Already base64-encoded, the chart uses it as is |
+| Use for | Text files: config, JSON, PEM certificates | Binary files: keystores (`.jks`, `.p12`), key files |
+| Default mount path | `/opt/apps/fabric/config-secrets` | `/opt/apps/fabric/mount-b64-secrets` |
+
+The file in the pod is always the original content, because Kubernetes decodes it when it mounts the secret. To prepare a binary value:
+
+```sh
+base64 -w0 my-keystore.p12
+```
+
+`enabled` only controls the **Fabric** container. The init container always mounts both secrets. The usual setup is to keep `enabled: false` and let the init container apply or copy the files to the workspace. The secret is then not mounted in the running Fabric container.
+
+Mounted secret files are read-only. When Fabric needs to own or change a file, copy it to the workspace with `cp_files`.
+
+### Copying Files
+`cp_files` copies files from the mounted secrets to the workspace volume (the PVC), where they persist and Fabric can write to them. The init container runs the copy, using the file that `COPY_FILES` points to (`/opt/apps/fabric/config-secrets/cp_files` by default).
+
+Each line is `<source> <target>`:
+
+```yaml
+mountSecret:
+  data:
+    cp_files: |
+      /opt/apps/fabric/config-secrets/rolesPrivileges.json /opt/apps/fabric/workspace/config/rolesPrivileges.json
+      /opt/apps/fabric/mount-b64-secrets/keystore.p12 /opt/apps/fabric/workspace/keystore.p12
+    rolesPrivileges.json: '{"roles":{"deployer":["DEPLOY","DEPLOY_ENVIRONMENTS","SET_GLOBAL_ENVIRONMENT","DROP_LUTYPE"]},"apikeys":{"xxxxxx-xxxx-xxxx-xxxx-xxxxxx":["deployer"]}}'
+
+mountSecretB64enc:
+  data:
+    keystore.p12: '<base64 of the file>'
+```
+
+Rules:
+- Separate the source and target with one space. Paths cannot contain spaces.
+- A folder source is copied with its content. The parent folder of the target must already exist.
+- The target is overwritten on every pod start, so the secret is the source of truth.
+- A source that does not exist is logged and skipped, and the pod keeps starting. Check the `init-fabric` logs when a file is missing.
+- Keep `COPY_FILES` in `initSecretsList`. If it is in `secretsList`, the Fabric container also tries to copy, and fails when the secret is not mounted there.
+
+### SAML Certificates (idp_cert)
+`mountSecret.data.idp_cert` holds the identity provider (IdP) certificate in PEM format. The key only creates the file. To load it, set `IDP_CERT_PATH` in `initSecretsList`:
+
+```yaml
+mountSecret:
+  data:
+    idp_cert: |
+      -----BEGIN CERTIFICATE-----
+      ...
+      -----END CERTIFICATE-----
+
+initSecretsList:
+  - name: config-init-secrets
+    data:
+      IDP_CERT_PATH: '/opt/apps/fabric/config-secrets/idp_cert'
+      IDP_ROLE: 'my-admin-role'
+```
+
+At startup the certificate is added to the Fabric truststore, and `IDP_CERT_ALIAS` in the `[saml]` section of `config.ini` is set (default alias `idp_cert`, change it with the `IDP_CERT_ALIAS` variable). The truststore is kept in the workspace (`workspace/config/.truststore`), so the certificate is still there when the Fabric container starts.
+
+`IDP_ROLE` is the IdP role that gets Fabric admin privileges.
+
+See [values.example_SAML](values.example_SAML) for a full SAML setup.
+
+### Certificates and Keys
+Use `ADD_CERTS_FILE` to load certificates and keys into Fabric when the pod starts:
+- `addtrust`: adds a certificate to the **truststore**, the certificates Fabric trusts for outgoing TLS connections. For example, a private or self-signed CA.
+- `addkey`: adds a certificate with its private key (`.p12`) to the **keystore**, the identity Fabric presents. For example, the web server TLS certificate or a client certificate.
+
+Both stores must be on the workspace volume, so that what the init container adds also reaches the Fabric container:
+- The truststore is there by default (`workspace/config/.truststore`).
+- For the keystore, set `FABRIC_KEYSTORE_PATH` and `FABRIC_KEYSTORE_PASS` in `secretsList`. The default `~/.keystore` is not on the workspace volume, so keys added to it are lost.
+
+Put the files in the mounted secrets and add a list file with one line per entry:
+- `addtrust|ALIAS|PATH`
+- `addkey|ALIAS|PATH|PASSWORD` (`PASSWORD` is the `.p12` password)
+
+Then set `ADD_CERTS_FILE` in `initSecretsList` to the path of the list file:
+
+```yaml
+mountSecret:
+  data:
+    trusted_certs: |
+      addtrust|corp_root_ca|/opt/apps/fabric/config-secrets/corp_root_ca.pem
+      addkey|webserver|/opt/apps/fabric/mount-b64-secrets/webserver.p12|my-p12-password
+    corp_root_ca.pem: |
+      -----BEGIN CERTIFICATE-----
+      ...
+      -----END CERTIFICATE-----
+
+mountSecretB64enc:
+  data:
+    webserver.p12: '<base64 of the file>'
+
+secretsList:
+  - name: common-env-secrets
+    data:
+      FABRIC_KEYSTORE_PATH: '/opt/apps/fabric/workspace/config/.keystore'
+      FABRIC_KEYSTORE_PASS: 'my-keystore-password'
+
+initSecretsList:
+  - name: config-init-secrets
+    data:
+      ADD_CERTS_FILE: '/opt/apps/fabric/config-secrets/trusted_certs'
+```
+
+Use a unique alias for each entry. Adding an entry with an existing alias replaces it.
+
+To use your own truststore instead of the default one, copy it to the workspace with [cp_files](#copying-files-cp_files) and set `FABRIC_TRUSTSTORE_PATH` and `FABRIC_TRUSTSTORE_PASS` in `secretsList`.
+
 
 ## RBAC
 RBAC (Role-Based Access Control) in this Helm chart is managed via the `serviceAccount` section in your `values.yaml` file.
@@ -293,7 +456,7 @@ scaling:
 > **Note:**
 > - HPA requires resource requests and limits to be set for CPU in your container configuration.
 > - The chart will automatically create the necessary Kubernetes HPA resource when enabled.
-> - Autoscaling it possible for Fabric but may not be suitable for all workloads, please evaluate based on your specific use case and load patterns.
+> - Autoscaling is possible for Fabric but may not be suitable for all workloads, please evaluate based on your specific use case and load patterns.
 
 ## Ingress
 To enable ingress, set `ingress.enabled: true` and configure the hostname:
@@ -443,7 +606,7 @@ spec:
 Storage behavior differs between deployment types:
 
 ### Deployment (`deploy.type: Deployment`)
-Always uses a shared PVC named `fabric-claim`. Control whether it is created with `storage.pvc.enabled` (default `true`):
+Always uses a shared PVC named `fabric-claim`, which the chart always creates in this mode (`storage.pvc.enabled` is ignored):
 
 ```yaml
 storage:
@@ -481,9 +644,35 @@ secretsList:
       MY_ENV_VAR_2: 'VALUE_2'
 ```
 
+For variables that only the init container needs, use `initSecretsList`. See [Environment Variables: secretsList and initSecretsList](#environment-variables-secretslist-and-initsecretslist).
+
+### Supported Variables
+The chart runs either the **Fabric** image (Fabric server) or the **Studio** image (Fabric with the web IDE). Both use the same values, but some variables apply to only one image.
+
+- **List**: where to set the variable, `init` for `initSecretsList` or `common` for `secretsList`.
+- **Image**: `Both`, `Fabric` or `Studio`.
+
+| Variable | List | Image | Description |
+|----------|------|-------|-------------|
+| `MIN_HEAP` / `MAX_HEAP` | common | Both | JVM heap size, for example `4G` |
+| `ADMIN_USER` | init | Both | First admin user, as `username/password` |
+| `IDP_ROLE` | init | Both | IdP role that gets Fabric admin privileges |
+| `ADD_MODULES` / `REMOVE_MODULES` | init | Both | Comma-separated Fabric modules to add or remove. `REMOVE_MODULES` matches part of a name, so use full module names. Studio: first start only |
+| `ADD_CERTS_FILE` | init | Both | Path to a file that lists certificates (`addtrust`) and keys (`addkey`) to load at startup. See [Certificates and Keys](#certificates-and-keys) |
+| `http_proxy` / `https_proxy` / `no_proxy` | common | Both | Proxy for Fabric (JVM) and git |
+| `FABRIC_LOG_TYPE` | common | Both | `CONTAINER_STDOUT`, `STDOUT` or `NONE`: how Fabric logs reach the pod log |
+| `MONITORING` | common | Both | `true` sets up the Prometheus JMX exporter |
+| `GIT_REPO` / `GIT_BRANCH` / `GIT_PATH_IN_REPO` / `GIT_TOKEN` | init | Both | Fabric: clone, build and deploy the project on every start. Studio: clone the project into the workspace on first start, for development |
+| `SPACE_NAME` | common | Studio | Space name, used as the node ID and as the git user name and email for commits |
+| `NEO4J_AUTH` | init | Studio | Initial password of the local Neo4j, when the image includes it |
+
+> **Studio first start:** the Studio image applies `mountSecret.data.config` (`CONFIG_UPDATE_FILE`), modules and the git clone only when the workspace has no project yet. To apply changes to these settings on an existing workspace, set `INIT_CONF: 'true'` in `initSecretsList` for one restart. The git clone is still skipped when the project exists.
+
 ## Troubleshooting
-- Check pod logs: `kubectl logs <pod-name> -n fabric`
-- Describe resources: `kubectl describe pod <pod-name> -n fabric`
+- Check pod logs: `kubectl logs <pod-name> -n <namespace>`
+- Check the init container logs when the pod is stuck in `Init` or Fabric starts with wrong settings: `kubectl logs <pod-name> -c init-fabric -n <namespace>`
+- The startup log of both containers is also written to `/opt/apps/fabric/workspace/logs/k2init.out`
+- Describe resources: `kubectl describe pod <pod-name> -n <namespace>`
 - Verify ingress and service endpoints.
 
 ## Support
