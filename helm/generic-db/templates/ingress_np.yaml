@@ -1,6 +1,7 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $networkPolicy := default dict .Values.networkPolicy }}
 {{ $app_name := default .Chart.Name .Values.app_name }}
+{{ $name_prefix := default "" .Values.name_prefix }}
 {{ $global := default dict .Values.global }}
 {{ $global_annotations := default (list) $global.annotations }}
 {{ $annotations := default (list) .Values.annotations }}
@@ -11,7 +12,7 @@
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: ingress-{{ $app_name }}-np
+  name: ingress-{{ $name_prefix }}{{ $app_name }}-np
   namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: {{ $app_name }}

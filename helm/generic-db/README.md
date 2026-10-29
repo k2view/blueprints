@@ -1,5 +1,5 @@
 # generic-db
-![Version: 1.1.9](https://img.shields.io/badge/Version-1.1.9-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
+![Version: 1.2.1](https://img.shields.io/badge/Version-1.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0](https://img.shields.io/badge/AppVersion-1.0-informational?style=flat-square)
 
 Example Helm chart that deploys a generic database, such as PostgreSQL, Cassandra, or Neo4j, on Kubernetes.
 
@@ -10,7 +10,8 @@ The `generic-db` Helm chart is a reference example of a unified and configurable
 ### Global Configuration
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `app_name` | string | `"generic-db"` | Name of the database type to deploy (`postgres`, `cassandra`, `kafka`, `neo4j`) |
+| `app_name` | string | `"postgres"` | Name of the database type to deploy (`postgres`, `cassandra`, `kafka`, `neo4j`) |
+| `name_prefix` | string | `""` | Prefix prepended to resource names (labels are unchanged), e.g. `"my-"` -> `my-postgres-service` |
 | `namespace.name` | string | `""` | Name of the Kubernetes namespace (defaults to release name) |
 | `annotations` | array | `[]` | Global annotations applied to all resources |
 | `labels` | array | `[]` | Global labels applied to all resources |
@@ -33,6 +34,14 @@ The `generic-db` Helm chart is a reference example of a unified and configurable
 |-----|------|---------|-------------|
 | `create_secrets` | bool | `true` | Whether to create default secrets |
 | `secrets` | array | `[]` | List of custom secrets to create |
+
+### Mount Secrets Configuration
+Files stored in a Secret (`<name_prefix><app_name>-mount-secrets`) and mounted read-only into the container. Rendered only when `mountSecrets.secrets` is set.
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `mountSecrets.path` | string | `""` | Directory to mount the files into. Required when `mountSecrets.secrets` is set |
+| `mountSecrets.secrets` | array | `[]` | List of files; each item has `key` (file name) and `value` (file content) |
 
 ### Storage Configuration
 | Key | Type | Default | Description |
@@ -126,6 +135,7 @@ The `generic-db` Helm chart can be customized to deploy different databases by a
 - **Kafka**: `values.example_kafka`
 - **Neo4j**: `values.example_neo4j`
 - **Postgres**: `values.yaml` (default configuration)
+- **Postgres (non-superuser app user)**: `values.example_postgres`
 
 These high-level configurations demonstrate how to customize the generic-db Helm chart to suit various database systems by modifying key parameters in the values files.
 
@@ -140,3 +150,25 @@ Deploy **Neo4j** by using `values.example_neo4j`. This setup changes `app_name` 
 
 ### Postgres
 The default `values.yaml` is configured for **PostgreSQL** deployment. It sets `app_name` to `postgres`, uses the PostgreSQL Docker image, and includes default resource allocations and secrets.
+
+### Postgres (non-superuser app user)
+`values.example_postgres` deploys PostgreSQL where applications connect as a regular (non-superuser) role. It uses `mountSecrets` to mount an init script (`01-app-role.sh`) into `/docker-entrypoint-initdb.d`, which the official `postgres` image runs on first start.
+
+| Env (in `secrets`) | Purpose |
+|--------------------|---------|
+| `POSTGRES_USER` | Bootstrap superuser, e.g. `pgadmin`. Must differ from `POSTGRES_USERNAME` |
+| `POSTGRES_PASSWORD` | Superuser password (must not contain a single quote) |
+| `POSTGRES_USERNAME` | App role, created without `SUPERUSER`/`CREATEROLE`/`CREATEDB`. Default `postgres` |
+| `POSTGRES_APP_PASSWORD` | App role password (must not contain a single quote). Optional; falls back to `POSTGRES_PASSWORD`, then `postgres` |
+| `POSTGRES_DB` | Database owned by the app role. Set it explicitly: if unset, the image names it after `POSTGRES_USER` |
+
+> **Note:** The init script only runs when the data directory is empty.
+
+## References
+- [PostgreSQL Docker image](https://hub.docker.com/_/postgres) (env vars and `/docker-entrypoint-initdb.d` init scripts)
+- [PostgreSQL `CREATE ROLE`](https://www.postgresql.org/docs/current/sql-createrole.html)
+- [Cassandra Docker image](https://hub.docker.com/_/cassandra)
+- [Neo4j Docker image](https://hub.docker.com/_/neo4j)
+- [Neo4j Docker configuration](https://neo4j.com/docs/operations-manual/current/docker/configuration/)
+- [Apache Kafka documentation](https://kafka.apache.org/documentation/) (the example uses the internal `docker.share.cloud.k2view.com/k2view/kafka` image)
+- [Kubernetes Secrets mounted as files](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets-as-files-from-a-pod)

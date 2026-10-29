@@ -1,5 +1,6 @@
 {{ $namespace := default dict .Values.namespace }}
 {{ $app_name := default .Chart.Name .Values.app_name }}
+{{ $name_prefix := default "" .Values.name_prefix }}
 {{ $service := default dict .Values.service }}
 {{ $service_port := $service.port }}
 {{ $global := default dict .Values.global }}
@@ -22,7 +23,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $app_name }}-service
+  name: {{ $name_prefix }}{{ $app_name }}-service
   namespace: {{ default .Release.Name $namespace.name }}
   labels:
     app: {{ $app_name }}

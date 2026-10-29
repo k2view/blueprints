@@ -1,5 +1,8 @@
 # app_name will be app label and prefix for resources
 # Supported values: postgres, cassandra, kafka, neo4j
+app_name: "postgres"
+# Optional prefix prepended to resource names (labels are unchanged), e.g. "my-" -> my-postgres-service
+# name_prefix: ""
 
 # Global annotations and labels applied to all resources
 # annotations:
@@ -16,7 +19,7 @@
 # deployment.yaml
 container:
   image:
-    url: postgres:17.5
+    url: postgres:17.11
     # repoSecret:
     #   name: "registry-secret"
     #   enabled: false
@@ -43,6 +46,14 @@ container:
 #   value: "postgres"
 # - key: PGDATA
 #   value: "/opt/apps/pgsql/data/data/pgdata"
+
+# mount_secret.yaml
+# Custom secrets to be mounted into the container at a specific path
+# mountSecrets:
+#   path: "/docker-entrypoint-initdb.d"
+#   secrets:
+#     - key: "MOUNT_SECRET_KEY"
+#       value: "MOUNT_SECRET_VALUE"
 
 # ingress_np.yaml
 networkPolicy:
