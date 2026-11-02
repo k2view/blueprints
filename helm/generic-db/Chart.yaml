@@ -1,6 +1,7 @@
 apiVersion: v2
-name: generic-db
-description: Example Helm chart that deploys a generic database, such as PostgreSQL, Cassandra, or Neo4j, on Kubernetes.
-type: application
-version: 1.1.10
 appVersion: "1.0"
+description: Example Helm chart that deploys a generic database, such as PostgreSQL,
+  Cassandra, or Neo4j, on Kubernetes.
+name: generic-db
+type: application
+version: 1.2.1

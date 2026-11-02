@@ -6,6 +6,7 @@
 {{ $limits := default dict $resource_allocation.limits}}
 {{ $requests := default dict $resource_allocation.requests}}
 {{ $app_name := default .Chart.Name .Values.app_name }}
+{{ $name_prefix := default "" .Values.name_prefix }}
 {{ $service_port := .Values.service.port }}
 {{ $secrets := default (list) .Values.secrets }}
 {{ $storage_path := .Values.container.storage_path }}
@@ -15,6 +16,7 @@
 {{ $global_labels := default (list) $global.labels }}
 {{ $resource_annotations := default (list) .Values.container.annotations }}
 {{ $resource_labels := default (list) .Values.container.labels }}
+{{ $mountSecrets := default dict .Values.mountSecrets }}
 {{- /* Default values for common apps */ -}}
 {{- if $app_name | eq "postgres" }}
   {{ $storage_path := .Values.container.storage_path | default "/opt/apps/pgsql/data/data/" }}
@@ -37,7 +39,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $app_name }}-deployment
+  name: {{ $name_prefix }}{{ $app_name }}-deployment
   namespace: {{ default .Release.Name $namespace.name }}
   labels: &id001
     app: {{ $app_name }}
@@ -118,13 +120,24 @@ spec:
         - name: {{ .key }}
           valueFrom:
             secretKeyRef:
-              name: {{ $app_name }}-secrets
+              name: {{ $name_prefix }}{{ $app_name }}-secrets
               key: {{ .key }}
         {{- end }}
         volumeMounts:
         - name: {{ $app_name }}-storage
           mountPath: {{ $storage_path }}
+        {{- if $mountSecrets.secrets }}
+        - name: {{ $app_name }}-mount-secrets
+          mountPath: {{ required "mountSecrets.path is required when mountSecrets.secrets is set" $mountSecrets.path }}
+          readOnly: true
+        {{- end }}
+
       volumes:
       - name: {{ $app_name }}-storage
         persistentVolumeClaim:
-          claimName: {{ $app_name }}-claim
+          claimName: {{ $name_prefix }}{{ $app_name }}-claim
+      {{- if $mountSecrets.secrets }}
+      - name: {{ $app_name }}-mount-secrets
+        secret:
+          secretName: {{ $name_prefix }}{{ $app_name }}-mount-secrets
+      {{- end }}

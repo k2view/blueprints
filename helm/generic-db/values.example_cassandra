@@ -13,7 +13,7 @@ app_name: "cassandra"
 # deployment.yaml
 container:
   image:
-    url: cassandra:4.1.5
+    url: cassandra:4.1.12
   storage_path: "/var/lib/cassandra"
   resource_allocation:
     limits:

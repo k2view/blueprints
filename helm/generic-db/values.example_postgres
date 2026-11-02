@@ -1,0 +1,77 @@
+# app_name will be app label and prefix for resources
+# Supported values: postgres, cassandra, kafka, neo4j
+app_name: "postgres"
+
+# Global annotations and labels applied to all resources
+# annotations:
+#   - key: "app.kubernetes.io/component"
+#     value: "database"
+#   - key: "kubernetes.io/description"
+#     value: "Generic database deployment for PostgreSQL, Cassandra, Kafka, or Neo4j"
+# labels:
+#   - key: "app.kubernetes.io/component"
+#     value: "database"
+#   - key: "app.kubernetes.io/part-of"
+#     value: "generic-db"
+
+# deployment.yaml
+container:
+  image:
+    url: postgres:17.11
+  storage_path: "/opt/apps/pgsql/data/data/"
+  resource_allocation:
+    limits:
+      memory: 4Gi
+      cpu: '1'
+    requests:
+      memory: 2Gi
+      cpu: '0.5'
+
+# secrets.yaml
+secrets:
+- key: POSTGRES_USERNAME
+  value: "postgres"
+# bootstrap superuser; renamed so "postgres" can be a regular role
+- key: POSTGRES_USER
+  value: "pgadmin"
+- key: POSTGRES_PASSWORD
+  value: "pgadmin_password"
+# keep "postgres" as the only db (otherwise defaults to POSTGRES_USER)
+- key: POSTGRES_DB
+  value: "postgres"
+- key: PGDATA
+  value: "/opt/apps/pgsql/data/data/pgdata"
+
+# mount_secret.yaml
+mountSecrets:
+  path: "/docker-entrypoint-initdb.d"
+  secrets:
+    - key: "01-app-role.sh"
+      value: |
+        #!/bin/bash
+        # runs once, on first init, as the bootstrap superuser
+        set -e
+        # NOTE: This script assumes POSTGRES_DB is set.
+        POSTGRES_USERNAME="${POSTGRES_USERNAME:-postgres}"
+        POSTGRES_APP_PASSWORD="${POSTGRES_APP_PASSWORD:-${POSTGRES_PASSWORD:-postgres}}"
+        psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
+          CREATE ROLE "$POSTGRES_USERNAME" LOGIN CREATEDB CREATEROLE PASSWORD '$POSTGRES_APP_PASSWORD';  -- no SUPERUSER
+          GRANT pg_monitor, pg_signal_backend TO "$POSTGRES_USERNAME";
+          ALTER DATABASE "$POSTGRES_DB" OWNER TO "$POSTGRES_USERNAME";
+          REVOKE ALL ON DATABASE "$POSTGRES_DB" FROM PUBLIC;
+        EOSQL
+
+# ingress_np.yaml
+networkPolicy:
+  enabled: true
+
+# service.yaml
+service:
+  port: 5432
+
+# pvc.yaml
+storage:
+  class: managed
+  allocated_amount: 10Gi
+  securityContext: true
+
