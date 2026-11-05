@@ -2,32 +2,39 @@ name: k2v-ingress
 services:
   socat:
     container_name: socat
-    image: alpine/socat
+    image: ${INGRESS_SOCAT_IMAGE}
     pull_policy: ${INGRESS_PULL_POLICY}
     restart: always
     networks:
       - fab-net
     volumes:
-      - ${SOCKET}:${SOCKET}:ro
+      - ${SOCKET}:/run/container-engine.sock:ro
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        until [[ -S ${SOCKET} ]]; do
-          echo "Waiting for Docker socket..."
+        until [ -S /run/container-engine.sock ]; do
+          if [ -e /run/container-engine.sock ]; then
+            echo "Error: Mounted socket file exists but is not an unix socket. In the host, you will need to remove '${SOCKET}' and restart the Docker socket" >&2
+          else
+            echo "Waiting for Docker socket..."
+          fi
           sleep 2
         done
-        exec socat tcp-listen:2375,fork,reuseaddr unix-connect:${SOCKET}
+        exec socat tcp-listen:2375,fork,reuseaddr unix-connect:/run/container-engine.sock
     healthcheck:
-      test: ["CMD-SHELL", "socat /dev/null TCP4:localhost:2375 || exit 1"]
+      test: 
+        - CMD-SHELL
+        - "{ printf 'GET /_ping HTTP/1.1\nHost: localhost\n\n'; sleep 0.1; } | socat -T3 - TCP4:127.0.0.1:2375 2>/dev/null | grep -q '200 OK'"
       interval: 15s
       timeout: 5s
       retries: 8
     labels:
-      - "k2v-ingress"
+      - k2v-ingress
+      - socketPath=${SOCKET}
 
   traefik:
     container_name: traefik
-    image: traefik
+    image: ${INGRESS_TRAEFIK_IMAGE}
     pull_policy: ${INGRESS_PULL_POLICY}
     depends_on:
       socat:
@@ -55,7 +62,7 @@ services:
       - "--entryPoints.websecure.address=:443"
       - "--entryPoints.websecure.http.tls=true"
     labels:
-      - "k2v-ingress"
+      - k2v-ingress
 
 networks:
   fab-net:

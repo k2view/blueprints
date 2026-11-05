@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 self_path=$(cd -- "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 && pwd)
-date=static #="$(date "+%Y%m%d_%H%M%S")"
+date="$(date "+%Y%m%d_%H%M%S")"
 
 usage="Usage: $(basename "$0") COMMAND
 
@@ -38,6 +38,25 @@ Check Options:
   --save[=OPTION]      Specify whether the diagnostic output must be saved to disk or not. Use --save to save on error or --save=always
 "
 
+function k2spacePackageVersion() {
+  local version k2space space_compose ingress_compose
+  version="$(cat "$self_path/.VERSION" 2>/dev/null)" || version=".VERSION file not found"
+  if command -v md5sum >/dev/null; then
+    k2space="$(md5sum "$self_path/k2space.sh" | awk '{ print $1 }')"
+    space_compose="$(md5sum "$self_path/compose.yaml" | awk '{ print $1 }')"
+    ingress_compose="$(md5sum "$self_path/k2vingress-compose.yaml" | awk '{ print $1 }')"
+  fi
+
+  [[ -n "$k2space" ]] || k2space="N/A"
+  [[ -n "$space_compose" ]] || space_compose="N/A"
+  [[ -n "$ingress_compose" ]] || ingress_compose="N/A"
+
+  echo "version: $version"
+  echo "k2space.sh: $k2space"
+  echo "compose.yaml: $space_compose"
+  echo "k2vingress-compose.yaml: $ingress_compose"
+}
+
 function k2spacePackageUpdate() {
   local version_file_remote="https://raw.githubusercontent.com/k2view/blueprints/refs/heads/main/Studio/Podman/.VERSION"
   local action="$1"
@@ -65,6 +84,7 @@ function k2spaceContainerStatus() {
   local name="$1"
   local max_tries=3
   local try=0
+  local wait=20
 
   while [[ "$try" -lt "$max_tries" ]]; do
     try=$((try + 1))
@@ -83,7 +103,7 @@ function k2spaceContainerStatus() {
       break
     fi
 
-    sleep 20
+    sleep $wait
     exit_code=1
   done
   [[ "$exit_code" -eq 1 ]] && echo "Timeout waiting for ${name#$COMPOSE_PROJECT_NAME-} (running=$running status=$status health=$health)" >&2
@@ -119,6 +139,24 @@ function k2spaceList() {
   fi
 }
 
+function k2spaceIngressValidateSocket() {
+  engine_socket="$(podman info --format '{{ .Host.RemoteSocket.Path }}' 2>/dev/null)"
+  [[ -n "$engine_socket" ]] || return
+
+  compose_socket="$(podman compose --file "$self_path/k2vingress-compose.yaml" config 2>/dev/null | sed -n 's/^[[:space:]]*socketPath: //p')"
+  [[ -n "$compose_socket" ]] || return
+
+  if ! [[ "$engine_socket" == "$compose_socket" ]]; then
+    echo "Error: The socket path configured in the .env file does not match your container engine. Traefik will not be started" >&2
+    return 1
+  fi
+
+  if ! [[ -S "$engine_socket" ]]; then
+    echo "Error: Socket file '$engine_socket' not found. Traefik will not be started" >&2
+    return 1
+  fi
+}
+
 function k2spaceIngress() {
   unset COMPOSE_PROJECT_NAME
 
@@ -129,6 +167,7 @@ function k2spaceIngress() {
       local state=$(podman ps --all --filter label=k2v-ingress --filter "name=^traefik$" --format "{{ .State }}")
       if ! [[ "$state" == "running" ]] || [[ "$action" == "restart" ]]; then
         [[ "$action" == "restart" ]] && recreate='--podman-run-args="--replace"'
+        k2spaceIngressValidateSocket || return 1
         echo "Starting Traefik"
         podman compose --file "$self_path/k2vingress-compose.yaml" $recreate up --detach
       fi
@@ -175,7 +214,7 @@ function k2spaceStart() {
     [[ "$arg" =~ ^"--git-branch=" ]] && { export GIT_BRANCH="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--heap=" ]] && { export MAX_HEAP="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--port=" ]] && { export FABRIC_UI_PORT="${arg#*=}"; continue; }
-    [[ "$arg" =~ ^"--profile=" ]] && { export PROFILE="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--profile=" ]] && { export COMPOSE_PROFILES="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--project=" ]] && { export PROJECT_NAME="${arg#*=}"; continue; }
     set -- "$@" "$arg"
   done
@@ -202,27 +241,26 @@ function k2spaceStart() {
     COMPOSE_PROJECT_NAME="$(sed -nE 's/^name:( )*//p' $compose)"
   fi
 
-  if [[ -n "$PROFILE" ]]; then
-    [[ ! -f "$self_path/$PROFILE.config" ]] && { echo "profile '$PROFILE' not found" 1>&2; return 1; }
-    local profile="--profile $PROFILE"
+  if [[ -n "$COMPOSE_PROFILES" ]]; then
+    [[ ! -f "$self_path/$COMPOSE_PROFILES.config" ]] && { echo "profile '$COMPOSE_PROFILES' not found" 1>&2; return 1; }
+    local profile="--profile $COMPOSE_PROFILES"
   fi
 
   if [[ -n "$GIT_AUTHORSHIP" ]]; then
-    [[ ! "$GIT_AUTHORSHIP" =~ ":" ]] && { echo "invalid GIT_AUTHORSHIP format (must be Your Name:you@example.com)" 1>&2; return 1; }
-    [[ -z "$GIT_AUTHOR_NAME" ]] && export GIT_AUTHOR_NAME="$(awk 'BEGIN { FS=":" }; { print $1 }' <<< $GIT_AUTHORSHIP)"
-    [[ -z "$GIT_AUTHOR_EMAIL" ]] && export GIT_AUTHOR_EMAIL="$(awk 'BEGIN { FS=":" }; { print $2 }' <<< $GIT_AUTHORSHIP)"
-    [[ -z "$GIT_COMMITTER_NAME" ]] && export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
-    [[ -z "$GIT_COMMITTER_EMAIL" ]] && export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+    [[ "$GIT_AUTHORSHIP" =~ .+:.+ ]] || { echo "invalid GIT_AUTHORSHIP format (must be 'Your Name:you@example.com')" >&2; return 1; }
+    export GIT_AUTHOR_NAME="${GIT_AUTHORSHIP%%:*}"
+    export GIT_AUTHOR_EMAIL="${GIT_AUTHORSHIP#*:}"
+    export GIT_COMMITTER_NAME="${GIT_AUTHORSHIP%%:*}"
+    export GIT_COMMITTER_EMAIL="${GIT_AUTHORSHIP#*:}"
   fi
 
   local space_info=$(podman ps --all --filter label=k2viewspace --filter label=com.docker.compose.project=$COMPOSE_PROJECT_NAME --format "{{index .Labels \"space-profile\"}}")
   if [[ -z "$space_info" ]]; then
-    podman compose --project-name "$COMPOSE_PROJECT_NAME" --file "$compose" $env_flag $profile pull || return 1
     sed "s/\${COMPOSE_PROJECT_NAME}/${COMPOSE_PROJECT_NAME}/g" "$compose" | podman compose --project-name "$COMPOSE_PROJECT_NAME" --file - $env_flag $profile up --detach || local err="$?"
   else
     echo "Starting Space '$COMPOSE_PROJECT_NAME'"
-    [[ -n "$PROFILE" ]] && [[ "$PROFILE" != "$space_info" ]] && echo "Warning: Space '$COMPOSE_PROJECT_NAME' was previously created using Space Profile '$space_info', ignoring '$PROFILE'" 1>&2
-    podman compose --project-name "$COMPOSE_PROJECT_NAME" start || local err="$?"
+    [[ -n "$COMPOSE_PROFILES" ]] && [[ "$COMPOSE_PROFILES" != "$space_info" ]] && echo "Warning: Space '$COMPOSE_PROJECT_NAME' was previously created using Space Profile '$space_info', ignoring '$COMPOSE_PROFILES'" 1>&2
+    podman compose --project-name "$COMPOSE_PROJECT_NAME" --profile "$space_info" start || local err="$?"
   fi
 
   if [[ -n "$err" ]]; then
@@ -236,11 +274,14 @@ function k2spaceStart() {
 
 function k2spaceRecreate() {
   local arg safety_bypass
+  local -a preserve_env
   for arg in "$@"; do
     shift
     [[ "$arg" =~ ^"--fabric-version=" ]] && { export FABRIC_VERSION="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--heap=" ]] && { local max_heap="${arg#*=}"; continue; }
     [[ "$arg" =~ ^"--port=" ]] && { export FABRIC_UI_PORT="${arg#*=}"; continue; }
+    [[ "$arg" =~ ^"--preserve-all-envs" ]] && { local preserve_all_envs="true"; continue; }
+    [[ "$arg" =~ ^"--preserve-env=" ]] && { preserve_env+=("${arg#*=}"); continue; }
     [[ "$arg" =~ ^"--safety-bypass" ]] && { safety_bypass="true"; continue; }
     set -- "$@" "$arg"
   done
@@ -272,26 +313,70 @@ function k2spaceRecreate() {
   [[ -f "$self_path/.env" ]] && env_flag="--env-file $self_path/.env"
   [[ -f "$self_path/.env-$name" ]] && env_flag="$env_flag --env-file $self_path/.env-$name"
 
-  export PROFILE=$(podman inspect --type=container "$space_id" --format '{{index .Config.Labels "space-profile"}}')
-  if [[ -z "$PROFILE" ]]; then
+  export COMPOSE_PROFILES=$(podman inspect --type=container "$space_id" --format '{{index .Config.Labels "space-profile"}}')
+  if [[ -z "$COMPOSE_PROFILES" ]]; then
     echo "could not retrieve Space Profile" >&2
     return 1
-  elif [[ ! -f "$self_path/$PROFILE.config" ]]; then
-    echo "Profile '$PROFILE' not found, it may have been deleted." >&2
+  elif [[ ! -f "$self_path/$COMPOSE_PROFILES.config" ]]; then
+    echo "Profile '$COMPOSE_PROFILES' not found, it may have been deleted." >&2
     return 1
   fi
-  local profile_flag="--profile $PROFILE"
+  local profile_flag="--profile $COMPOSE_PROFILES"
 
   local space_env_vars=$(podman inspect --type=container "$space_id" --format '{{range .Config.Env}}{{println .}}{{end}}')
-  (
-    while IFS= read -r line || [[ -n "$line" ]]; do
-      export "$line"
-    done < <(printf "$space_env_vars")
-    [[ -n "$max_heap" ]] && export MAX_HEAP="$max_heap"
+  local -A preserve_env_whitelist=(
+    [PROJECT_NAME]=
+    [PROJECT_DIR]=
+    [GIT_REPO]=
+    [GIT_BRANCH]=
+    [GIT_USERNAME]=
+    [GIT_TOKEN]=
+    [GIT_USE_HEADER_AUTH]=
+    [GIT_AUTHOR_NAME]=
+    [GIT_AUTHOR_EMAIL]=
+    [GIT_COMMITTER_NAME]=
+    [GIT_COMMITTER_EMAIL]=
+    [MAX_HEAP]=
+    [http_proxy]=
+    [https_proxy]=
+    [no_proxy]=
+    [HTTP_PROXY]=
+    [HTTPS_PROXY]=
+    [NO_PROXY]=
+  )
 
-    podman compose --project-name "$COMPOSE_PROJECT_NAME" --file "$compose" $env_flag $profile pull || return 1
-    sed "s/\${COMPOSE_PROJECT_NAME}/${COMPOSE_PROJECT_NAME}/g" "$compose" | podman compose --project-name "$COMPOSE_PROJECT_NAME" --file - $env_flag $profile_flag up --detach
-  ) || local err=$?
+  if [[ "$preserve_all_envs" == "true" ]]; then
+    preserve_env=( "${!preserve_env_whitelist[@]}" )
+  else
+    local filtered=()
+    for env in "${preserve_env[@]}"; do
+      if [[ -n "${preserve_env_whitelist[$env]+x}" ]]; then
+        filtered+=( "$env" )
+      else
+        echo "Warning: environment variable '$env' is not whitelisted, ignoring" >&2
+      fi
+    done
+    preserve_env=( "${filtered[@]}" )
+  fi
+
+  local compose_env_var=()
+  local line env
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" =~ =.+$ ]] || continue
+
+    env="${line%%=*}"
+    for preserve in "${preserve_env[@]}"; do
+      if [[ "$env" == "$preserve" ]]; then
+        [[ -n "$max_heap" ]] && [[ "$env" == "MAX_HEAP" ]] && { echo "Warning: Max heap manually set, not preserving" >&2; continue; }
+        compose_env_var+=( "$line" )
+        break
+      fi
+    done
+  done <<<"$space_env_vars"
+
+  [[ -n "$max_heap" ]] && compose_env_var+=( "MAX_HEAP=$max_heap" )
+
+  sed "s/\${COMPOSE_PROJECT_NAME}/${COMPOSE_PROJECT_NAME}/g" "$compose" | env "${compose_env_var[@]}" podman compose --project-name "$COMPOSE_PROJECT_NAME" --file - $env_flag $profile_flag up --detach || local err=$?
 
   if [[ -n "$err" ]]; then
     echo "An error occurred during the space recreation." >&2
@@ -326,6 +411,7 @@ function k2spaceDiagnostic() {
 
   local log_space_info="/dev/null"
   local log_cp_files="/dev/null"
+  local log_package_info="/dev/null"
 
   if [[ "$DIAGNOSTIC_OUTPUT_SAVE" == "true" ]] || [[ "$DIAGNOSTIC_OUTPUT_SAVE" == "always" ]]; then
     [[ -z "$output_path" ]] && [[ -z "$DIAGNOSTIC_OUTPUT_PATH" ]] && output_path="$self_path"
@@ -346,8 +432,10 @@ function k2spaceDiagnostic() {
 
     log_space_info="$DIAGNOSTIC_OUTPUT_PATH/space-info.log"
     log_cp_files="$DIAGNOSTIC_OUTPUT_PATH/cp-files.log"
+    log_package_info="$DIAGNOSTIC_OUTPUT_PATH/package-info.log"
   fi
 
+  k2spacePackageVersion | tee -a "${log_package_info}"
   k2spaceIngressCheck || echo "Ingress in unhealthy"
 
   local container_list=( $(podman ps --all --filter label=com.docker.compose.project=$COMPOSE_PROJECT_NAME --format "{{ .Names }}" | grep -Ev -- "-fabric$") )
@@ -396,8 +484,7 @@ function k2spaceDiagnostic() {
     zip -r -X "${DIAGNOSTIC_OUTPUT_PATH}.zip" .
     popd
   fi
-  [[ "$created_output_path" == "true" ]] && rm -d "$DIAGNOSTIC_OUTPUT_PATH" 2>/dev/null
-
+  [[ "$created_output_path" == "true" ]] && rm -df "$DIAGNOSTIC_OUTPUT_PATH" 2>/dev/null
 }
 
 command="$1"
@@ -410,10 +497,18 @@ case "$command" in
     k2spaceDiagnostic "$@"
     ;;
   stop)
-    podman pod stop "pod_$1"
+    export COMPOSE_PROJECT_NAME="$1"
+    profile_flag=()
+    profile="$(podman ps --all --filter label=k2viewspace --filter label=com.docker.compose.project=$COMPOSE_PROJECT_NAME --format "{{index .Labels \"space-profile\"}}")"
+    [[ -n "$profile" ]] && profile_flag=( --profile "$profile" )
+    podman compose --project-name "$COMPOSE_PROJECT_NAME" "${profile_flag[@]}" stop
     ;;
   destroy | rm | down)
-    podman pod rm --force "pod_$1"
+    export COMPOSE_PROJECT_NAME="$1"
+    profile_flag=()
+    profile="$(podman ps --all --filter label=k2viewspace --filter label=com.docker.compose.project=$COMPOSE_PROJECT_NAME --format "{{index .Labels \"space-profile\"}}")"
+    [[ -n "$profile" ]] && profile_flag=( --profile "$profile" )
+    podman compose --project-name "$COMPOSE_PROJECT_NAME" "${profile_flag[@]}" down
     ;;
   recreate | upgrade)
     k2spaceRecreate "$@"
@@ -427,7 +522,10 @@ case "$command" in
   package)
     k2spacePackageUpdate "$@"
     ;;
+  version|--version)
+    k2spacePackageVersion
+    ;;
   *)
-    echo "$usage" 1>&2
+    echo "$usage" >&2
     ;;
 esac

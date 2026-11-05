@@ -1,6 +1,5 @@
-# K2view Fabric Web Studio for Podman, Version 2.1
-This **README** describes how to use **Podman Compose** container runtime to host K2view Fabric Web Studio. It outlines the setup, components, installation options, and features relevant to Podman-based container environments.
-
+# K2view Fabric Web Studio for Podman
+This **README** describes the Podman Compose runtime used to host K2view Fabric Web Studio. It covers prerequisites, setup, installation, configuration, and operation.
 ## Table of Contents
 
 1. [Documentation](#documentation)
@@ -13,7 +12,7 @@ This **README** describes how to use **Podman Compose** container runtime to hos
 1. [Proxy Configuration](#proxy-configuration)
 1. [Things to Know](#things-to-know)
 1. [Installation](#installation)
-1. [Operating and Managing Fabric Web Studio](#operating-and-managing-fabric-web-studio)
+1. [Operating and Managing Fabric Web Studio for Podman Compose](#operating-and-managing-fabric-web-studio-for-podman-compose)
 1. [Reference Information](#reference-information)
 1. [Customizing Runtime Files Per Space](#customizing-runtime-files-per-space)
 1. [Podman Command Reference for Enterprise Linux Environments](#podman-command-reference-for-enterprise-linux-environments)
@@ -25,49 +24,42 @@ The latest documentation is located at this location: https://support.k2view.com
 
 ## About K2view Fabric Web Studio
 
-K2view Fabric Web Studio provides developers a unified platform for designing, building, and managing data-driven solutions. With Podman Compose, the platform supports multi-space development, allowing teams to work concurrently within isolated environments that mirror real-world use cases.
+K2view Fabric Web Studio provides developers with a unified platform for designing, building, and managing data-driven solutions. The Podman Compose runtime supports multi-space development, allowing multiple developers to work concurrently in separate Fabric Spaces.
 
-Developers benefit from a comprehensive suite of data orchestration and management tools that enable real-time integration, fast iteration cycles, streamlined testing, and advanced debugging. These capabilities help accelerate delivery and foster collaboration across teams.
+Developers benefit from Fabric's data management and orchestration capabilities, including real-time integration, testing, and debugging. These capabilities help accelerate project delivery and support collaboration across teams.
 
-Version 2.1 of K2view Fabric Web Studio for Podman supports the creation of multiple Fabric Spaces and introduces simplified routing using URL context paths instead of subdomain-based access—making the system easier to configure and use across development environments.
+Fabric Web Studio supports the creation of multiple Fabric Spaces through simplified URL routing. Each Space is accessed using a URL context path (for example, `/spacename`) rather than a subdomain-based URL.
 
 ## What's New
 
-**Version 2.1 incorporates a few updates**:
+**Version 2.2 incorporates a few updates**:
 
-* Added support for Podman in addition to Docker Compose
-* Upgrades the Fabric version to 8.2.4_3.
-* The Heap size was increased to 4GB.
-* We now use PROJECT_NAME to define the project name; previously, this field used the same value as the SPACE_NAME parameter.
-* When creating a Space, we automatically load a custom .env, compose.yaml, and a .config based on the Space's name. Refer to the Configuring Runtime File Per Space section for details.
-* Fabric port 5124 is now exposed for JDBC access to the host's database (using the host's random port, similar to 3213).
-* Ability to define a Linux socket file via .env.
-* We improved the healthcheck.
-
-**New Release Location**
-
-* The Docker Compose runtime release download was renamed as Studio-Docker-latest.zip.
-* For Podman, the distribution is named Studio-Podman-latest.zip.
+* Improved output when running Space diagnostic
+* Validate the container runtime socket before launching the ingress component
+* Check if the Space Profile configuration files have the appropriate permission and prevents Fabric container from starting if not properly set
+* Space restart policy can be defined via environment variable `SPACE_RESTART_POLICY` (default: `no`)
+* Traefik image is pinned to a major release instead of **latest**
+* We improved the healthcheck of ingress components
+* Fixed an issue related to Cassandra's persistent data
+* Fixed a bug that could prevent upgrading Spaces version in some systems
 
 **k2space.sh changes include**:
 
-* New flag: --project can be used to specify the Project name, overriding the value of PROJECT_NAME defined in the .env file.
-* New flag: --env allows the use of a custom .env file. Note: when specifying the --env flag the .env / .env-spacename will not be used.
-* Prevents a Space from being recreated if one exists. It will start instead.
+* New flag: `--version` can be used to check the version of K2view Fabric Web Studio for Podman
+* New command: `version` which is an alias to flag `--version`
+* New flags in the `upgrade` subcommand: `--preserve-env=VAR_NAME` preserves the existing value of the specified whitelisted variable, while `--preserve-all-envs` preserves all whitelisted environment variables.
 * Minor improvements and bug fixes.
 
 ## The Components
 
-1. **Podman Compose Setup**: Fabric Web Studio can be deployed using **Podman Compose**, which allows users to run Compose YAML files with Podman’s container engine. Podman Compose orchestrates the Web Studio environment—including a selected Fabric profile, an embedded Fabric engine, and a Traefik reverse proxy—enabling the creation of multiple, isolated Fabric Spaces. This setup offers a lightweight and daemonless alternative to Docker-based runtimes, fully aligned with Enterprise Linux practices. 
-2. **Fabric Image**: The Podman Compose environment is certified to run specific Fabric releases you can download from K2view's Container Registry.
-3. **K2view Fabric Web Studio**: Available with four profiles that each embeds Fabric.
+1. **Podman Compose Runtime**: Fabric Web Studio runs in a Podman Compose environment. Podman and Podman Compose orchestrate Web Studio, the selected Fabric profile and embedded Fabric engine, and the Traefik reverse proxy. Together, these components support the creation and management of multiple Fabric Spaces. Podman provides a daemonless container engine and integrates with Enterprise Linux environments.
+2. **Fabric Image**: The Podman Compose runtime is certified to run specific Fabric releases that you can download from K2view's Container Registry.
+3. **K2view Fabric Web Studio**: Available with four profiles, each of which embeds Fabric.
    1. **studio.config**. The default Web Studio profile embeds SQLite for its System DB.
    2. **studio_pg.config**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
    3. **studio_cass.config**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM.
    4. **studio_pg_cass.config**. A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
-4. **Traefik Reverse Proxy** allows you to route requests to your various Fabric Spaces running within your Docker Compose Runtime at http(s)://[host]/[spacename]/. 
-
-
+4. **Traefik Reverse Proxy**: Routes requests to the Fabric Spaces running within the Podman Compose environment at `http(s)://[host]/[spacename]/`.
 
 ## Prerequisites
 
@@ -75,95 +67,75 @@ The Podman Compose setup for Fabric Web Studio requires the following system pre
 
 ### **Host Machine**
 
-- **Architecture**: The supported processor architecture is **AMD64**. Fabric Web Studio does **not support ARM-based processors**.
-- **Memory**: A minimum of **32GB RAM** is recommended for running Podman, Fabric Web Studio, and related integrations. Each Fabric Space allocates a **4GB heap by default**, which can be overridden via configuration.
+The supported processor architecture is **AMD64**. Fabric Web Studio does not support ARM-based processors.
+
+The amount of memory required depends on your use case. **32GB RAM** is recommended for running Fabric Web Studio and its integrations. A **4GB heap** is allocated by default for each Fabric Space and can be overridden through configuration.
 
 ### **Enterprise Linux Required**
 
-A supported **Enterprise Linux distribution** (e.g., RHEL, AlmaLinux, Rocky Linux, CentOS Stream) is required for running Podman in a production-grade configuration.
+A supported **Enterprise Linux distribution** (e.g., RHEL, AlmaLinux, Rocky Linux, or CentOS Stream) is required for running Podman in a production-grade configuration.
 
 ### **3rd Party Software**
 
-1. **Git**:
-    Install Git from https://git-scm.com/downloads and follow the platform-specific instructions provided at [Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
-
-2. **Podman**:
-    Install Podman using your distribution's package manager. For example, on RHEL-based systems:
+1. **Git**: Install Git from https://git-scm.com/downloads and follow the instructions at https://git-scm.com/book/en/v2/Getting-Started-Installing-Git.
+2. **Podman**: Install Podman using your distribution's package manager. For example, on RHEL-based systems:
 
    ```bash
    sudo dnf install -y podman
    ```
-   
-   Refer to the official documentation at https://podman.io/getting-started/installation for complete installation steps.
 
-3. **Podman Compose**:
-    Install **Podman Compose** to support Compose YAML workflows. Use either:
-
+   Refer to https://podman.io/getting-started/installation for complete installation steps.
+3. **Podman Compose (minimum version 1.5.0)**: Install Podman Compose to support Compose YAML workflows. Use either:
    - DNF:
-
      ```bash
      sudo dnf install -y podman-compose
      ```
-     
-   - Or pip:
-
+   - pip:
      ```bash
      pip3 install --user podman-compose
      ```
 
-> **Note**:  Podman Compose provides native compatibility for Compose YAML files with Podman pods.
+> **Note**: Podman Compose can be replaced by Docker Compose (certified with Docker Compose version v5.6).
 
 **K2view Software**
 
-1. The installation presumes you have Internet access, so you can obtain Fabric images from the K2view Container Registry and perform a Git clone on your machine. 
-2. To obtain a Fabric Studio docker image, you need a K2view Container Registry account. Your K2view representative can arrange this for you. 
+1. Installation requires Internet access to obtain Fabric images from the K2view Container Registry and, if using Git, to clone K2view's Blueprints.
+2. A K2view Container Registry account is required to obtain the Fabric Studio image. Your K2view representative can arrange access.
 
 **Internet Access is Required**
 
 Internet access is required to perform this installation. You will need access to:
 
-1. (Optional) Github.com to clone K2view’s blueprints at https://github.com/k2view/blueprints.git
+1. (Optional) `downloads.cloud.k2view.com` to [download](https://downloads.cloud.k2view.com/s/zpeNPVHKmKnUtnt/download) the distribution, or GitHub to clone K2view's Blueprints at https://github.com/k2view/blueprints.git.
+2. K2view's Container Registry at https://docker.share.cloud.k2view.com.
+3. K2view's Exchange if you plan to install TDM.
 
-2. K2view’s Container Registry at https://docker.share.cloud.k2view.com
-
-3. If you plan to install TDM, you need access to K2view’s Exchange.
-
-Refer to the "Podman Offline Package Download" section below for instructions on obtaining the necessary images in a disconnected environment. 
+Refer to the "Podman Image Offline Package Download" section below for instructions on obtaining the necessary images in a disconnected environment.
 
 ## What's in this Package
 
-1. README.md - This document
-2. K2space.sh - A Bash shell script used to create, list, and destroy spaces defined by Web Studio profiles. This script is used to start Fabric and the embedded Traefik reverse proxy. It can allocate additional heap space if required and override the default Fabric version specified in the .env file.
-3. .env file - define various Fabric and Git parameters
-1. .env-tdm-sample-space - a sample file with a set of parameters that will override the default configuration defined in the .env file that will apply to a Space named "tdm-sample-space"
-4. common.config file - define various Fabric and runtime configurations
-5. Studio_*.config files - the Fabric Profiles to choose from
-6. YAML files are used to configure the Fabric and Traefik services. You can use the tls-config.yaml file to configure the TLS certificate and private key. 
-
+1. `README.md` - This document.
+2. `k2space.sh` - A Bash script used to create, list, and destroy Spaces defined by Web Studio profiles. It starts Fabric and the embedded Traefik reverse proxy, can allocate additional heap space, and can override the default Fabric version specified in `.env`.
+3. `.env` - Defines Fabric and Git parameters.
+4. `.env-tdm-sample-space` - A sample file containing parameters that override the defaults in `.env` for a Space named `tdm-sample-space`.
+5. `common.config` - Defines Fabric and runtime configurations.
+6. `Studio_*.config` - Fabric profiles to choose from.
+7. YAML files - Configure the Fabric and Traefik services. Use `tls-config.yaml` to configure the TLS certificate and private key.
 
 ## Things to Configure
-1. Git Configuration - This is described in Step 4 - Configuring Git and TLS
-2. TLS Certificate and Private Key Configuration - Optional because Traefik uses its own self-signed TLS certificate for HTTPS connections by default.  One is created for you by default for the machine.  To provide your own, please refer to Step 4. 
 
+1. **Git configuration** - Described in Step 4 - Configuring Git and TLS.
+2. **TLS certificate and private key configuration** - Optional. Traefik uses its own self-signed TLS certificate for HTTPS connections by default. To use your own certificate, refer to Step 4.
 
 ## Proxy Configuration
 
-In environments where a forward proxy is configured on the host (e.g., air-gapped deployments with whitelisted outbound access), Docker can automatically inject proxy environment variables into all containers. This can cause internal container-to-container traffic to be misrouted through the proxy, breaking the deployment.
-
+In environments where a forward proxy is configured on the host, proxy environment variables should be passed only to services that require outbound access. Passing proxy settings to internal services can cause container-to-container traffic to be misrouted through the proxy, disrupting the deployment.
 ### How Proxy Handling Works
 
-The Docker Compose setup is designed to prevent unintended proxy inheritance:
+The Podman Compose configuration avoids unintended proxy inheritance by omitting proxy-related environment variables from services that do not require outbound access.
 
-- **`cassandra`, `postgres`, and `init-fabric`** services have no proxy-related environment variables defined. They communicate only on the internal Docker network and do not require outbound access.
-- **`fabric`** is the only service that may need outbound access (e.g., connecting to external databases or APIs). It receives proxy settings passed from the host OS using the standard lowercase-first fallback pattern:
-
-  ```yaml
-  http_proxy: "${http_proxy:-$HTTP_PROXY}"
-  https_proxy: "${https_proxy:-$HTTPS_PROXY}"
-  no_proxy: "${no_proxy:-$NO_PROXY}"
-  ```
-
-  If the host has `http_proxy` set, that value is used. If only `HTTP_PROXY` is set, that is the fallback. If neither is set, the container receives an empty value, which is equivalent to no proxy.
+- **`cassandra`, `postgres`, and `init-fabric`** have no proxy-related environment variables defined. They communicate over the internal Podman network and do not require outbound access.
+- **`fabric`** is the only service that may need outbound access (for example, to connect to external databases or APIs). It receives proxy settings passed from the host OS. Proxy variables can use lowercase (`http_proxy`, `https_proxy`, `no_proxy`) or uppercase (`HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY`) names.
 
 ### Configuring Proxy for Fabric
 
@@ -176,11 +148,11 @@ export no_proxy="localhost,127.0.0.1,.internal.example.com"
 ./k2space.sh create spacename
 ```
 
-> **Note:** Lowercase variable names (`http_proxy`, `https_proxy`, `no_proxy`) take precedence over their uppercase equivalents in most Linux tools and runtimes. It is recommended to set both forms if your environment requires it.
+> **Note:** Lowercase variable names (`http_proxy`, `https_proxy`, `no_proxy`) take precedence over their uppercase equivalents in many Linux tools and runtimes, but both forms can be defined. If both forms are set to different values, the value used may depend on the application or runtime. To avoid unexpected behavior, set both forms to the same value.
 
 ### Disabling Proxy for Fabric
 
-If Fabric should not use any proxy (e.g., all external sources are directly reachable), simply ensure the proxy variables are unset on the host before running `k2space.sh`:
+If Fabric should not use a proxy (for example, if all external sources are directly reachable), ensure the proxy variables are unset on the host before running `k2space.sh`:
 
 ```bash
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY
@@ -188,28 +160,26 @@ unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY
 ```
 
 ## Things to Know
-1. Default administrator credentials are
 
-   1. Username: admin
-   2. Password: admin
+1. **Default administrator credentials**:
+   - Username: `admin`
+   - Password: `admin`
 
-2. Ports: Traefik employs the following ports:
+2. **Ports**: Traefik uses the following ports:
 
-   | Protocol | Port | Description       |
-   | -------- | ---- | ----------------- |
-   | HTTP     | 8080 | Traefik dashboard |
-   | HTTP     | 80   | HTTP listener     |
-   | HTTPS    | 443  | HTTPS listener    |
+   | Protocol | Port | Description |
+   | --- | ---: | --- |
+   | HTTP | 8080 | Traefik dashboard |
+   | HTTP | 80 | HTTP listener |
+   | HTTPS | 443 | HTTPS listener |
 
-3. Your Data Files
-  - Please note that persistent files created by Fabric Web Studio and the database instance you install will store their data in the "persistent-data" folder of your installation directory (e.g., K2view/Studio/persistent-data). Your Fabric Space's data is stored in the persistent-data/spacename directory. The respective space's directory will contain data if you create multiple spaces.
-   - The location of the persistent data directory is configured in the `.env` file and set by default to be in the Fabric Web Studio installation directory.
+3. **Your data files**: Persistent files created by Fabric Web Studio and the database instance are stored in the `persistent-data` folder under the installation directory (for example, `K2view/Studio/persistent-data`). Each Fabric Space's data is stored in `persistent-data/spacename`. The location of the persistent data directory is configured in `.env` and defaults to the Fabric Web Studio installation directory.
 
 ## Installation
 
-Follow the steps below to get Fabric Web Studio up and running using the **Podman Compose** setup.
+Follow these steps to get Fabric Web Studio up and running using the **Podman Compose** runtime.
 
-* Step 1: Install and Validate Podman and Podman Compose
+* Step 1: Install and validate Podman and Podman Compose
 * Step 2: Setup
 * Step 3: Download
 * Step 4: Configure Git and TLS
@@ -218,23 +188,19 @@ Follow the steps below to get Fabric Web Studio up and running using the **Podma
 * Step 7: Create and Launch a Fabric Space
 * Step 8: Access Web Studio
 
-**Before you proceed, confirm that you have a K2view Container Registry Account**
+**Before you proceed, confirm that you have a K2view Container Registry account.**
 
-You need to obtain credentials to access the K2view Container Registry. Your K2view account representative can arrange this for you. If you do not have access, please contact your K2view representative, who can provide steps to help you through this process.
+You need credentials to access the K2view Container Registry. Your K2view account representative can arrange access. If you do not have an account, contact your K2view representative.
 
-### **Step 1**: Install and Validate Podman and Podman Compose 
+### **Step 1**: Install and Validate Podman and Podman Compose
 
-If Podman is not already installed on your machine, refer to the **Podman and Podman Compose Installation** topic at https://support.k2view.com/Academy/articles/98_maintenance_and_operational/Installations/Fabric_Web_Studio/version_2-1/README.html.
+If Podman is not already installed on your machine, refer to the Podman and Podman Compose installation topic at https://support.k2view.com/Academy/articles/98_maintenance_and_operational/Installations/Fabric_Web_Studio/version_2-1/README.html.
 
-The recommended approach is to install **Podman** using your Linux distribution's package manager. This will install the Podman engine and CLI tools. You must also install **Podman Compose**, which provides Compose YAML support for Podman-based environments.
-
-Please follow the steps in the **Podman and Podman Compose Installation** guide to complete the installation and validate your setup. Please refer to https://support.k2view.com/Academy/articles/98_maintenance_and_operational/Installations/Fabric_Web_Studio/version_2-1/README.html.
+Install Podman using your Linux distribution's package manager, then install Podman Compose to provide Compose YAML support. Follow the installation guide above to complete the setup and validate your environment.
 
 ### **Step 2**: Setup
 
-You can download the distribution (recommended) or use Git, “clone” the K2view Blueprints to "download" them. These blueprints incorporate the Fabric Docker Compose Runtime installation files. The K2view Blueprints are hosted on GitHub.com (Internet access is required). 
-
-Please note that persistent files created by Fabric Web Studio and the database instance you install will store their data in the "persistent-data" folder of your installation directory (e.g., K2view/Studio/persistent-data). Your Fabric Space's data is stored in the persistent-data/spacename directory. The respective space's directory will contain data if you create multiple spaces. The location of the persistent data directory is configured in the `.env` file and set by default to be in the Fabric Web Studio installation directory. This is a per-space configuration. 
+You can download the distribution (recommended) or clone K2view's Blueprints using Git. The Blueprints contain the Fabric Web Studio Podman Compose runtime files and are hosted on GitHub (Internet access is required).
 
 *Select a Base Directory for your Download and Installation Directory Locations*
 
@@ -256,13 +222,13 @@ mkdir K2view
 
 ### **Step 3**: Download
 
-There are two options to obtain Fabric Web Studio. You can download a zip file or clone the content from K2view's Blueprints. Downloading the latest distribution as described in Option 1 is recommended. 
+There are two options to obtain Fabric Web Studio: download a ZIP file or clone the content from K2view's Blueprints. Downloading the latest distribution, as described in Option 1, is recommended.
 
-#### Option 1: Download The Latest Version of Fabric Web Studio for Podman
+#### Option 1: Download The Latest Version of Fabric Web Studio for Podman Compose
 
-You can download the latest version of Fabric Web Studio for Podman from this location: [studio-podman-latest](https://download.k2view.com/index.php/s/8lgQY4ybu5fNy4u/download)
+Download the latest version of Fabric Web Studio for Podman Compose here: [studio-podman-latest](https://downloads.cloud.k2view.com/s/zpeNPVHKmKnUtnt/download).
 
-Then, change the directory to the K2view directory. Copy `Studio-Podman-latest.zip` to this directory, and unzip `Studio-Podman-latest.zip` to this directory. Then, rename the `Studio-Podman-latest.zip` directory as `Studio`.
+Change to the `K2view` directory, copy `Studio-Podman-latest.zip` into it, extract the archive, and rename the extracted directory to `Studio`.
 
 ```bash
 cd K2view
@@ -270,33 +236,30 @@ cd K2view
 # unzip Studio-Podman-latest.zip to this directory
 ```
 
-The Studio directory contains the configuration, YAML, and the `k2Space.sh` script files to configure and create your Fabric Web Studio spaces. Please refer to the What's in this Package topic above for details about these files. 
+The `Studio` directory contains the configuration files, YAML files, and `k2space.sh` script used to configure and create Fabric Web Studio Spaces. See "What's in this Package" above for details.
 
-You can now skip to Step 4.
+You can now skip to Step 4 to configure Git and TLS.
 
-#### Option 2: Clone the K2view Blueprints 
+#### Option 2: Clone the K2view Blueprints
 
-Using a shell, change your directory to your K2view directory and run the following command to clone K2view Blueprints (this requires a prior installation of a Git client):
-
-Using the prior example of the `K2view` directory:
+From your `K2view` directory, run the following command to clone K2view's Blueprints (this requires Git):
 
 ```bash
 cd K2view
 git clone https://github.com/k2view/blueprints.git
 ```
 
-This will create a `blueprints` directory with various subdirectories. The `Studio` subdirectory holds the Fabric Web Studio installation files. 
+This creates a `blueprints` directory containing various subdirectories. The `Studio` subdirectory contains the Fabric Web Studio installation files.
 
 #### Create an Installation Directory and Copy the Fabric Web Studio Files
 
-We recommend running Fabric Web Studio within the `Studio` directory of the `K2view` directory. From the K2view directory, copy the `blueprints/Studio` directory as `Studio`. 
-
-From the K2view directory
+We recommend running Fabric Web Studio from a `Studio` directory under `K2view`. From the `K2view` directory, copy the `blueprints/Studio/Podman` directory as `Studio`.
 
 ```bash
-cp -r blueprints/Studio/ Studio
+cp -r blueprints/Studio/Podman Studio
 ```
-The Studio directory contains the configuration, YAML, and the `k2Space.sh` script files to configure and create your Fabric Web Studio spaces. Please refer to the <a href="https://support.k2view.com/articles/98_maintenance_and_operational/Installations/Fabric_Web_Studio/version_2-1/Installation-podman.html#whats-in-this-package">What's in this Package</a> topic above for details about these files. 
+
+The `Studio` directory contains the configuration files, YAML files, and `k2space.sh` script used to configure and create Fabric Web Studio Spaces. See [What's in this Package](https://support.k2view.com/Academy/articles/98_maintenance_and_operational/Installations/Fabric_Web_Studio/version_2-1/Installation-podman.html#whats-in-this-package) above for details.
 
 ### **Step 4**: Configure Git and TLS
 
@@ -331,27 +294,30 @@ Traefik will use its own self-signed TLS certificates for HTTPS connections by d
 
 These files must be named `cert.cer` and `cert.key`, respectively. The TLS certificate must be in PEM format and contain the server, root, and intermediate certificates, should they exist.
 
-If you perform this step after the initial installation, you must restart Fabric for these to take effect.
+If you perform this step after the initial installation, you must restart Fabric for these to take effect. In addition, you will also need to restart the ingress using this command:
+
+```bash
+./k2space.sh ingress restart
+```
 
 ### **Step 5**: Select a Fabric Blueprint Profile to Use
 
-There are four profiles, each of which embeds Fabric. The default is 'studio'.  
+There are four profiles, each of which embeds Fabric. The default profile is `studio`.
 
-1. **studio**. The default Web Studio profile embeds SQLite as its system database.
-2. **studio_pg**. A generic Studio or TDM profile - Web Studio with PostgreSQL for use with its System DB and TDM.
-3. **studio_cass**. A TDM profile - Web Studio with Cassandra used for the System DB and TDM.
-4. **studio_pg_cass**. A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
+1. **studio**: The default Web Studio profile embeds SQLite as its System DB.
+2. **studio_pg**: A generic Studio or TDM profile - Web Studio with PostgreSQL for its System DB and TDM.
+3. **studio_cass**: A TDM profile - Web Studio with Cassandra for its System DB and TDM.
+4. **studio_pg_cass**: A TDM profile incorporating Apache Cassandra for its System DB and PostgreSQL for TDM tasks.
 
-Using the default profile, 'studio', you will not need to provide the profile on the `k2space.sh` command line. Otherwise, you will need to enter one of the other profiles. 
-
+When using the default `studio` profile, you do not need to specify the profile on the `k2space.sh` command line. Otherwise, specify one of the other profiles.
 
 ### **Step 6**: Log in to K2view's Container Registry
 
 *Prerequisite*
 
-Podman must be installed and properly configured to access the container registry. If running in rootless mode, ensure the Podman socket is active.
+Docker and its Compose extension must be installed, running, and configured on the server to perform this step. If running in rootless mode, ensure the Podman socket is active.
 
-Using the K2view Container Registry credentials provided to you, run the following command from the same directory where you performed the `git clone`:
+Using the K2view Container Registry credentials provided to you, run the following command:
 
 ```bash
 podman login -u [YourAccount] https://docker.share.cloud.k2view.com
@@ -359,15 +325,54 @@ podman login -u [YourAccount] https://docker.share.cloud.k2view.com
 
 You will be prompted to enter your password.
 
-Depending on your environment and user permissions, you may need to prepend `sudo` to the command on some Linux systems.
-
-> Tip: You can verify a successful login by running `podman info` and confirming registry authentication.
+**Note**: The Docker login command requires Internet access to log in and pull K2view Fabric images from the K2view Container Registry at docker.share.cloud.k2view.com. 
 
 
+#### Step-by-Step: Ensure Podman Socket is Active (Rootful Mode)
+**Check the status of the socket**
 
-To ensure the **Podman socket** is active in **rootless mode**, follow these steps:
+```bash
+systemctl status podman.socket
+```
+
+- If the service is **inactive** or **not found**, proceed to the next steps.
+
+**Enable and start the socket**
+
+```bash
+systemctl enable --now podman.socket
+```
+
+This will:
+
+- Enable the socket to start automatically on login
+- Start the socket immediately
+
+
+**Verify the socket is now listening**
+
+```bash
+systemctl status podman.socket
+```
+
+You should see output like:
+
+```bash
+Active: active (listening)
+```
 
 #### Step-by-Step: Ensure Podman Socket is Active (Rootless Mode)
+
+
+**Enable linger (so user services run after logout)**
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+- This allows systemd user services (like the Podman socket) to run after the user logs out.
+- This step is essential for non-interactive or headless environments.
+
 
 **Check the status of the socket**
 
@@ -389,16 +394,6 @@ This will:
 - Start the socket immediately
 
 
-
-**Enable linger (so user services run after logout)**
-
-```bash
-loginctl enable-linger $USER
-```
-
-- This allows systemd user services (like the Podman socket) to run after the user logs out.
-- This step is essential for non-interactive or headless environments.
-
 **Verify the socket is now listening**
 
 ```bash
@@ -411,20 +406,26 @@ You should see output like:
 Active: active (listening)
 ```
 
+
+#### Step-by-Step: Limits in Rootless Mode
+
+Fabric requires at least 1,048,576 open file descriptors. In `compose.yaml`, comment out or remove the `ulimits` block.
+
 ### Podman Image Offline Package Download
 
-The Podman login command and the `k2space.sh` bash shell script requires Internet access to log in and pull K2view Fabric images from the K2view Container Registry at docker.share.cloud.k2view.com.
 
-If your target machine **does not have Internet connectivity**, you can follow this **offline download procedure** to transfer the required image from another system. The Fabric image is approximately **1.9GB**, and its version must match the value specified in your local `.env` file.
+If your target machine **does not have Internet connectivity**, you can follow this **offline download procedure** to transfer the required image from another system. The Fabric image is approximately **2GB**, and its version must match the value specified in your local `.env` file.
 
 By preloading the image locally, the `k2space.sh` script can create a Fabric Space without needing to download the image from the registry.
+
+**Important:** You also must set `INGRESS_PULL_POLICY="never"` in the `.env` file.
 
 #### Offline Image Transfer Procedure
 
 **Save and compress the desired Fabric image on an online machine:**
 
 ```bash
-podman save docker.share.cloud.k2view.com/k2view/fabric-studio:X.Y.Z_0 | gzip > k2view_fabric-studio_X.Y.Z_0.tar.gz
+podman save docker.share.cloud.k2view.com/k2view-images/fabric-studio:X.Y.Z_0 | gzip > k2view_fabric-studio_X.Y.Z_0.tar.gz
 ```
 
 **Transfer the image file to your target (offline) machine:**
@@ -440,6 +441,30 @@ podman load -i k2view_fabric-studio_X.Y.Z_0.tar.gz
 This will make the image available to the local Podman image store.
 
 > **Important**: Ensure that the image version matches the value in your `.env` file before executing `k2space.sh`. This ensures proper image resolution and prevents unnecessary fetch attempts.
+
+**Use similar procedures to obtain the following:**
+
+- Traefik Reverse Proxy:
+
+```bash
+  podman pull docker.io/library/traefik:v3
+```
+
+- Socat Relay:
+
+```bash
+  podman pull docker.io/alpine/socat:latest
+```
+
+- Database containers as required: Postgres 18.4 and optionally Cassandra 4.1.8 depending on your profile
+
+```bash
+  podman pull docker.io/library/postgres:18.4
+
+  podman pull docker.io/library/cassandra:4.1.8
+```
+
+Then run `podman save` for each of the images, transfer to the server, and load using `podman load`.
 
 ### **Step 7**: Create and Launch a Fabric Space
 
@@ -521,21 +546,20 @@ $ ./k2space.sh create myspace
 
 You have completed the installation and are ready to access Fabric Web Studio over HTTP or HTTPS.
 
-Open a browser and connect to `http://localhost/spacename`. 
+Open a browser and connect to `http://localhost/spacename`.
 
-You can also connect to Fabric remotely, using `https://[hostname or IP address]/spacename`.
+You can also connect to Fabric remotely using `https://[hostname or IP address]/spacename`.
 
-> Traefik will default to using its own self-signed TLS certificates for HTTPS connections. The Certificate is created for you by default for the machine. If you want to use a certificate created by your organization, everything is pre-configured for you to do so. See the "Configuring TLS" topic above for instructions. 
+> Traefik uses its own self-signed TLS certificate for HTTPS connections by default. To use a certificate created by your organization, see "Configuring TLS" above.
 
-When presented with the login screen, enter: 
+When presented with the login screen, enter:
 
-  - Username: admin
-  - Password: admin
+- Username: `admin`
+- Password: `admin`
 
-If you access Fabric Web Studio, you have successfully installed it. 
+If you can access Fabric Web Studio, the installation is complete.
 
-
-## Operating and Managing Fabric Web Studio
+## Operating and Managing Fabric Web Studio for Podman Compose
 
 ### Fabric Spaces
 This `k2space.sh` shell script makes it easy to create and delete Fabric. You can also use it to list and get information about existing Fabric Spaces using: 
@@ -586,12 +610,18 @@ You can upgrade the Studio version or Space parameters with the following comman
 ./k2space.sh upgrade [OPTIONS] spacename
 ```
 
-Note: The upgrade command allow the following flags:
+The upgrade command recreates the existing Space using the current configuration. You can use it to change the Fabric version and Space parameters, such as the heap size and host-to-container port mappings.
 
-| Option            | Description                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| --heap=           | Allows you to override the default 4GB allocated heap size   |
-| --fabric-version= | Allows you to override the Fabric version specified in the .env file |
+By default, the recreated Space uses the values currently defined in `.env` and the applicable Space-specific environment file. To retain environment variable values from the existing Space instead, use one of the preservation options below. These options apply only to variables supported by the preservation mechanism (the whitelist is not listed here).
+
+| Option | Description |
+| --- | --- |
+| `--heap=` | Overrides the default 4GB allocated heap size. |
+| `--fabric-version=` | Overrides the Fabric version specified in `.env`. |
+| `--preserve-env=VAR_NAME` | Preserves the existing Space's value for the specified whitelisted environment variable. |
+| `--preserve-all-envs` | Preserves all whitelisted environment variables from the existing Space. |
+
+For example, if `http_proxy` was set to `proxy.example.com:3128` when the Space was created and `.env` is later changed to `http_proxy=newproxy.example.com:3218`, an upgrade without a preservation option uses the new value. Use `--preserve-env=http_proxy` to retain the existing value, or `--preserve-all-envs` to retain all whitelisted values.
 
 **Diagnosing a Space**
 
@@ -601,15 +631,15 @@ You can check the Space's health by running:
 ./k2space.sh check [OPTIONS] spacename
 ```
 
-Along with the Space's health, this command also checks for the diagnostic of the ingress components. If any error is found in any subcomponent, ingress or supporting containers, and the flag --save is set, it will capture the logs of the problematic cotnainer. If the problem is with Studio, rather than capturing its container logs, it will copy files k2fabric.log and k2studio.err along with some other useful information. Those generated files can be provided to a K2view agent, where it will be used to determine the cause of issue.
+Along with the Space's health, this command also checks for the diagnostic of the ingress components. If any error is found in any subcomponent, ingress or supporting containers, and the flag --save is set, it will capture the logs of the problematic container. If the problem is with Studio, rather than capturing its container logs, it will copy files k2fabric.log and k2studio.err along with some other useful information. Those generated files can be provided to a K2view agent, where it will be used to determine the cause of issue.
 
-Note: The check command allow the following flags:
+Note: The check command allows the following flags:
 
 | Option            | Description                                                  |
 | ----------------- | ------------------------------------------------------------ |
 | --save[=always]   | Use this flag to control if the diagnostic results should be saved. If you run without a value (or --save=true), it will only save if the diagnostic tool finds an error. Use --save=always to override this behavior |
 | --package={tar|zip} | Creates an easy-to-share package in the desired format (requires the appropriate packages to be installed) |
-| --path= | Destination folder to save the diagnostic files. Note: a subdir inside the specified path will be created as followed: (...path)/diagnostic-SPACENAME-TIMESTAMP/ and if flag is omitted, this subdirectory will be created nested to the k2space.sh script |
+| --path= | Destination folder to save the diagnostic files. Note: a subdir inside the specified path will be created as follows: (...path)/diagnostic-SPACENAME-TIMESTAMP/ and if flag is omitted, this subdirectory will be created nested to the k2space.sh script |
 | --add-file=   | Additional file to be copied to the diagnostic output directory. This flag can be used multiple times, allowing several files to be copied |
 
 **Destroying a Space**
@@ -634,7 +664,7 @@ Traefik starts automatically after you create your first Fabric Space. It will a
 
 Before initializing, Traefik will auto-update its image. This behavior can be changed by setting the environment variable `INGRESS_PULL_POLICY="never"` in the .env file (image will need to be pre-loaded with `podman pull` or `podman load` before starting)
 
-> __Note:__ Traefik relies on the Docker network created during the creation of a Fabric Space. Therefore, it must be started __after__ the Fabric Space.
+> __Note:__ Traefik relies on the Podman network created during the creation of a Fabric Space. Therefore, it must be started __after__ the Fabric Space.
 
 #### Restarting Traefik
 To restart Traefik (e.g., after configuring your TLS certificates), run the command below:
@@ -649,6 +679,7 @@ Use this tool to find useful information if you are having issues when accessing
 
 ```bash
 ./k2space.sh ingress check
+```
 
 #### Upgrading Traefik
 Forces Traefik's image to be updated. This may cause Spaces to be temporarily unreachable while Traefik reload.
@@ -659,24 +690,31 @@ Forces Traefik's image to be updated. This may cause Spaces to be temporarily un
 
 ### Adding Users
 
-You are ready to add users. You can experiment with the built-in System DB (e.g., Postgres or Cassandra data stores). We recommend using alternate authentication providers rather than using built-in providers. 
+You are ready to add users. You can experiment with the built-in System DB (for example, PostgreSQL or Cassandra). We recommend using alternative authentication providers rather than relying on the built-in providers.
 
-To use the built-in authentication provider, navigate to the [Web Admin App](https://support.k2view.com/Academy/articles/30_web_framework/03_web_admin_application.html). Select the Security tab. Select the Users tab and add a user. Select the Roles tab, create a new role (e.g., User), and then assign Fabric permissions to the newly created role. 
+To use the built-in authentication provider, navigate to the [Web Admin App](https://support.k2view.com/Academy/articles/30_web_framework/03_web_admin_application.html). Select the Security tab, then the Users tab to add a user. Select the Roles tab to create a role (for example, `User`), and assign Fabric permissions to that role.
 
-The K2view Fabric Web Studio for Podman employs underlying Fabric security capabilities and configurations. Fabric works with several authentication providers. Each authenticator is responsible for user authentication and managing user IDs and roles.
+K2view Fabric Web Studio for Podman Compose uses the underlying Fabric security capabilities and configurations. Fabric supports several authentication providers, each responsible for user authentication and management of user IDs and roles.
 
-The following are the supported authentication providers as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/07_user_IAM_overview.html). 
+The supported authentication providers are described [here](https://support.k2view.com/Academy/articles/26_fabric_security/07_user_IAM_overview.html):
 
-- **Fabric**: Fabric stores users' credentials in a System DB table using Postgres. Passwords are stored securely in this table using a salted password hashing technique. By default, Fabric is configured to use a 32-byte salt length. When Cassandra is used, the provider is named Cassandra.
-- **LDAP**: Fabric authentication is performed via LDAP integration as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/11_user_IAM_LDAP.html).
-- **ADLDAP** (Microsoft Active Directory): Fabric authentication is performed via Active Directory integration as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/11_user_IAM_LDAP.html).
-- **SAML**:  Fabric authentication is performed via SAML IDP integration as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/09_user_IAM_SAML_fundamentals_and_terms.html). SAML provides the means of offering an SSO experience to users using, for example, Microsoft Entra ID and Okta. See the [Microsoft Entra ID](https://support.k2view.com/Academy/articles/26_fabric_security/14_user_IAM_SAML_Azure_AD_setup.html) and [Okta](https://support.k2view.com/Academy/articles/26_fabric_security/15_user_IAM_SAML_Okta_setup.html) integration descriptions to learn more about Fabric SSO support. 
+- **Fabric**: Fabric stores users' credentials in a system database table using PostgreSQL. Passwords are stored securely using salted password hashing. By default, Fabric uses a 32-byte salt. When Cassandra is used, the provider is referred to as Cassandra.
+- **LDAP**: Fabric authentication is performed through LDAP integration, as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/11_user_IAM_LDAP.html).
+- **ADLDAP** (Microsoft Active Directory): Fabric authentication is performed through Active Directory integration, as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/11_user_IAM_LDAP.html).
+- **SAML**: Fabric authentication is performed through SAML IdP integration, as described [here](https://support.k2view.com/Academy/articles/26_fabric_security/09_user_IAM_SAML_fundamentals_and_terms.html). SAML enables single sign-on (SSO) with identity providers such as Microsoft Entra ID and Okta. See the [Microsoft Entra ID](https://support.k2view.com/Academy/articles/26_fabric_security/14_user_IAM_SAML_Azure_AD_setup.html) and [Okta](https://support.k2view.com/Academy/articles/26_fabric_security/15_user_IAM_SAML_Okta_setup.html) integration descriptions for details.
 
 ### Upgrading to a Later Fabric Version
 
 K2view certifies specific versions. To obtain the list of supported Fabric versions, please create a K2view support ticket via the [My Tickets](https://k2view.freshdesk.com/a/dashboard/default) link from the [K2view Support Site](https://support.k2view.com/).
 
-The approach is simple: 1) push all changes to Git, and 2) create a new Fabric Space with the desired certified version of Fabric. 
+Before recreating a Space, push any project changes to Git so that your work is preserved. Then upgrade the existing Space to the desired certified Fabric version using `k2space.sh upgrade`:
+
+```bash
+./k2space.sh upgrade --fabric-version=VERSION spacename
+```
+
+Git is independent of the upgrade command; pushing changes is a precaution to avoid losing project work when the Space is recreated. 
+
 
 ## Reference Information
 
@@ -689,8 +727,8 @@ Here are the command options for `k2space.sh`:
 | --profile=        | Allows you to select the desired Fabric Space Profile        |
 | --heap=           | Allows you to override the default 4GB allocated heap size   |
 | --fabric-version= | Allows you to override the Fabric version specified in the .env file |
-| --compose=        | Allows you to use a custom Docker compose.yaml file         |
-| --env=            | Allows you to use a custom Docker environment file |
+| --compose=        | Allows you to use a custom Podman Compose YAML file         |
+| --env=            | Allows you to use a custom environment file |
 | --project=        | Allows you to specify the Project's name |
 | --git-authorship= | Allows you to set the Git AUTHOR and COMMITTER name and email. The value is to be passed in as "name:email". |
 
@@ -718,41 +756,41 @@ This temporary container sets the proper ownership of the persistent data's _Spa
 
 ## Customizing Runtime Files Per Space
 
-K2view Fabric Web Studio's Docker Compose Runtime supports **per-Space configuration overrides** using custom `.env`, `compose.yaml`, and `.config` files. When a new Fabric Space is created using the `k2space.sh` script, the runtime checks for specially named files corresponding to the Space name and applies them accordingly.
+K2view Fabric Web Studio's Podman Compose runtime supports **per-Space configuration overrides** using custom `.env`, `compose.yaml`, and `.config` files. When a Space is created using `k2space.sh`, the runtime checks for files named for that Space and applies them as described below.
 
 ### File Customization Behavior
 
-When creating a Space named, for example, `dcr210`, the following behavior applies:
+When creating a Space named, for example, `dcr210`:
 
-- **`.env` and `.config` files** are **appended to** the base configuration.
-- **`compose.yaml` files** are **overridden completely** if a matching file is found.
+- `.env` and `.config` files are appended to the base configuration, with matching values overriding the base values.
+- A matching `compose.yaml` file completely replaces the default Compose file for that Space.
 
 #### `.env` Customization
 
 - The base `.env` file is always loaded first.
-- If a file named `.env-dcr210` exists (where `dcr210` is the Space name), its values will be **appended to or override** those defined in the base `.env`.
-- You can use this to set environment-specific parameters such as `MAX_HEAP`, `GIT_REPO`, or other custom variables.
+- If `.env-dcr210` exists, its values are appended to or override those in the base `.env` file.
+- Use this file to set Space-specific parameters such as `MAX_HEAP`, `GIT_REPO`, or other custom variables.
 
 #### `compose.yaml` Customization
 
-- The default `compose.yaml` is loaded unless a file named `compose-dcr210.yaml` exists.
-- If `compose-dcr210.yaml` exists  (where `dcr210` is the Space name), it will **completely replace** the default `compose.yaml` for that Space.
+- The default `compose.yaml` is loaded unless `compose-dcr210.yaml` exists.
+- If `compose-dcr210.yaml` exists, it completely replaces the default `compose.yaml` for that Space.
 
 #### `.config` Customization
 
 - The base `common.config` file is always loaded.
-- If a file named `dcr210.config` exists (where `dcr210` is the Space name), its values will be **appended to or override** settings from `common.config`.
-- This allows per-Space configuration of Fabric runtime behavior, such as a custom system DB path or SSO settings.
+- If `dcr210.config` exists, its values are appended to or override settings in `common.config`.
+- Use this file to configure Space-specific Fabric runtime behavior, such as a custom System DB path or SSO settings.
 
 ### Manual Overrides
 
-You can also explicitly specify files when using the `k2space.sh` script:
+You can explicitly specify files when using `k2space.sh`:
 
-```
+```bash
 ./k2space.sh create --env=custom.env --compose=custom-compose.yaml --config=custom.config dcr210
 ```
 
-When using the `--env` or `--compose` options, **automatic detection of `.env-[spacename]` and `compose-[spacename].yaml` is skipped**.
+When using `--env` or `--compose`, automatic detection of `.env-[spacename]` and `compose-[spacename].yaml` is skipped.
 
 ### Example Use Case
 
@@ -761,31 +799,36 @@ For a Space named `dcr210`, you might create:
 - `.env-dcr210` to override heap size:
 
   ```env
-  
   MAX_HEAP=8G
   ```
 
-- `compose-dcr210.yaml` to expose an additional port (e.g., JDBC port 5124):
+- `compose-dcr210.yaml` to expose an additional port (for example, JDBC port 5124):
 
   ```yaml
-  
   ports:
     - "5124:5124"
   ```
 
 - `dcr210.config` to point to a different System DB path or define SSO behavior:
 
-  ``` ini
-  
+  ```ini
   [System]
   db.path=/custom/path/system.db
   ```
 
-This flexible mechanism supports both shared and isolated runtime customization for Fabric Web Studio Spaces, making it ideal for multi-tenant development, QA, or demo environments.
+This mechanism supports shared and isolated runtime customization for Fabric Web Studio Spaces, including multi-tenant development, QA, and demo environments.
 
+## Upgrading this package
 
+The Fabric Web Studio for Podman Compose package is updated periodically to add capabilities and support newer Fabric and Web Studio versions. Keeping the package current is important because operational capabilities, including Space upgrade functionality, may depend on changes delivered with the package.
 
+Upgrading the package does **not** require recreating existing Spaces. Space data and configuration are maintained separately under the `persistent-data` directory and must be preserved during the package upgrade.
 
+Detailed instructions are available [here](https://support.k2view.com/Academy/articles/98_installation_and_upgrade/Install_Fabric_Web_Studio_v2-1/Installation-podman.html#upgrading-this-package). In general:
+
+1. Back up customized files (such as `.env`, SSL certificates, and other configuration files).
+2. Download and extract the new package.
+3. Merge your customized files into the corresponding files distributed with the new package.
 
 ## Podman Command Reference for Enterprise Linux Environments
 
