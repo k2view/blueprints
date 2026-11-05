@@ -3,6 +3,7 @@ services:
   cassandra:
     container_name: ${COMPOSE_PROJECT_NAME}-cassandra
     image: ${CASS_IMAGE}
+    restart: ${SPACE_RESTART_POLICY}
     profiles: ["studio_cass","studio_pg_cass"]
     networks:
       - fab-net
@@ -11,8 +12,9 @@ services:
       MAX_HEAP_SIZE: 2G
       CASSANDRA_DC: DC1
       CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      CASSANDRA_LOG_DIR: /var/lib/cassandra/logs
     volumes:
-      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/cassandra:/var/log/cassandra/:Z
+      - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/cassandra:/var/lib/cassandra/:Z
     healthcheck:
       test: ["CMD-SHELL", "nodetool status | grep $$(hostname -i) | grep ^UN || exit 1"]
       interval: 15s
@@ -23,13 +25,14 @@ services:
   postgres:
     container_name: ${COMPOSE_PROJECT_NAME}-postgres
     image: "${PG_IMAGE}"
+    restart: ${SPACE_RESTART_POLICY}
     profiles: ["studio_pg","studio_pg_cass"]
     networks:
       - fab-net
     environment:
-      POSTGRES_DB: "${POSTGRES_DB}"
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB:
+      POSTGRES_USER:
+      POSTGRES_PASSWORD:
     volumes:
       - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/postgres:/var/lib/postgresql/data/:Z
     healthcheck:
@@ -58,39 +61,48 @@ services:
     depends_on:
       init-fabric:
         condition: service_completed_successfully
+    restart: ${SPACE_RESTART_POLICY}
     networks:
       fab-net:
     ports:
       - ${FABRIC_UI_PORT}:3213
       - ${FABRIC_JDBC_PORT}:5124
     environment:
-      - SPACE_NAME=${COMPOSE_PROJECT_NAME}
-      - PROJECT_NAME
-      - PROJECT_DIR
-      - GIT_REPO
-      - GIT_BRANCH
-      - GIT_USERNAME
-      - GIT_TOKEN
-      - GIT_USE_HEADER_AUTH=${GIT_USE_HEADER_AUTH:-false}
-      - GIT_AUTHOR_NAME
-      - GIT_AUTHOR_EMAIL
-      - GIT_COMMITTER_NAME
-      - GIT_COMMITTER_EMAIL
-      - MAX_HEAP
-      - INI_CONFIG_UPDATE_FILE
-      - CLOUD_LINK=https://cloud.k2view.com
-      - http_proxy=${http_proxy:-$HTTP_PROXY}
-      - https_proxy=${https_proxy:-$HTTPS_PROXY}
-      - no_proxy=${no_proxy:-$NO_PROXY}
+      SPACE_NAME: "${COMPOSE_PROJECT_NAME}"
+      PROJECT_NAME:
+      PROJECT_DIR:
+      GIT_REPO:
+      GIT_BRANCH:
+      GIT_USERNAME:
+      GIT_TOKEN:
+      GIT_USE_HEADER_AUTH:
+      GIT_PATH_IN_REPO:
+      GIT_AUTHOR_NAME:
+      GIT_AUTHOR_EMAIL:
+      GIT_COMMITTER_NAME:
+      GIT_COMMITTER_EMAIL:
+      MAX_HEAP:
+      INI_CONFIG_UPDATE_FILE:
+      CLOUD_LINK: "https://cloud.k2view.com"
+      http_proxy:
+      https_proxy:
+      no_proxy:
+      HTTP_PROXY:
+      HTTPS_PROXY:
+      NO_PROXY:
     volumes:
-      - ./common.config:/opt/apps/fabric/common.config:ro,Z
-      - ./${PROFILE}.config:/opt/apps/fabric/profile.config:ro,Z
+      - ./common.config:/opt/apps/fabric/common.config:ro,z
+      - ./${COMPOSE_PROFILES}.config:/opt/apps/fabric/profile.config:ro,z
       - ${PERSISTENT_DATA}/${COMPOSE_PROJECT_NAME}/workspace/:/opt/apps/fabric/workspace/:Z
     entrypoint:
       - /bin/bash
       - -l
       - -c
       - |
+        env | sort
+        [[ -f "${INI_CONFIG_UPDATE_FILE}" ]] || [[ -r /opt/apps/fabric/common.config ]] || { echo "Error: Cannot read common config file. Ensure it has read permission (chmod go+r common.config)"; err=1; }
+        [[ -f "${INI_CONFIG_UPDATE_FILE}" ]] || [[ -r /opt/apps/fabric/profile.config ]] || { echo "Error: Cannot read profile config file. Ensure it has read permission (chmod go+r ${COMPOSE_PROFILES}.config)"; err=1; }
+        [[ -z "$$err" ]] || [[ "$$err" -eq 0 ]] || exit "$$err"
         cat /opt/apps/fabric/common.config /opt/apps/fabric/profile.config > ${INI_CONFIG_UPDATE_FILE}
         sed -i "s/__COMPOSE_PROJECT_NAME__/${COMPOSE_PROJECT_NAME}/g" ${INI_CONFIG_UPDATE_FILE}
         sed -i "s/__POSTGRES_DB__/${POSTGRES_DB}/g" ${INI_CONFIG_UPDATE_FILE}
@@ -100,7 +112,7 @@ services:
         tail -F /opt/apps/fabric/workspace/logs/k2fabric.log
     labels:
       - "k2viewspace"
-      - "space-profile=${PROFILE}"
+      - "space-profile=${COMPOSE_PROFILES}"
       - "traefik.enable=true"
       - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=3213"
       - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-localhost.entrypoints=web"
